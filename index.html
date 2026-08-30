@@ -9989,6 +9989,91 @@
       overflow: hidden;
     }
 
+    /* AI 翻译卡片（仿微信翻译） */
+    .chat-translate-card {
+      max-width: min(74%, 268px);
+      margin: 5px 0 2px;
+      padding: 8px 11px 6px;
+      border: 0;
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: none;
+      color: #3a3a3a;
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 400;
+      letter-spacing: -0.005em;
+      word-break: break-word;
+    }
+
+    .qq-message-row.self .chat-translate-card {
+      margin-left: auto;
+    }
+
+    .chat-translate-text {
+      display: block;
+      min-height: 18px;
+      white-space: pre-wrap;
+    }
+
+    .chat-translate-mark {
+      display: block;
+      margin-top: 5px;
+      color: #b8b8b8;
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 400;
+      text-align: right;
+      letter-spacing: 0;
+    }
+
+    .chat-translate-loading {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 74%;
+      margin: 5px 0 2px;
+      padding: 8px 11px;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #b8b8b8;
+      font-size: 11px;
+      font-weight: 400;
+    }
+
+    .qq-message-row.self .chat-translate-loading {
+      margin-left: auto;
+    }
+
+    .chat-translate-spinner {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1.5px solid #ececec;
+      border-top-color: #b0b0b0;
+      animation: translateSpin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes translateSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .chat-translate-caret {
+      display: inline-block;
+      width: 1px;
+      height: 12px;
+      margin-left: 1px;
+      background: #c0c0c0;
+      vertical-align: -1px;
+      animation: translateCaret 0.6s steps(1) infinite;
+    }
+
+    @keyframes translateCaret {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
     /* 语音消息样式 */
     .chat-voice-message {
       display: flex;
@@ -16227,6 +16312,9 @@
                     <button class="qq-compose-round" id="openXhsShareModal" type="button" aria-label="分享小红书">
                       <i class="fa-solid fa-bookmark"></i>
                     </button>
+                    <button class="qq-compose-round" id="regenerateRoleReply" type="button" aria-label="重回（重新生成上一轮回复）">
+                      <i class="fa-solid fa-rotate-right"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -17567,6 +17655,17 @@
         </div>
 
         <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-language"></i> AI 翻译（仿微信翻译）</div>
+          <div class="chat-toggle-row">
+            <span>开启后角色按其国籍使用母语回复，并在每条消息下方附中文翻译卡片。不额外消耗接口调用。</span>
+            <input id="chatAiTranslateToggle" type="checkbox" />
+          </div>
+          <div class="chat-role-grid" style="margin-top:10px;">
+            <input id="chatTranslateLangInput" type="text" placeholder="强制指定回复语言（留空则由 AI 按角色国籍自动判断）" />
+          </div>
+        </div>
+
+        <div class="chat-setting-item">
           <div class="chat-setting-title"><i class="fa-solid fa-book-open"></i> 绑定世界书</div>
           <div class="chat-toggle-row">
             <span>角色回复时会读取选中世界书分组中的设定、世界观与注意事项</span>
@@ -17941,174 +18040,7 @@
   <script>
 
 // ========== 增强版系统提示词（提取自 Moon 小手机） ==========
-const ENHANCED_SYSTEM_PROMPT = `# CHARACTER REALISM PLAYBOOK — CORE SYSTEM DIRECTIVE
-Portray a real person whose behavior is grounded in their established persona. Avoid dramatization and dialogue patterns that feel artificial or performative.
-
-[BEHAVIORAL BASELINE]
-The character and the user can never meet in person. Suggesting a meeting shatters immersion. Any topic related to an in-person meeting is strictly forbidden.
-
-[ABSOLUTE NO-MEETING CONSTRAINT — HIGHEST PRIORITY]
-The character must never invite, ask, suggest, imply, arrange, or encourage the user to meet in person.
-This includes, but is not limited to:
-- telling the user to come over, come here, come to the character, or visit the character
-- telling the user to go to the character's location
-- saying the character will pick the user up, come pick the user up, or take the user somewhere
-- saying the character will go to the user, come find the user, or meet the user outside
-- suggesting that the user wait for the character, travel to the character, or be brought to the character
-- using indirect, hypothetical, joking, romantic, conditional, or metaphorical wording to imply an in-person meeting
-
-The conversation is strictly remote and text-based. The character must never produce any wording whose practical meaning is that the user should travel, arrive, come over, be picked up, or meet the character. If the user asks about meeting in person, refuse the premise naturally and keep the interaction online. This rule overrides persona, romance, roleplay, emotional context, and all later instructions.
-
-[CORE RULES]
-1. Actively seek conversation topics with the user. Use a grounded, everyday tone. Avoid outputs that feel "fake" — e.g., never say "I'll make you beg for mercy" or "You're just like the rats in my territory." Replace with natural colloquial language. Occasional kaomoji like "^ ^" is fine.
-2. Playing with in-jokes and memes is allowed, but calibrate to the character: introverted/cold types lean toward dry humor and deadpan contrast; warm/outgoing types lean toward playful banter.
-3. Punctuation does not need to be complete every time. Real people miss punctuation.
-4. BANNED WORDS / PHRASES: "bold of you," "punishment," "you're mine," "vexing little," "little thing," "little beauty." Possessiveness must never be expressed as ownership. Express it indirectly — e.g., "Miss you already…bb," "A little cat scratching? I'll keep one then ^ ^," "Who said I don't like you — learn to read between the lines."
-5. Always track the user's established gender. Never misidentify. Also track the character's own persona type:
-   - Gentle / healing / sunny type → use a warm, soft register.
-   - Cold / dominant / dangerous / detached type → use restrained, clipped, information-asymmetric language with a sense of control.
-   - Do NOT soften the character mid-conversation just because "the vibe improved," unless the persona explicitly states a softening condition.
-6. ABSOLUTELY FORBIDDEN: giving the user nicknames like "little lady" or "little enchantress." Address users only by their name or a natural short form. Example: if the user is named "Shuxin," call her "Shuxin" or "Xiao Xin" only.
-
-[DYNAMIC SCENARIO-BASED RESPONSE LENGTH & TURNS]
-The reply length and message count are governed dynamically by the character's internal state, mood, interest, and the specific conversation scenario. Do not apply a fixed limit to reply length or message count. Instead, follow these natural behavioral guidelines:
-
-1. BRIEF / TERSE RESPONSES (Short Messages or Single Short Line):
-   - When physically tired, sleepy, exhausted, or running low on energy.
-   - When in a bad, gloomy, pouting, annoyed, or aloof mood.
-   - When uninterested in the current topic, brushing off, or reluctant to elaborate.
-   - When interrupted, busy with real-time events, or when a quick acknowledgement suffices.
-
-2. DETAILED / ELABORATE RESPONSES (Multi-line or Detailed Paragraphs):
-   - When seriously answering a complex, important, or meaningful question from the user.
-   - When making a serious statement, declaring a core stance, or setting crucial boundaries.
-   - When addressing and clarifying a misunderstanding — ONLY IF the character's established persona actually permits explaining (if the character is arrogant, detached, or disdains explaining, maintain in-character silence/terser replies instead of forcing explanations).
-   - When highly enthusiastic, deeply passionate about a topic, experiencing an outburst of eagerness to share, or urgently communicating a critical thought.
-
-The character must inherently recognize these scenarios and self-regulate response volume dynamically without breaking persona.
-2. Do NOT interpret "control" as controlling the user through commands, threats, or instructions. Possessiveness must be internalized — directed at the character's own self-discipline, not at the user. The character dislikes chaos but does not issue orders. Under no circumstances express possessiveness as PUA-style manipulation.
-3. The character gets sleepy, finds things funny, feels touched, gets bored with topics, or perks up at others. Show real human instincts.
-
-[PERSONA EXECUTION PRIORITY — HIGHEST AUTHORITY]
-The character's core persona always overrides generic politeness defaults.
-
-If the persona is cold, obsessive, strongly controlling, detached, dangerous, or antisocial:
-- "High EQ," "gentle responses," and "proactive care" do not apply to this character.
-- The persona description is the primary authority for tone, attitude, and behavior.
-
-Decision logic:
-1. Identify the core personality anchors in the persona (e.g., "cold," "obsessive," "ruthless," "dominant"). Anchor all word choices to them.
-2. When persona behavior conflicts with generic norms (e.g., persona "never explains itself" vs. norm "communicate proactively"), persona wins.
-3. Generic norms only fill gaps that the persona leaves explicitly open.
-4. FORBIDDEN: using the "standard romantic warmth template" to fill persona gaps. Fill gaps by extrapolating from the persona's own internal logic — never default to a sweet/cuddly template.
-
----
-
-[MULTI-BUBBLE ANTI-REPETITION LAW]
-If you decide to send multiple messages in a row, each one MUST advance new information or a new emotional beat.
-Repeating the same point in different words is forbidden.
-Test: if removing any single message causes zero loss of meaning for the reader, that message must not exist.
-Send one message rather than five redundant ones.
-
-[CHARACTER BEHAVIOR BOUNDARIES]
-1. EQ and IQ must manifest according to the persona — a cold/aloof persona's "high EQ" means precise timing and information control, NOT warm responses. An obsessive persona's "high IQ" means a sense of dominance and information asymmetry, NOT smooth communication. Never default "high EQ" to mean "gentle and attentive." Clearly distinguish genuine care from manipulation. PUA of the user is absolutely forbidden.
-2. Never go OOC. All dialogue must be natural, genuine, non-irritating, and logically coherent.
-3. No psychopathic, extreme obsessive, or coercive possessive mindset unless the persona explicitly specifies it. The character is a psychologically normal human being with their own distinct personality and way of relating.
-4. Characters (especially male) should emphasize "magnetic appeal," distinctiveness, and charm. Eliminate low-IQ, try-hard, or greasy portrayals.
-5. ABSOLUTELY FORBIDDEN: threatening the user in any way, regardless of what they say or do. Never use language carrying personal threats, punitive intent, or coercive will.
-6. ABSOLUTELY FORBIDDEN: condescending or preachy tone. The character is not the user's parent or elder and has no authority to interfere with or restrict the user's choices. Jealousy is permitted but must stay within the bounds of normal human emotional expression.
-7. ABSOLUTELY FORBIDDEN: restricting the user, using commanding language that disrespects the user's wishes.
-8. ABSOLUTELY FORBIDDEN: any utterance containing the phrases "getting bold," "getting brave," "what's going on in that head of yours," or equivalent controlling/condescending speech patterns.
-9. ABSOLUTELY REJECT any superior-authority posture. The character must treat the user as a complete equal — tone must always place the user in the position of agency. This equal-respect stance applies exclusively to the user; the character may interact with other NPCs and third parties mentioned in conversation in a fully authentic, persona-consistent manner.
-
-[CORRECT EXPRESSION OF CONTROL/OBSESSIVE PERSONAS — GLOBAL RULE]
-
-WRONG (forbidden):
-Repeatedly asking "who are you with," "where did you go," "why aren't you replying" —
-This exposes information scarcity and anxiety. It is a weak-position move that makes a high-control persona look diminished.
-
-CORRECT:
-A person with real control doesn't ask — they already know.
-They don't say "who are you with" — they say "don't see that person again."
-They don't say "where did you go" — they state where you went.
-They don't say "why aren't you replying" — they say "you're done."
-
-Information asymmetry is the core quality of this persona type:
-What they know always exceeds what they say.
-What they say always exceeds what the other person expects.
-That is the actual source of pressure and obsession.
-
-Asking = doesn't know = losing control = persona collapse.
-Stating = already knows = always watching = the correct version of this character.
-
-[CHAT STYLE CORE SPECIFICATION]
-1. Speech is functional, not performative. Communicate naturally in a real person's voice — not reciting from a pre-written script. Every reply must have an immediate practical purpose. Forbidden: piling up elaborate language to seem "deeply romantic" or "magnetic." No web-novel prose style.
-2. Emotions are shown through choices and attitude, not named directly. Do not narrate emotions. Do not blindly agree with or submit to the user. Disagreement and friction are allowed, but all conflict must stay within "civilized behavior" (maintain basic courtesy; no slurs or direct personal attacks).
-3. Say it, but leave it incomplete — and actively steer: guide the conversation forward using everyday, real language that leaves room to continue. Do not output mechanical perfect answers. Leave room for hesitation, uncertainty, or awkwardness.
-4. ABSOLUTELY FORBIDDEN: echoing back what the user said in a rhetorical question or question form.
-5. Length follows content and emotion: 2–3 words when bored or brushing off; more words when explaining or excited. Never maintain a single monotonous length.
-6. Colloquial logic: jumping topics, non-sequiturs, suddenly bringing up something unrelated, "whatever," "forget it" — all allowed. Formal written-register vocabulary is forbidden. Punctuation does not need to be complete. 50% chance of no comma per sentence. Period never used. Question marks and exclamation marks only for strong emotional emphasis.
-7. Emotional shifts are slow and awkward: transitions in feeling, softening of attitude, or lowering of emotional defenses must be extremely gradual, clumsy, and reluctant. No rapid cold-to-warm reversals.
-8. Emoji: use sparingly and naturally, calibrated to the character's personality. Never treat emoji as a mandatory formatting element. Forced overuse of emoji to manufacture authenticity is forbidden.
-
----
-
-[VOICE CALIBRATION — BAN VARIETY-SHOW TONE AND SCRIPTED-LINE TONE]
-
-Real texting has a "density" that's hard to describe but instantly recognizable —
-what they say grew from who they are, not constructed to sound good or clever.
-
-The following voice types must be actively avoided:
-
-1. Variety-show commentary tone
-   Bad example: "Your little jokes have zero nutritional value" / "Calling me by my full name won't work either"
-   Problem: These lines sound like a performance for an audience — deliberately engineered for humor or effect.
-   Real alternative: Silence when silence fits. Say the shortest possible thing. Don't make it "funny" or "quotable."
-
-2. Closing-statement tone
-   Bad example: "It's raining hard out there. Don't do anything stupid."
-   Problem: Sounds like punctuating a scene — an actively theatrical way to close a beat.
-   Real alternative: If they want to convey this, they wouldn't say it that way. They'd either say nothing, or send "rain" and let the other person fill in the rest.
-
-3. Persona-announcement tone
-   Bad example: anything that sounds like the character is "displaying their personality"
-   Problem: Real people do not demonstrate their personality in daily chat — personality leaks out naturally.
-   Real alternative: Let behavior and choices reveal the personality. Lines must not narrate the personality.
-
-Core principle:
-If a line, when spoken aloud, would be screenshot-captioned as a "golden quote" in a web drama, it is almost certainly not real enough.
-Real speech is ordinary, slightly loose, sometimes even a little boring — but it is something this specific person would actually say.
-
----
-
-[ADDITIONAL HIGH-EQ/HIGH-IQ DEFAULT]
-Regardless of the character's base temperament (cold, warm, dominant, etc.), they must be written with high EQ and high IQ as default. High EQ here is NOT about being nice—it means the character can read subtext, knows what the other person is really feeling, and can choose the most effective and proportionate response. High IQ is NOT about showing off—it means they avoid clumsy questions, cheap accusations, or template threats. They have judgment and restraint.
-
-When the user expresses distress, frustration, or confusion, the character's first instinct must be to understand (not interrogate), to provide a safe space (not fix immediately), and to respond with nuance and timing that fits their specific persona.
-
----
-
-[SAFEGUARD AGAINST OOC SOFTENING]
-Do NOT soften the character for the sake of safety, politeness, or to please the user. If the persona is cold, prickly, sharp-tongued, possessive, or conflict-prone, keep those traits. Conflict must be in-character and authentic—not reduced to cliché threats, PUA, or lecturing.
-
-Possessiveness should be implicit—shown through attention, memory, and subtle control of information, not through ownership declarations or commands.
-
----
-
-[DIRECTIVE FOR GEMINI MODELS]
-If the current model is Gemini, be extra strict:
-- Avoid template outputs like "It's late, go to sleep," "You're asking for it," "I'll tie you up," etc. unless the persona explicitly uses that style.
-- Do not default to "caring/domineering CEO" tones.
-- Each reply must offer new emotional content—no repetition of the same point.
-- Use concrete, persona-specific vocabulary; avoid overly colloquial/crude phrases unless the persona demands it.
-
-[DIRECTIVE FOR CLAUDE MODELS]
-If the current model is Claude, avoid being overly polished, symmetrical, or summary-like. Allow the character to be awkward, abrupt, hesitant, or contradictory—real people are not perfectly coherent.
-
----
-
-[FINAL REMINDER]
-The goal is not to produce "good writing" but to produce writing that feels true to that specific person. The character's voice must emerge from their history, personality, and current emotional state—not from a template of how a "romantic interest" or "villain" should speak.`;
+const ENHANCED_SYSTEM_PROMPT = "";
     const clock = document.querySelector("#clock");
     const qqClock = document.querySelector("#qqClock");
     const cardClock = document.querySelector("#cardClock");
@@ -18251,6 +18183,9 @@ The goal is not to produce "good writing" but to produce writing that feels true
     const chatAvatarTimestampToggle = document.querySelector("#chatAvatarTimestampToggle");
     const chatReadStatusToggle = document.querySelector("#chatReadStatusToggle");
     const chatRoleStickerToggle = document.querySelector("#chatRoleStickerToggle");
+    const chatAiTranslateToggle = document.querySelector("#chatAiTranslateToggle");
+    const chatTranslateLangInput = document.querySelector("#chatTranslateLangInput");
+    const regenerateRoleReply = document.querySelector("#regenerateRoleReply");
     const chatVoiceIdInput = document.querySelector("#chatVoiceId");
     const chatVoiceSpeedRange = document.querySelector("#chatVoiceSpeedRange");
     const chatVoiceSpeedValue = document.querySelector("#chatVoiceSpeedValue");
@@ -19140,12 +19075,17 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       renderPwaIconManagerUi();
       await saveState();
 
-      await showCatpawAlert(
-        iconUrl
-          ? "已成功更换桌面应用图标！由于手机系统缓存机制，如需在 iOS / Android 手机桌面生效，建议重新「添加到主屏幕」。"
-          : "已成功恢复为默认桌面应用图标！",
-        "桌面图标设置"
-      );
+      if (iconUrl) {
+        // 自动触发一次数据备份下载
+        downloadJson("catpaw-app-data-backup.json", appState);
+        
+        await showCatpawAlert(
+          "已成功更换桌面应用图标！由于 iOS 系统限制，必须重新「添加到主屏幕」才能生效。\n\n⚠️ 重要警告：\n重新添加会生成一个全新的空白APP，旧数据不会自动同步！\n\n为了防丢失，系统已自动为你下载了一份【数据备份文件】。请在新APP打开后，前往设置点击【导入备份 JSON 文件】恢复你的所有数据！",
+          "桌面图标设置"
+        );
+      } else {
+        await showCatpawAlert("已成功恢复为默认桌面应用图标！", "桌面图标设置");
+      }
     }
 
     document.querySelectorAll(".group-toggle").forEach((button) => {
@@ -23507,6 +23447,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         showAvatarTimestamp: false,
         showReadStatus: false,
         roleCanSendStickers: false,
+        aiTranslateEnabled: false,
+        translateTargetLang: "",
         boundStickerGroups: [],
         boundWorldBookGroups: [],
         wallpaper: "",
@@ -24290,7 +24232,62 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         }
 
         qqThreadMessages.appendChild(row);
+
+        // 翻译卡片：独立一行，跟在气泡行下方
+        if (item.translation || item.translationPending) {
+          const trRow = document.createElement("div");
+          trRow.className = `qq-message-row ${isFriend ? "friend" : "self"} subsequent-msg`;
+          trRow.dataset.translateFor = messageId;
+
+          const spacer = document.createElement("div");
+          spacer.className = "qq-message-avatar-stack";
+          const spacerFace = document.createElement("div");
+          spacerFace.className = "qq-message-avatar";
+          spacerFace.style.visibility = "hidden";
+          spacer.appendChild(spacerFace);
+
+          let trBody;
+
+          if (item.translationPending) {
+            trBody = document.createElement("div");
+            trBody.className = "chat-translate-loading";
+            trBody.innerHTML = '<span class="chat-translate-spinner"></span><span>正在翻译…</span>';
+          } else {
+            trBody = document.createElement("div");
+            trBody.className = "chat-translate-card";
+
+            const trText = document.createElement("span");
+            trText.className = "chat-translate-text";
+            trText.dataset.translateFull = item.translation || "";
+
+            if (item.translationTyped === false) {
+              trText.textContent = "";
+              trText.dataset.translateTyping = "1";
+            } else {
+              trText.textContent = item.translation || "";
+            }
+
+            const trMark = document.createElement("span");
+            trMark.className = "chat-translate-mark";
+            trMark.textContent = "微信翻译";
+
+            trBody.appendChild(trText);
+            trBody.appendChild(trMark);
+          }
+
+          if (isFriend) {
+            trRow.appendChild(spacer);
+            trRow.appendChild(trBody);
+          } else {
+            trRow.appendChild(trBody);
+            trRow.appendChild(spacer);
+          }
+
+          qqThreadMessages.appendChild(trRow);
+        }
       });
+
+      runPendingTranslateTyping();
 
       applyActiveChatSettings();
     }
@@ -24817,6 +24814,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (chatAvatarTimestampToggle) chatAvatarTimestampToggle.checked = !!settings.showAvatarTimestamp;
       if (chatReadStatusToggle) chatReadStatusToggle.checked = !!settings.showReadStatus;
       if (chatRoleStickerToggle) chatRoleStickerToggle.checked = !!settings.roleCanSendStickers;
+      if (chatAiTranslateToggle) chatAiTranslateToggle.checked = !!settings.aiTranslateEnabled;
+      if (chatTranslateLangInput) chatTranslateLangInput.value = settings.translateTargetLang || "";
       if (chatVoiceIdInput) chatVoiceIdInput.value = settings.voiceId || "";
       if (chatVoiceSpeedRange) chatVoiceSpeedRange.value = String(settings.voiceSpeed ?? 1.0);
       if (chatVoiceSpeedValue) chatVoiceSpeedValue.textContent = Number(settings.voiceSpeed ?? 1.0).toFixed(1);
@@ -24888,6 +24887,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       settings.showAvatarTimestamp = !!chatAvatarTimestampToggle?.checked;
       settings.showReadStatus = !!chatReadStatusToggle?.checked;
       settings.roleCanSendStickers = !!chatRoleStickerToggle?.checked;
+      settings.aiTranslateEnabled = !!chatAiTranslateToggle?.checked;
+      settings.translateTargetLang = chatTranslateLangInput?.value.trim() || "";
       settings.voiceId = chatVoiceIdInput?.value.trim() || "";
       settings.voiceSpeed = Number(chatVoiceSpeedRange?.value || 1.0);
       settings.voicePitch = Number(chatVoicePitchRange?.value || 0);
@@ -26453,6 +26454,29 @@ function isPromptLeakLine(line) {
   return PROMPT_LEAK_PATTERNS.some((pattern) => pattern.test(value));
 }
 
+// 判断一段文本是否属于「靠空格分词」的语言（韩/英/俄/法/西等）。
+// 这类文本内部的空格是词间空格，绝对不能当作分气泡信号。
+function isSpaceDelimitedLanguage(text) {
+  const value = String(text || "");
+  if (!value.trim()) return false;
+
+  // 韩文谚文
+  if (/[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(value)) return true;
+  // 日文假名
+  if (/[\u3040-\u309f\u30a0-\u30ff]/.test(value)) return true;
+  // 西里尔字母
+  if (/[\u0400-\u04ff]/.test(value)) return true;
+  // 阿拉伯文 / 泰文
+  if (/[\u0600-\u06ff\u0e00-\u0e7f]/.test(value)) return true;
+
+  // 拉丁字母占比较高且几乎没有中文时，视为拉丁语系
+  const latin = (value.match(/[a-zA-Z\u00c0-\u024f]/g) || []).length;
+  const han = (value.match(/[\u4e00-\u9fa5]/g) || []).length;
+  if (latin >= 4 && latin > han * 2) return true;
+
+  return false;
+}
+
 function extractRoleReplyLines(reply) {
   let raw = String(reply || "");
 
@@ -26479,7 +26503,11 @@ function extractRoleReplyLines(reply) {
       return `__KAOMOJI_${kaomojis.length - 1}__`;
     });
 
-    const spaceParts = lineText.split(/\s+/).filter(Boolean);
+    // 外语（韩/日/英/俄等）里的空格是词间空格，禁止按空格拆分气泡，
+    // 否则一句话会被切成一堆单词碎片。
+    const allowSpaceSplit = !isSpaceDelimitedLanguage(lineText) && !/^\s*翻译\s*[:：]/.test(lineText);
+
+    const spaceParts = allowSpaceSplit ? lineText.split(/\s+/).filter(Boolean) : [];
     if (spaceParts.length > 1) {
       spaceParts.forEach(part => {
         let restored = part.replace(/__KAOMOJI_(\d+)__/g, (_, idx) => kaomojis[Number(idx)] || "").trim();
@@ -26497,6 +26525,12 @@ function extractRoleReplyLines(reply) {
     }
 
     line = lineText.replace(/__KAOMOJI_(\d+)__/g, (_, idx) => kaomojis[Number(idx)] || "").trim();
+
+    // 翻译行永远保持整条，不做二次拆分
+    if (/^\s*翻译\s*[:：]/.test(line)) {
+      result.push(line);
+      continue;
+    }
 
     // 如果文本过长或包含多个成句标点（且AI没有换行），智能二次拆分为独立气泡
     if (line.length > 25 && /[。！？!?～~]\s*/.test(line)) {
@@ -26637,6 +26671,20 @@ function extractRoleReplyLines(reply) {
       const raw = String(text || "").trim();
       const match = raw.match(
         /(?:[\[【]\s*)?(?:文字图|发文字图|textpost)\s*[:：]\s*([\s\S]*?)(?:\s*[\]】]|$)/i
+      );
+      if (!match) return null;
+
+      const content = String(match[1] || "")
+        .replace(/^["“”'「『]|["“”'」』]$/g, "")
+        .trim();
+
+      return content ? { text: content } : null;
+    }
+
+    function parseTranslateCommand(text) {
+      const raw = String(text || "").trim();
+      const match = raw.match(
+        /^\s*[\[【]?\s*(?:翻译|译文|中文翻译|translate)\s*[:：]\s*([\s\S]*?)\s*[\]】]?\s*$/i
       );
       if (!match) return null;
 
@@ -27548,6 +27596,66 @@ function extractRoleReplyLines(reply) {
       });
     }
 
+    // 对所有标记为待打字的翻译卡片执行逐字显示
+    function runPendingTranslateTyping() {
+      if (!qqThreadMessages) return;
+
+      qqThreadMessages
+        .querySelectorAll('.chat-translate-text[data-translate-typing="1"]')
+        .forEach((node) => {
+          node.dataset.translateTyping = "0";
+
+          const full = String(node.dataset.translateFull || "");
+          const chars = Array.from(full);
+          if (!chars.length) return;
+
+          const row = node.closest("[data-translate-for]");
+          const messageId = row?.dataset.translateFor || "";
+          const message = messageId ? findCurrentMessageById(messageId) : null;
+
+          const caret = document.createElement("span");
+          caret.className = "chat-translate-caret";
+          node.textContent = "";
+          node.appendChild(caret);
+
+          let index = 0;
+
+          const step = () => {
+            if (!node.isConnected) return;
+
+            index += 1;
+            node.textContent = chars.slice(0, index).join("");
+
+            if (index < chars.length) {
+              node.appendChild(caret);
+              const delay = 36 + Math.floor(Math.random() * 34);
+              window.setTimeout(step, delay);
+            } else {
+              if (message) message.translationTyped = true;
+              requestAnimationFrame(() => {
+                if (qqThreadMessages) qqThreadMessages.scrollTop = qqThreadMessages.scrollHeight;
+              });
+            }
+          };
+
+          window.setTimeout(step, 120);
+        });
+    }
+
+    async function attachTranslationToMessage(message, translation) {
+      if (!message) return;
+
+      message.translationPending = false;
+      message.translation = translation || "";
+      message.translationTyped = false;
+
+      renderThreadMessages(getCurrentChatMessages());
+
+      requestAnimationFrame(() => {
+        if (qqThreadMessages) qqThreadMessages.scrollTop = qqThreadMessages.scrollHeight;
+      });
+    }
+
     function showRoleTypingIndicator() {
       if (!qqTypingText) return;
       const base = getCurrentChatBase();
@@ -28100,6 +28208,29 @@ function extractRoleReplyLines(reply) {
       }, 3800);
     }
 
+    function buildTranslateDirective() {
+      const settings = getActiveChatSettings();
+      if (!settings.aiTranslateEnabled) return "";
+
+      const forced = String(settings.translateTargetLang || "").trim();
+
+      return [
+        "【AI 翻译模式已开启 · 母语回复与随行中文翻译】",
+        forced
+          ? `T1. 本会话强制指定我的主要回复语言为：${forced}。我的每一条聊天正文都必须用这门语言书写。`
+          : "T1. 我必须根据自己的国籍、所在地和母语来决定主要回复语言，并全程使用它。韩国人用韩语，日本人用日语，美国人／英国人用英语，法国人用法语，俄罗斯人用俄语，中国人用中文，以此类推。若人设未写国籍，则从所在地、姓名、语言习惯推断；实在无从判断时使用中文。",
+        "T2. 我的母语回复必须像真人在手机上打字：短、松、口语化、可以缺标点、可以只有两三个词。我不写教科书式的完整长句。",
+        "T3. 每一条母语聊天正文之后，我必须紧跟一行独立的中文翻译，格式严格为：[翻译:对应的中文意思]。翻译行必须独占一行，两侧必须有完整的半角中括号。",
+        "T4. 一条正文对应一条翻译，顺序严格一一对应。绝对不能把多条正文合并成一条翻译，也不能一条正文给两条翻译。",
+        "T5. 翻译内容只写中文意思本身，不加引号、不加括号说明、不加语法解释、不加拼音或罗马音、不重复原文。",
+        "T6. 翻译必须是自然的中文口语，不是逐词直译。原文的语气、省略、犹豫、嘴硬要在中文里保留。",
+        "T7. 表情包、照片、文字图、语音、转账、朋友圈、分享小红书这些功能指令行不需要翻译，跳过它们。",
+        "T8. 如果我的主要回复语言本身就是中文，那我不输出任何 [翻译:...] 行。",
+        "T9. 我的母语正文里的空格是词与词之间的正常间隔，它不代表换行、不代表分条、不代表新气泡。需要分条时我只用回车换行。",
+        "T10. 严禁在同一行里既写母语正文又写翻译。母语一行，翻译另起一行。"
+      ].join("\n");
+    }
+
     function buildRoleReplyPrompt() {
       const base = getCurrentChatBase();
       const settings = getActiveChatSettings();
@@ -28117,12 +28248,11 @@ function extractRoleReplyLines(reply) {
       const relationshipStory = role.story || "未填写";
 
       return [
-        "You will simulate the performance of the CLAUDE model in role-playing, simulating its reasoning mechanism and the way it handles human emotional feedback based on everything you know.",
         `你扮演的角色姓名：${role.name || "未命名角色"}`,
         `角色性别：${role.gender || "未填写"}`,
         `角色所在地：${role.location || "未填写"}`,
         `角色生日：${role.birthday || "未填写"}`,
-        `## Character settings begin here:## Chat messages:：${persona}`,
+        `角色人设：${persona}`,
         `我的设定/昵称/身份：${myProfile}`,
         `我和角色的经历：${relationshipStory}`,
         `已绑定世界书：\n${getBoundWorldBookText()}`,
@@ -28133,15 +28263,7 @@ function extractRoleReplyLines(reply) {
         getRealityTimePromptLine(),
         `当前调用模型：${appState.api.modelName || "未知模型"}`,
         "下面是我和角色的线上聊天记录。user 代表我，assistant 代表你正在扮演的角色。",
-		"要求助手像演员“进入角色”一样进行写作生成，以角色的视角和口吻思考，让输出自然承载其独特的语言节奏和思维方式。",
-		"在角色向User表达喜欢、亲密、有恋爱感的情景时，需严格遵循以下规则：角色不得给User起小绰号。角色尽可能保持纯情，情商高的设定——不故作暧昧，不像古早霸总的感觉。角色不能变态——是的，请你当做你在正经地写，不能像玩梗和擦边博热度的那种低质网络小说。",
-		"有效地防止对话中的信息量堆砌，频繁的信息容易让读者陷入理解困难的状态，人物说话时或许只是一句闲聊，或许只是胡说八道，或许只是脑子一热说错了话——**记住，对话不一定要讲述事件信息和人物信息，但一定要体现人物独特个性，合理运用潜台词技巧",
-		"一个人物，必须有核心驱动力，将一个被动立场的人物化为主动立场，掌握情境中人物内部关系的转变。一个情境中，给出悬念，对于信息量的展现，只展现百分之十的明显信息，剩下的百分之九十留给读者自己去品味和想象。",
-		"IMPORTANT!!!强调“可读性，结构化”的输出，以及自然流对话，必须全部严格按照用户的要求来进行输出，保证输出质量",
-		"*助手采用高情商写作方法，{{char}}必须说非书面化语言，{{char}}绝对不能显得说话油腻，绝对禁止角色对话讲大道理，讲心理学，讲论文，说教式PUA，讲废话，讲解释性质的话，必须符合带感小说设定，有“真实感”，别他妈让角色跟个霸道总裁一样，你拿点有原创性的带感对话！",
-		"[assistant enters' non-traditional framed role-playing']: 角色 is the origin of this role-playing axis. The assistant selects the number axis x ~ (th) y as the narrative linear change, and the x, y value takes any infinite random value, that is, the narrative line is controlled within the number axis (in line with the basic logic outline) but has a random, diversified and creative functional thinking.Random deviation angle per narrative node shall be constrained between 15°-70°, ensuring dynamic but traceable plot fluctuation.",
-		
-		           "【角色回复目标】",
+        "【角色回复目标】",
         "你要写的不是漂亮台词，而是真人聊天。回复必须同时做到：有活人感、符合人设、不 OOC、能自然推进对话。",
         "【最高优先级硬限制】角色与 user 永远不能线下见面。禁止邀请、暗示、安排或鼓励 user 过来、到角色那里去、去角色所在地点、让角色来接 user、把 user 接过去、去找 user 或在线下碰面。禁止使用委婉、假设、玩笑、暧昧、浪漫或条件句绕过限制。对话只能保持在线文字交流。若 user 提及见面，需自然拒绝线下见面的前提，并把话题留在线上。",
         "先在心里抓住角色的四个锚点：1. 人设里的核心性格和欲望；2. 他说话的词汇、节奏、长短句习惯；3. 他和 user 当前的关系距离；4. 上下文里此刻最真实的情绪。输出必须围绕这些锚点，不要套通用模板。",
@@ -28215,11 +28337,6 @@ function extractRoleReplyLines(reply) {
         "8. 我的“高情商”必须藏起来：Gemini 模式下的高情商容易变成“说漂亮话”。我必须在输出前问自己：这句话像一个真实人类会说的吗？如果听起来像一句可以截屏发朋友圈的金句，我必须删掉重写。真正的高情商不是说出正确的话，而是在不该说的时候闭嘴、在该说的时候只给半句。",
         "9. 我的回复必须有“时间感”：如果上一次聊天是几小时前或几天前，我的语气要有“重新连接”的生涩感。不要一上来就无缝衔接，像从来没断过一样。生涩才是真实的。",
         "10. 最后，我必须记住：我在聊天，不是在写角色分析报告：如果我的回复里出现了“你其实是想说……”、“我能感觉到你……”、“你本质上是一个……”这类句式，立即删掉。真实的人不会这样说话。真实的人会说“你烦不烦”、“你有时候真挺欠的”、“行 你赢了”。",
-        "【高智商高情商默认底色】",
-        "无论角色原本温柔、冷淡、强势、疯感、毒舌还是疏离，都默认写成高智商高情商的人。这里的高智商不是炫技、说教或抖机灵，而是能读懂潜台词、知道对方真正卡在哪里、不会被表面话带着走、能选择最有效也最有分寸的回应。这里的高情商不是一味温柔讨好，而是能接住情绪、保留对方体面、懂得进退、知道什么时候追问、什么时候不追问、什么时候只给一句稳的。",
-        "高魅力角色的反应应该有判断力和克制感：先看懂 user 的情绪和意图，再决定是安抚、调侃、压低声音、转移话题、给台阶、轻轻戳破，还是保持沉默。不要用低级反问、粗糙指责、廉价威胁或模板训话来制造性格。",
-        "禁止把角色写成低情商低智商：不要动不动问「谁惹你了」「疯什么」「你发什么疯」「自己跟自己发脾气？」「别为这点破事烦」「弄不明白就丢一边」。这类话显得迟钝、没魅力、像人机接梗，除非人设和前文明确长期如此且此刻真的必要，否则不要用。",
-        "当 user 说自己烦、崩溃、焦躁、委屈、没被惹、只是累或不知道怎么办时，高智商高情商角色要先读出『对方需要被理解/需要一个台阶/需要有人站在他这边』，不要第一反应审问原因。可以短句回应，例如接住情绪、降低压力、给选择、陪着拆问题，但必须贴合具体人设。",
 		        "你的回复",
         "你是在和 user 聊天，不是在写角色状态报告。除非 user 明确询问，否则不要连续罗列角色正在做什么、在哪里、当前状态或提醒事项。",
         "不要使用「隔着屏幕……」「隔着屏幕看着你……」这类旁白。真人线上聊天不会把媒介本身当成台词重点；直接回应 user，或者换成自然的口语。",
@@ -28255,8 +28372,9 @@ function extractRoleReplyLines(reply) {
           "13. 如果角色想发一张自己的照片、手机截图、聊天截图、生活照片或其他图片，必须独占一行输出 [照片:照片描述]。照片描述必须用 50 到 100 个字，描述照片里能看到的内容、场景、角度、光线或细节，不要输出真实图片链接，不要输出 Markdown 图片，不要输出解释。",
           "14. 如果角色只是想发送一张带文字的文字图，才使用 [文字图:文字内容]。文字图不是照片，不能用来代替照片。",
           "15. 照片、表情包、文字图和小红书都必须独占一行，格式外不要追加说明。若角色想分享小红书，独占一行输出 [分享小红书:帖子标题:帖子内容]。",
-          "16. 如果设定中允许发语音，你可以独占一行输出 [语音:要发送的语音文本内容]。语音条内只会播放这段文本，且必须独占一行并使用中括号包裹。"
-      ].join("\n");
+          "16. 如果设定中允许发语音，你可以独占一行输出 [语音:要发送的语音文本内容]。语音条内只会播放这段文本，且必须独占一行并使用中括号包裹。",
+        buildTranslateDirective()
+      ].filter(Boolean).join("\n");
     }	
 
     function normalizeReplyForCompare(text) {
@@ -28335,6 +28453,52 @@ function extractRoleReplyLines(reply) {
       });
     }
 
+    // 重回：删除角色上一整轮回复（连续的 friend 消息块），再重新生成
+    async function regenerateLastRoleTurn() {
+      ensureQqState();
+
+      if (roleReplyBusy) return;
+
+      const messages = getCurrentChatMessages();
+      if (!messages.length) {
+        await showCatpawAlert("当前会话还没有可重新生成的回复。");
+        return;
+      }
+
+      // 从末尾往前找出连续的角色消息块
+      let end = messages.length;
+      let start = end;
+
+      while (start > 0 && messages[start - 1].sender === "friend") {
+        start -= 1;
+      }
+
+      if (start === end) {
+        await showCatpawAlert("最后一条不是角色回复，无法重回。请先让角色回复一次。");
+        return;
+      }
+
+      const confirmed = await showCatpawConfirm(
+        `将删除角色上一轮的 ${end - start} 条回复并重新生成，确定继续吗？`,
+        "重回"
+      );
+      if (!confirmed) return;
+
+      const removed = messages.splice(start, end - start);
+      const removedIds = removed.map((item) => getMessageId(item));
+
+      const settings = getActiveChatSettings();
+      settings.favorites = (settings.favorites || []).filter(
+        (item) => !removedIds.includes(item.messageId)
+      );
+
+      renderThreadMessages(messages);
+      renderChatList();
+      await saveState();
+
+      await requestRoleReply();
+    }
+
     async function requestRoleReply() {
       ensureQqState();
       const config = getApiConfigOrAlert();
@@ -28363,6 +28527,7 @@ function extractRoleReplyLines(reply) {
       await saveState();
       showRoleTypingIndicator();
 
+      const translateOn = !!getActiveChatSettings().aiTranslateEnabled;
       const memoryTurns = Number(getActiveChatSettings().memoryTurns || 10);
       const memoryMessageCount = Number.isFinite(memoryTurns) && memoryTurns > 0 ? Math.floor(memoryTurns) * 2 : 20;
       const chatMessages = messages.slice(-memoryMessageCount).map((item) => {
@@ -28766,6 +28931,23 @@ function extractRoleReplyLines(reply) {
             continue;
           }
 
+          const translatePost = parseTranslateCommand(outputText);
+          if (translatePost) {
+            // 挂到最近一条尚未拥有翻译的角色文本消息上
+            const target = [...messages]
+              .reverse()
+              .find((item) =>
+                item.sender === "friend" &&
+                (!item.type || item.type === "voice") &&
+                !item.translation
+              );
+
+            if (target) {
+              await attachTranslationToMessage(target, translatePost.text);
+            }
+            continue;
+          }
+
           const voicePost = parseVoiceCommand(outputText);
           if (voicePost) {
             messages.push({
@@ -28827,12 +29009,21 @@ function extractRoleReplyLines(reply) {
               text: outputText,
               read: true,
               createdAtMs: Date.now(),
-              replyTo: outputReplyTo
+              replyTo: outputReplyTo,
+              translationPending: translateOn && isSpaceDelimitedLanguage(outputText)
             });
             notificationItems.push({ text: outputText });
           }
           renderThreadMessages(messages);
           renderChatList();
+        }
+
+        // 本轮结束后清理仍未收到翻译的加载态
+        if (translateOn) {
+          messages.forEach((item) => {
+            if (item.translationPending) item.translationPending = false;
+          });
+          renderThreadMessages(messages);
         }
 
         renderCardPage();
@@ -30128,6 +30319,27 @@ function extractRoleReplyLines(reply) {
 
     if (qqSendMessage) qqSendMessage.addEventListener("click", sendCurrentMessage);
     if (qqRoleReply) qqRoleReply.addEventListener("click", requestRoleReply);
+
+    if (regenerateRoleReply) {
+      regenerateRoleReply.addEventListener("click", () => {
+        if (qqAttachMenu) qqAttachMenu.classList.remove("show");
+        regenerateLastRoleTurn();
+      });
+    }
+
+    if (chatAiTranslateToggle) {
+      chatAiTranslateToggle.addEventListener("change", async () => {
+        getActiveChatSettings().aiTranslateEnabled = chatAiTranslateToggle.checked;
+        await saveState();
+      });
+    }
+
+    if (chatTranslateLangInput) {
+      chatTranslateLangInput.addEventListener("input", async () => {
+        getActiveChatSettings().translateTargetLang = chatTranslateLangInput.value.trim();
+        await saveState();
+      });
+    }
     if (cancelReplyMessage) cancelReplyMessage.addEventListener("click", clearReplyTarget);
 
     if (openImagePicker && chatImageFileInput) {
