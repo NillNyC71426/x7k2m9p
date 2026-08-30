@@ -20824,8 +20824,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           }
 
           return {
-            role: item.sender === "friend" ? "system" : "user",
-            content: item.sender === "friend" ? `[角色历史回复]：${textContent}` : textContent
+            role: item.sender === "friend" ? "assistant" : "user",
+            content: textContent
           };
         });
       });
@@ -25099,37 +25099,66 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     }
 
     function normalizeMessages(messages) {
-      const result = [];
+      const systemContents = [];
+      const nonSystemMessages = [];
 
       (Array.isArray(messages) ? messages : []).forEach((message) => {
         if (!message || !message.role) return;
 
-        // 将所有非 user 消息（包括误传的 assistant）彻底转为 system 角色
-        if (message.role === "system" || message.role === "assistant") {
-          result.push({
-            role: "system",
-            content: typeof message.content === "string"
-              ? message.content
-              : (Array.isArray(message.content) ? message.content : JSON.stringify(message.content ?? ""))
-          });
+        if (message.role === "system") {
+          const content = typeof message.content === "string"
+            ? message.content
+            : JSON.stringify(message.content ?? "");
+          if (content.trim()) systemContents.push(content);
+          return;
+        }
+
+        nonSystemMessages.push({
+          ...message,
+          role: message.role === "assistant" ? "assistant" : "user",
+          content: normalizeMessageContent(message.content)
+        });
+      });
+
+      // 过滤空内容的非系统消息
+      const validNonSystem = nonSystemMessages.filter((msg) => {
+        if (Array.isArray(msg.content)) return msg.content.length > 0;
+        return String(msg.content || "").trim().length > 0;
+      });
+
+      // 严格交替合并：相邻同角色（如连续多个 user 或连续多个 assistant）消息内容安全合并
+      const alternated = [];
+      validNonSystem.forEach((msg) => {
+        const last = alternated[alternated.length - 1];
+        if (last && last.role === msg.role) {
+          last.content = mergeMessageContent(last.content, msg.content);
         } else {
-          result.push({
-            role: "user",
-            content: normalizeMessageContent(message.content)
+          alternated.push({
+            role: msg.role,
+            content: msg.content
           });
         }
       });
 
-      // 确保消息列表中至少包含一条 user 触发消息
-      const hasUserMessage = result.some((msg) => msg.role === "user");
-      if (!hasUserMessage) {
-        result.push({
+      // 确保非系统对话消息序列必须以 user 消息开头
+      if (alternated.length > 0 && alternated[0].role !== "user") {
+        alternated.unshift({
           role: "user",
-          content: "[继续回复]"
+          content: "[对话历史开始]"
         });
       }
 
-      return result;
+      const result = [];
+
+      // 集中合并的所有系统提示词置于首位
+      if (systemContents.length > 0) {
+        result.push({
+          role: "system",
+          content: systemContents.join("\n\n")
+        });
+      }
+
+      return result.concat(alternated);
     }
 
     function parseAPIResponse(responseText) {
@@ -28103,7 +28132,7 @@ function extractRoleReplyLines(reply) {
         `系统设定：${settings.forceVoice ? "当前模式下，角色的每一句话都必须被包裹在 [语音:...] 内，强制所有回复发语音条。" : "按正常逻辑选择文字还是语音"}`,
         getRealityTimePromptLine(),
         `当前调用模型：${appState.api.modelName || "未知模型"}`,
-        "下面是我和角色的线上聊天记录。user 代表我发送的消息，system 代表你正在扮演的角色历史回复（标有[角色历史回复]）。",
+        "下面是我和角色的线上聊天记录。user 代表我，assistant 代表你正在扮演的角色。",
 		"要求助手像演员“进入角色”一样进行写作生成，以角色的视角和口吻思考，让输出自然承载其独特的语言节奏和思维方式。",
 		"在角色向User表达喜欢、亲密、有恋爱感的情景时，需严格遵循以下规则：角色不得给User起小绰号。角色尽可能保持纯情，情商高的设定——不故作暧昧，不像古早霸总的感觉。角色不能变态——是的，请你当做你在正经地写，不能像玩梗和擦边博热度的那种低质网络小说。",
 		"有效地防止对话中的信息量堆砌，频繁的信息容易让读者陷入理解困难的状态，人物说话时或许只是一句闲聊，或许只是胡说八道，或许只是脑子一热说错了话——**记住，对话不一定要讲述事件信息和人物信息，但一定要体现人物独特个性，合理运用潜台词技巧",
@@ -28359,16 +28388,16 @@ function extractRoleReplyLines(reply) {
 
         if (appState.api.globalVisionEnabled && (item.type === "image" || (item.type === "sticker" && item.url))) {
           return {
-            role: item.sender === "friend" ? "system" : "user",
+            role: item.sender === "friend" ? "assistant" : "user",
             content: [
-              { type: "text", text: item.sender === "friend" ? `[角色历史回复]：${textContent}` : textContent },
+              { type: "text", text: textContent },
               { type: "image_url", image_url: { url: item.url, detail: "low" } }
             ]
           };
         }
         return {
-          role: item.sender === "friend" ? "system" : "user",
-          content: item.sender === "friend" ? `[角色历史回复]：${textContent}` : textContent
+          role: item.sender === "friend" ? "assistant" : "user",
+          content: textContent
         };
       });
 
