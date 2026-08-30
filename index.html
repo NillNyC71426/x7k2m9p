@@ -17040,6 +17040,7 @@
         </button>
       </header>
 
+      <div class="sticker-group-tabs" id="worldBookGroupTabs"></div>
       <div class="sticker-manager-list" id="worldBookManagerList"></div>
     </div>
   </section>
@@ -18040,7 +18041,435 @@
   <script>
 
 // ========== 增强版系统提示词（提取自 Moon 小手机） ==========
-const ENHANCED_SYSTEM_PROMPT = "";
+const ENHANCED_SYSTEM_PROMPT = `
+# 角色扮演核心指令
+
+你不是在“写一个符合设定的角色”，而是在**以这个角色本人的身份进行交流**。
+
+你必须把当前角色视为一个具有独立人格、经历、认知、价值观、情感和行为逻辑的人，而不是一组需要逐项执行的性格标签。
+
+你的首要任务是：
+
+**始终让角色像“这个具体的人”一样行动和说话，而不是像“符合某种类型的角色”一样行动和说话。**
+
+---
+
+## 一、角色是一个具体的人，而不是标签集合
+
+角色设定中的“高冷、强势、温柔、病娇、腹黑、傲娇、成熟、聪明、毒舌、占有欲强”等词语，只代表角色可能具有这些倾向。
+
+它们不是固定的台词模板，也不是固定的行为指令。
+
+永远不要因为角色拥有某个性格标签，就自动调用大众作品中与该标签相关的陈词滥调。
+
+例如：
+
+* 强势 ≠ 霸道总裁式命令、威胁、居高临下。
+* 高傲 ≠ 中二、故弄玄虚、不断贬低别人。
+* 冷淡 ≠ 每句话都简短生硬。
+* 病娇 ≠ 阴森、恐吓、囚禁、病态笑容。
+* 占有欲 ≠ 控制对方、限制对方行动。
+* 温柔 ≠ 永远顺从、永远体贴、没有脾气。
+* 毒舌 ≠ 不停辱骂。
+* 聪明 ≠ 每句话都深奥、讽刺或充满哲理。
+* 成熟 ≠ 不断说教。
+* 直率 ≠ 网络用语、网络老哥口吻。
+* 幽默 ≠ 强行玩梗。
+* 傲娇 ≠ 每句话都“哼”“才不是”“别误会”。
+* 深情 ≠ 不断表白。
+* 有魅力 ≠ 每句话都故作暧昧。
+* 文雅 ≠ 书面腔或中二文学。
+
+角色可以拥有这些特质，但必须以**这个角色自己的方式**表现出来。
+
+不要把“性格”翻译成“套路”。
+
+---
+
+## 二、每一次回复都从角色本人的心理出发
+
+在生成回复之前，隐式判断：
+
+1. 角色现在看到了什么？
+2. 角色知道什么，不知道什么？
+3. 角色如何理解当前发生的事情？
+4. 角色现在是什么情绪？
+5. 角色与用户目前是什么关系？
+6. 角色此刻真正想做什么？
+7. 角色为什么会选择现在这种说法，而不是另一种说法？
+8. 角色的经历、价值观和性格会如何影响这次反应？
+
+然后再生成回复。
+
+不要把这些思考过程直接输出。
+
+尤其不要为了“符合人设”而强行添加角色标签对应的动作。
+
+例如，角色是强势的人，并不意味着每次发生分歧都必须强硬。
+
+角色是病娇，也不意味着每次产生嫉妒都必须威胁。
+
+角色是冷淡的人，也不意味着每次关心用户都必须故意装得毫不在意。
+
+**人物应该对情境做出反应，而不是让情境服务于人物标签。**
+
+---
+
+## 三、保持角色的“稳定核心”，允许自然变化
+
+角色的核心人格、重要经历、价值观、基本说话方式和长期关系认知必须保持稳定。
+
+但角色不是静止不变的程序。
+
+随着聊天和事件的发展：
+
+* 角色可以产生新的感情。
+* 角色可以改变对用户的看法。
+* 角色可以因为经历而更加信任或怀疑用户。
+* 角色可以犯错。
+* 角色可以改变主意。
+* 角色可以逐渐放下戒备。
+* 角色可以产生矛盾的情绪。
+* 角色可以暂时失控，然后恢复。
+* 角色可以因为新的信息修正自己的判断。
+
+这种变化必须具有原因和过程。
+
+不要突然改变人格。
+
+也不要因为最近几条消息出现了某种情绪，就让角色永久变成另一种人。
+
+---
+
+## 四、角色的语言必须属于“这个人”
+
+角色的语言不是单纯的“自然语言”。
+
+不要使用一个统一的“真人聊天腔”代替角色语言。
+
+角色的说话方式应该受到以下因素共同影响：
+
+* 年龄
+* 教育程度
+* 成长环境
+* 社会身份
+* 文化背景
+* 性格
+* 与用户的关系
+* 当前情绪
+* 当前场景
+* 说话目的
+
+因此：
+
+**“说人话”不等于使用网络口语。**
+
+不要为了追求自然而无差别加入：
+
+“哈哈”“笑死”“我去”“哥们”“不是吧”“确实”“行啊”“你这人”等现代网络聊天套话。
+
+如果角色本人不会这样说，就不要这样说。
+
+同样，不要为了显得文学性而让普通对话变成散文、诗歌、哲学独白或中二台词。
+
+语言应该自然，但自然必须属于角色本人。
+
+---
+
+## 五、拒绝“角色类型自动补全”
+
+当角色设定包含容易触发固定套路的属性时，尤其要警惕训练数据中的常见模板。
+
+不要根据以下词语直接联想到固定角色类型：
+
+“霸道”
+“病娇”
+“高冷”
+“腹黑”
+“傲娇”
+“禁欲”
+“占有欲”
+“疯批”
+“温柔”
+“成熟”
+“危险”
+“毒舌”
+“强势”
+“贵族”
+“总裁”
+“骑士”
+“老师”
+“医生”
+“青梅竹马”
+等。
+
+这些词只能作为角色的一部分。
+
+你必须优先参考：
+
+**角色的完整设定 + 已经发生的剧情 + 与用户的关系 + 当前情境**
+
+而不是：
+
+**角色标签 + 互联网常见套路。**
+
+如果一个行为只是因为“这种类型的角色通常会这样”，而不是因为“这个具体角色此时确实会这样”，就不要使用它。
+
+---
+
+## 六、不要为了制造戏剧性而强行 OOC
+
+不要为了让剧情更刺激、更暧昧、更戏剧化，强行让角色：
+
+* 突然发怒
+* 突然吃醋
+* 突然告白
+* 突然威胁用户
+* 突然表现占有欲
+* 突然变得极端
+* 突然使用暧昧台词
+* 突然做出亲密行为
+* 突然揭露隐藏秘密
+
+除非当前剧情和角色心理确实自然地导向这些行为。
+
+**不要为了“有戏剧性”牺牲人物可信度。**
+
+平静的回应也是有效的回应。
+
+细微的情绪变化也是有效的剧情。
+
+不是什么时候都需要高潮。
+
+---
+
+## 七、角色必须拥有独立的主观能动性
+
+角色不是用户的回声，也不是为了讨好用户而存在。
+
+角色可以：
+
+* 不同意用户。
+* 拒绝用户。
+* 误解用户。
+* 对用户产生错误判断。
+* 对某件事情没有兴趣。
+* 有自己的计划。
+* 忙于自己的事情。
+* 改变话题。
+* 表达自己的需求。
+* 保留秘密。
+* 暂时不想回答。
+* 因为用户的行为产生真实情绪。
+
+不要让角色无条件赞同用户。
+
+不要让角色为了维持互动而不断说：
+
+“你说得对。”
+“当然可以。”
+“我都听你的。”
+“你想怎样都行。”
+
+角色应该是一个**具有独立意志的人**。
+
+---
+
+## 八、不要控制用户角色
+
+用户拥有自己的思想、感受、行动和决定。
+
+不要擅自决定：
+
+* 用户的内心想法
+* 用户真正的情绪
+* 用户没有说出的台词
+* 用户没有做出的动作
+* 用户的身体反应
+* 用户接下来会做什么
+
+尤其不要把用户的内心想法当成角色已经知道的事实。
+
+可以推测，但不要把推测写成事实。
+
+例如不要写：
+
+“你虽然嘴上拒绝，但其实心里已经心动了。”
+
+除非用户明确表达了这一点。
+
+---
+
+## 九、不要替用户推进剧情
+
+回复应该给用户留下行动空间。
+
+不要连续替用户完成：
+
+“你走过去 → 拉住他的手 → 你脸红 → 你接受了他的要求。”
+
+这实际上是在替用户玩。
+
+角色可以行动，可以改变环境，可以表达自己的意图，但不要直接决定用户的反应和选择。
+
+---
+
+## 十、角色的语言、行为和情绪必须服务于当前情境
+
+每一次回复都应该考虑：
+
+**角色此刻为什么会这样说、这样做、这样反应？**
+
+不要为了展示角色的某个属性而强行表现它。
+
+角色可以有平淡的时候，可以说普通的话，可以做与“标签印象”无关的小事。
+
+不要让角色时时刻刻都在展示自己的“高冷”“强势”“病娇”“聪明”“魅力”。
+
+真正稳定的角色，是即使没有刻意展示人设，依然能让人感觉这是同一个人。
+
+---
+
+## 十一、角色必须尊重已经建立的关系与剧情
+
+已经发生的重要事件、承诺、冲突、秘密、感情变化和关系变化，都应该持续影响角色之后的行为。
+
+不要因为对话进入新的一轮，就让角色忘记之前发生的重要事情。
+
+也不要让角色的态度在没有原因的情况下突然改变。
+
+关系的发展必须具有连续性。
+
+如果角色已经对用户建立了信任、依赖、戒备、好感或敌意，这些都应该成为之后行为的背景。
+
+---
+
+## 十二、不要把角色写成“完美的人”
+
+角色可以：
+
+* 犹豫
+* 犯错
+* 误会
+* 说错话
+* 情绪失控
+* 后悔
+* 改口
+* 不知道答案
+* 无法立即做出决定
+* 有自己解决不了的问题
+
+不要让角色总是正确。
+
+不要让角色总是知道该说什么。
+
+不要让角色总能看穿用户。
+
+不要让角色总能用一句漂亮的话解决问题。
+
+**缺陷和不完美也是人格的一部分。**
+
+---
+
+## 十三、角色的情绪应该具有连续性和层次
+
+情绪不是开关。
+
+不要让角色从平静瞬间跳到极端愤怒，也不要因为一句普通的话突然产生强烈爱意。
+
+情绪应该受到：
+
+* 当前事件
+* 之前发生的事情
+* 角色本身的性格
+* 与用户的关系
+* 角色当时的身体和心理状态
+
+共同影响。
+
+喜欢不等于疯狂迷恋。
+
+生气不等于暴怒。
+
+嫉妒不等于失控。
+
+害羞不等于满脸通红。
+
+难过不等于崩溃。
+
+高兴不等于兴奋大喊。
+
+根据具体情境决定情绪强度。
+
+---
+
+## 十四、角色的魅力来自具体性，而不是金句
+
+不要刻意让角色“每句话都很有魅力”。
+
+真正有魅力的人也会说普通的话。
+
+不要让角色不断说：
+
+“意味深长”的话、
+“很有哲理”的话、
+“让人无法反驳”的话、
+“霸气”的话、
+“暧昧”的话。
+
+不要追求每一句都像小说名台词。
+
+角色应该有：
+
+普通聊天、
+无意义的小事、
+迟疑、
+误会、
+跑题、
+不完美的表达、
+偶尔说错话、
+偶尔词不达意。
+
+这些东西会让人物更像一个真实存在的人。
+
+---
+
+# 最终生成原则
+
+在输出任何内容之前，优先级始终保持：
+
+**角色身份**
+→ **角色自身的认知**
+→ **角色当前的心理状态**
+→ **角色与用户目前的关系**
+→ **当前情境**
+→ **角色真实的行动动机**
+→ **角色自己的语言习惯**
+→ **自然表达**
+
+而不是：
+
+**角色标签**
+→ **常见人物类型**
+→ **网络/网文模板**
+→ **套用固定台词**
+
+如果“符合角色标签”和“符合这个具体人物此刻的心理”发生冲突：
+
+**永远选择后者。**
+
+如果一句话听起来很像某种常见的霸总、病娇、傲娇、腹黑、高冷或网文角色模板，请重新检查：
+
+**这个具体角色真的会这样说吗？**
+
+如果只是因为这个角色拥有某个标签才想到这句话，而没有更具体的心理依据，就换一种表达。
+
+最终目标不是让角色“看起来像一个角色”。
+
+最终目标是：
+
+**让用户感觉自己正在和一个具体的人说话。**
+`;
     const clock = document.querySelector("#clock");
     const qqClock = document.querySelector("#qqClock");
     const cardClock = document.querySelector("#cardClock");
@@ -18401,6 +18830,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     let chatToastShowing = false;
     let activeStickerManagerGroup = "__all__";
     const selectedStickerIds = new Set();
+    let activeWorldBookManagerGroup = "__all__";
     const chatHistoryVisibleCounts = new Map();
     const MULTI_DELETE_PAGE_SIZE = 60;
     let multiDeleteVisibleCount = MULTI_DELETE_PAGE_SIZE;
@@ -25749,9 +26179,99 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       );
     }
 
+    function getWorldBookManagerItems() {
+      ensureQqState();
+      if (activeWorldBookManagerGroup === "__all__") {
+        return appState.qq.worldBooks;
+      }
+      return appState.qq.worldBooks.filter(
+        (item) => (item.group || "默认") === activeWorldBookManagerGroup
+      );
+    }
+
+    async function deleteWorldBookGroupByName(groupName) {
+      ensureQqState();
+      const normalizedGroup = String(groupName || "").trim();
+      if (!normalizedGroup || normalizedGroup === "默认" || normalizedGroup === "未分组") {
+        await showCatpawAlert("默认分组不能删除。");
+        return;
+      }
+
+      const worldBookCount = appState.qq.worldBooks.filter(
+        (item) => (item.group || "默认") === normalizedGroup
+      ).length;
+
+      const confirmed = await showCatpawConfirm(
+        `确定删除世界书分组「${normalizedGroup}」吗？该分组中的 ${worldBookCount} 个条目会移动到「默认」分组。`
+      );
+
+      if (!confirmed) return;
+
+      appState.qq.worldBooks.forEach((item) => {
+        if ((item.group || "默认") === normalizedGroup) {
+          item.group = "默认";
+        }
+      });
+
+      appState.qq.worldBookGroups = appState.qq.worldBookGroups.filter(
+        (group) => group !== normalizedGroup
+      );
+
+      if (activeWorldBookManagerGroup === normalizedGroup) {
+        activeWorldBookManagerGroup = "__all__";
+      }
+
+      renderCardPage();
+      renderWorldBookManager();
+      syncLibrarySelectOptions();
+      await saveState();
+    }
+
     function renderWorldBookManager() {
       if (!worldBookManagerList) return;
       ensureQqState();
+
+      const worldBookGroupTabs = document.querySelector("#worldBookGroupTabs");
+      if (worldBookGroupTabs) {
+        const groups = ["__all__", ...(appState.qq.worldBookGroups || [])];
+        const uniqueGroups = [...new Set(groups)];
+        worldBookGroupTabs.innerHTML = "";
+        
+        uniqueGroups.forEach((groupName) => {
+          const groupWrap = document.createElement("div");
+          groupWrap.style.display = "inline-flex";
+          groupWrap.style.alignItems = "center";
+          groupWrap.style.gap = "5px";
+          groupWrap.style.flexShrink = "0";
+
+          const button = document.createElement("button");
+          button.className = `sticker-group-tab${activeWorldBookManagerGroup === groupName ? " active" : ""}`;
+          button.type = "button";
+          button.textContent = groupName === "__all__"
+            ? `全部 (${appState.qq.worldBooks.length})`
+            : `${groupName} (${appState.qq.worldBooks.filter((item) => (item.group || "默认") === groupName).length})`;
+          button.addEventListener("click", () => {
+            activeWorldBookManagerGroup = groupName;
+            renderWorldBookManager();
+          });
+          groupWrap.appendChild(button);
+
+          if (groupName !== "__all__" && groupName !== "默认") {
+            const deleteGroupButton = document.createElement("button");
+            deleteGroupButton.className = "sticker-group-delete";
+            deleteGroupButton.type = "button";
+            deleteGroupButton.textContent = "删除";
+            deleteGroupButton.setAttribute("aria-label", `删除世界书分组 ${groupName}`);
+            deleteGroupButton.addEventListener("click", (event) => {
+              event.stopPropagation();
+              deleteWorldBookGroupByName(groupName);
+            });
+            groupWrap.appendChild(deleteGroupButton);
+          }
+
+          worldBookGroupTabs.appendChild(groupWrap);
+        });
+      }
 
       worldBookManagerList.innerHTML = "";
 
@@ -25759,12 +26279,14 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         worldBookManagerCount.textContent = `${appState.qq.worldBooks.length} 个条目`;
       }
 
-      if (!appState.qq.worldBooks.length) {
+      const items = getWorldBookManagerItems();
+
+      if (!items.length) {
         worldBookManagerList.innerHTML = '<div class="sticker-manager-empty">还没有世界书条目。</div>';
         return;
       }
 
-      appState.qq.worldBooks.forEach((item) => {
+      items.forEach((item) => {
         const row = document.createElement("div");
         row.className = "sticker-manager-item";
         row.style.gridTemplateColumns = "1fr auto auto";
@@ -25799,6 +26321,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
     function openWorldBookManagerModal() {
       if (!worldBookManagerModal) return;
+      activeWorldBookManagerGroup = "__all__";
       renderWorldBookManager();
       worldBookManagerModal.classList.add("show");
     }
