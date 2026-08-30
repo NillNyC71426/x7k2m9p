@@ -15585,6 +15585,40 @@
           </button>
           <div class="group-body">
             <div class="field-stack">
+              <!-- 自定义 PWA 桌面应用图标 -->
+              <div class="upload-item">
+                <strong>手机桌面 APP 图标自定义 (iOS / Android)</strong>
+                <span>更换添加到手机主屏幕时显示的桌面应用图标。修改后将动态更新 Apple Touch Icon 与 Web App Manifest。</span>
+                
+                <div style="display:flex; align-items:center; gap:12px; margin:12px 0 8px;">
+                  <div id="pwaIconCurrentPreview" style="width:58px; height:58px; border-radius:14px; background:#fafafa url('https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg') center/cover no-repeat; border:1px solid #e2e5e9; box-shadow:0 3px 10px rgba(0,0,0,0.06); flex-shrink:0;"></div>
+                  <div style="flex:1; min-width:0;">
+                    <strong style="font-size:12px; color:#111;" id="pwaIconStatusLabel">当前桌面图标：默认图标</strong>
+                    <span style="font-size:10px; color:#888; margin-top:2px;">可上传正方形图片，系统自动适配桌面尺寸</span>
+                  </div>
+                </div>
+
+                <div class="inline-actions" style="margin-top:10px;">
+                  <button class="liquid-btn primary" id="triggerPwaIconUpload" type="button">
+                    <i class="fa-solid fa-image" style="margin-right:6px;"></i>选择新图标图片
+                  </button>
+                  <button class="liquid-btn" id="resetPwaIconBtn" type="button">
+                    <i class="fa-solid fa-rotate-left" style="margin-right:6px;"></i>恢复默认图标
+                  </button>
+                  <input id="pwaIconUploadInput" type="file" accept="image/*" style="display:none;" />
+                </div>
+
+                <!-- 历史图标记录 -->
+                <div style="margin-top:14px; padding-top:10px; border-top:1px dashed #e8edf2;">
+                  <span style="font-size:11px; font-weight:700; color:#555; display:block; margin-bottom:8px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="margin-right:4px; color:#888;"></i>历史使用过的图标
+                  </span>
+                  <div id="pwaIconHistoryGrid" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;">
+                    <!-- 动态渲染历史图标 -->
+                  </div>
+                </div>
+              </div>
+
               <div class="upload-item">
                 <strong>独立 APP 模式</strong>
                 <span id="pwaStatusText">添加到桌面后，从主屏幕图标启动可自动隐藏浏览器地址栏，享受真正的全屏流畅体验。</span>
@@ -18458,6 +18492,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     const PROMPT_LOGIC_VERSION = "P-2026-01-15-A";
     let dbInstance = null;
 
+    const DEFAULT_PWA_DESKTOP_ICON = "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg";
+
     const appState = {
       api: {
         base: "",
@@ -18477,7 +18513,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         noteCopy: "things^in*myphone",
         listenCopy: "正在听 WILDFLOWER-BillieEilish",
         sharedCopy: "✦ [· Pink shirt (♡♡) · Cake skirt✦, · Diamond nail art✦/.. ]",
-        speechCopy: "お湯をたくさん飲んでください······",
+        speechCopy: "お汤をたくさん饮んでください······",
         avatarImage: "",
         albumImage: "",
         memoryMainImage: "",
@@ -18491,6 +18527,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         iconTodo2Image: "",
         iconMusicImage: "",
         desktopBannerImage: "",
+        pwaAppIcon: "",
+        pwaIconHistory: [],
         qqHomeTitle: "猫爪信箱",
         qqHomeSubtitle: "把对话、歌单灵感和常用联系人收进轻雾卡片",
         qqFeatureTitle: "晚风备忘",
@@ -18661,8 +18699,14 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         : "现实时间感知未开启。";
     }
 
+    function getActivePwaIconUrl() {
+      return appState.theme.pwaAppIcon || DEFAULT_PWA_DESKTOP_ICON;
+    }
+
     function getPwaManifestObject() {
       const currentUrl = window.location.href.split("#")[0].split("?")[0];
+      const iconUrl = getActivePwaIconUrl();
+
       return {
         name: "猫爪机",
         short_name: "猫爪机",
@@ -18678,15 +18722,15 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         lang: "zh-CN",
         icons: [
           {
-            src: "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg",
+            src: iconUrl,
             sizes: "192x192",
-            type: "image/jpeg",
+            type: iconUrl.startsWith("data:image/png") ? "image/png" : "image/jpeg",
             purpose: "any maskable"
           },
           {
-            src: "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg",
+            src: iconUrl,
             sizes: "512x512",
-            type: "image/jpeg",
+            type: iconUrl.startsWith("data:image/png") ? "image/png" : "image/jpeg",
             purpose: "any maskable"
           }
         ]
@@ -18694,17 +18738,25 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     }
 
     function setupPwaManifest() {
+      const iconUrl = getActivePwaIconUrl();
+
+      // 1. 同步更新 HTML 中的 apple-touch-icon 和 favicon
+      document.querySelectorAll("link[rel='apple-touch-icon'], link[rel='icon']").forEach((link) => {
+        link.href = iconUrl;
+      });
+
+      // 2. 动态重构 Web Manifest Blob
       const manifestLink = document.querySelector("#catpawManifest");
-      if (!manifestLink) return;
+      if (manifestLink) {
+        const manifestObj = getPwaManifestObject();
+        const jsonString = JSON.stringify(manifestObj);
 
-      const manifestObj = getPwaManifestObject();
-      const jsonString = JSON.stringify(manifestObj);
-
-      try {
-        const blob = new Blob([jsonString], { type: "application/manifest+json" });
-        manifestLink.href = URL.createObjectURL(blob);
-      } catch (e) {
-        manifestLink.href = "data:application/manifest+json;charset=utf-8," + encodeURIComponent(jsonString);
+        try {
+          const blob = new Blob([jsonString], { type: "application/manifest+json" });
+          manifestLink.href = URL.createObjectURL(blob);
+        } catch (e) {
+          manifestLink.href = "data:application/manifest+json;charset=utf-8," + encodeURIComponent(jsonString);
+        }
       }
 
       registerPwaServiceWorker();
@@ -18936,10 +18988,164 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       applyCoverImage(qqFeatureArt, null, appState.theme.qqFeatureArtImage);
       applyCoverImage(qqCoverThumb, null, appState.theme.qqCoverThumbImage);
       applyCoverImage(cardProfileCover, null, appState.theme.cardProfileCoverImage);
+      renderPwaIconManagerUi();
       renderRoleList();
       renderCardPage();
       ensureMusicState();
       renderMusicApp();
+    }
+
+    /* ============================================================
+       PWA 桌面应用图标管理器（选图上传 / 历史记录切换 / 恢复默认）
+       ============================================================ */
+    function renderPwaIconManagerUi() {
+      const previewNode = document.querySelector("#pwaIconCurrentPreview");
+      const statusLabel = document.querySelector("#pwaIconStatusLabel");
+      const historyGrid = document.querySelector("#pwaIconHistoryGrid");
+      if (!previewNode || !historyGrid) return;
+
+      const currentIcon = getActivePwaIconUrl();
+      const isDefault = !appState.theme.pwaAppIcon || appState.theme.pwaAppIcon === DEFAULT_PWA_DESKTOP_ICON;
+
+      previewNode.style.backgroundImage = `url(${currentIcon})`;
+      if (statusLabel) {
+        statusLabel.textContent = isDefault ? "当前桌面图标：系统默认" : "当前桌面图标：自定义图标";
+      }
+
+      if (!Array.isArray(appState.theme.pwaIconHistory)) {
+        appState.theme.pwaIconHistory = [];
+      }
+
+      historyGrid.innerHTML = "";
+
+      // 1. 固定包含系统默认图标项
+      const defaultItem = document.createElement("div");
+      defaultItem.style.display = "flex";
+      defaultItem.style.flexDirection = "column";
+      defaultItem.style.alignItems = "center";
+      defaultItem.style.gap = "4px";
+      defaultItem.style.flexShrink = "0";
+      defaultItem.style.cursor = "pointer";
+
+      const defaultIconBox = document.createElement("div");
+      defaultIconBox.style.width = "46px";
+      defaultIconBox.style.height = "46px";
+      defaultIconBox.style.borderRadius = "12px";
+      defaultIconBox.style.background = `#fafafa url('${DEFAULT_PWA_DESKTOP_ICON}') center/cover no-repeat`;
+      defaultIconBox.style.border = isDefault ? "2px solid #111111" : "1px solid #e0e4e8";
+      defaultIconBox.style.boxShadow = isDefault ? "0 0 0 2px #fff, 0 3px 8px rgba(0,0,0,0.12)" : "none";
+
+      const defaultLabel = document.createElement("span");
+      defaultLabel.textContent = "系统默认";
+      defaultLabel.style.fontSize = "10px";
+      defaultLabel.style.color = isDefault ? "#111" : "#888";
+      defaultLabel.style.fontWeight = isDefault ? "700" : "500";
+
+      defaultItem.appendChild(defaultIconBox);
+      defaultItem.appendChild(defaultLabel);
+      defaultItem.addEventListener("click", () => setPwaDesktopIcon(""));
+      historyGrid.appendChild(defaultItem);
+
+      // 2. 遍历历史图标列表
+      appState.theme.pwaIconHistory.forEach((item, index) => {
+        const isCurrentActive = appState.theme.pwaAppIcon === item.url;
+
+        const histItem = document.createElement("div");
+        histItem.style.display = "flex";
+        histItem.style.flexDirection = "column";
+        histItem.style.alignItems = "center";
+        histItem.style.gap = "4px";
+        histItem.style.flexShrink = "0";
+        histItem.style.cursor = "pointer";
+        histItem.style.position = "relative";
+
+        const iconBox = document.createElement("div");
+        iconBox.style.width = "46px";
+        iconBox.style.height = "46px";
+        iconBox.style.borderRadius = "12px";
+        iconBox.style.background = `#fafafa url('${item.url}') center/cover no-repeat`;
+        iconBox.style.border = isCurrentActive ? "2px solid #111111" : "1px solid #e0e4e8";
+        iconBox.style.boxShadow = isCurrentActive ? "0 0 0 2px #fff, 0 3px 8px rgba(0,0,0,0.12)" : "none";
+
+        const label = document.createElement("span");
+        label.textContent = item.name || `历史 ${index + 1}`;
+        label.style.fontSize = "10px";
+        label.style.color = isCurrentActive ? "#111" : "#888";
+        label.style.fontWeight = isCurrentActive ? "700" : "500";
+        label.style.maxWidth = "48px";
+        label.style.overflow = "hidden";
+        label.style.textOverflow = "ellipsis";
+        label.style.whiteSpace = "nowrap";
+
+        // 删除历史小按键
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        delBtn.style.position = "absolute";
+        delBtn.style.top = "-4px";
+        delBtn.style.right = "-4px";
+        delBtn.style.width = "16px";
+        delBtn.style.height = "16px";
+        delBtn.style.borderRadius = "50%";
+        delBtn.style.background = "#111";
+        delBtn.style.color = "#fff";
+        delBtn.style.border = "none";
+        delBtn.style.fontSize = "8px";
+        delBtn.style.display = "grid";
+        delBtn.style.placeItems = "center";
+        delBtn.style.cursor = "pointer";
+
+        delBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          appState.theme.pwaIconHistory = appState.theme.pwaIconHistory.filter((_, idx) => idx !== index);
+          if (appState.theme.pwaAppIcon === item.url) {
+            appState.theme.pwaAppIcon = "";
+            setupPwaManifest();
+          }
+          renderPwaIconManagerUi();
+          await saveState();
+        });
+
+        histItem.appendChild(iconBox);
+        histItem.appendChild(label);
+        histItem.appendChild(delBtn);
+
+        histItem.addEventListener("click", () => setPwaDesktopIcon(item.url));
+        historyGrid.appendChild(histItem);
+      });
+    }
+
+    async function setPwaDesktopIcon(iconUrl, name = "") {
+      appState.theme.pwaAppIcon = iconUrl || "";
+
+      if (iconUrl && iconUrl !== DEFAULT_PWA_DESKTOP_ICON) {
+        if (!Array.isArray(appState.theme.pwaIconHistory)) {
+          appState.theme.pwaIconHistory = [];
+        }
+        const exists = appState.theme.pwaIconHistory.some((item) => item.url === iconUrl);
+        if (!exists) {
+          appState.theme.pwaIconHistory.unshift({
+            url: iconUrl,
+            name: name || `图标 ${appState.theme.pwaIconHistory.length + 1}`,
+            createdAt: new Date().toLocaleDateString()
+          });
+          // 最多保留 8 个历史图标
+          if (appState.theme.pwaIconHistory.length > 8) {
+            appState.theme.pwaIconHistory = appState.theme.pwaIconHistory.slice(0, 8);
+          }
+        }
+      }
+
+      setupPwaManifest();
+      renderPwaIconManagerUi();
+      await saveState();
+
+      await showCatpawAlert(
+        iconUrl
+          ? "已成功更换桌面应用图标！由于手机系统缓存机制，如需在 iOS / Android 手机桌面生效，建议重新「添加到主屏幕」。"
+          : "已成功恢复为默认桌面应用图标！",
+        "桌面图标设置"
+      );
     }
 
     document.querySelectorAll(".group-toggle").forEach((button) => {
@@ -20618,8 +20824,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           }
 
           return {
-            role: item.sender === "friend" ? "assistant" : "user",
-            content: textContent
+            role: item.sender === "friend" ? "system" : "user",
+            content: item.sender === "friend" ? `[角色历史回复]：${textContent}` : textContent
           };
         });
       });
@@ -22992,12 +23198,32 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       { btnId: "triggerIconTodo1Upload", inputId: "iconTodo1Upload" },
       { btnId: "triggerIconTodo2Upload", inputId: "iconTodo2Upload" },
       { btnId: "triggerIconMusicUpload", inputId: "iconMusicUpload" },
+      { btnId: "triggerPwaIconUpload", inputId: "pwaIconUploadInput" },
       { btnId: "triggerImportTheme", inputId: "importThemeInput" },
       { btnId: "triggerImportAppData", inputId: "importAppDataInput" },
       { btnId: "triggerChatAiImage", inputId: "chatAiImageInput" },
       { btnId: "triggerChatWallpaper", inputId: "chatWallpaperUpload" },
       { btnId: "triggerChatRoleAvatar", inputId: "chatRoleAvatarInput" }
     ];
+
+    const pwaIconUploadInput = document.querySelector("#pwaIconUploadInput");
+    const resetPwaIconBtn = document.querySelector("#resetPwaIconBtn");
+
+    if (pwaIconUploadInput) {
+      pwaIconUploadInput.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        readImage(file, async (rawUrl) => {
+          const cropped = await cropImageToSquare(rawUrl, 512);
+          await setPwaDesktopIcon(cropped, file.name.replace(/\.[^.]+$/, "").slice(0, 8));
+          pwaIconUploadInput.value = "";
+        });
+      });
+    }
+
+    if (resetPwaIconBtn) {
+      resetPwaIconBtn.addEventListener("click", () => setPwaDesktopIcon(""));
+    }
 
     fileTriggerMap.forEach(({ btnId, inputId }) => {
       const btn = document.querySelector(`#${btnId}`);
@@ -24851,86 +25077,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       return `${prevStr}\n\n${currStr}`;
     }
 
-    function normalizeMessages(messages) {
-      const systemContents = [];
-      const nonSystemMessages = [];
-
-      (Array.isArray(messages) ? messages : []).forEach((message) => {
-        if (!message || !message.role) return;
-
-        if (message.role === "system") {
-          const content = typeof message.content === "string"
-            ? message.content
-            : JSON.stringify(message.content ?? "");
-          if (content.trim()) systemContents.push(content);
-          return;
-        }
-
-        nonSystemMessages.push({
-          ...message,
-          role: message.role === "assistant" ? "assistant" : "user",
-          content: normalizeMessageContent(message.content)
-        });
-      });
-
-      // 过滤空内容的非系统消息（保留显式 prefill 预填充消息）
-      const validNonSystem = nonSystemMessages.filter((msg) => {
-        if (msg.prefill) return true;
-        if (Array.isArray(msg.content)) return msg.content.length > 0;
-        return String(msg.content || "").trim().length > 0;
-      });
-
-      // 严格交替合并：相邻同角色（如连续多个 user 或连续多个 assistant）消息内容安全合并
-      const alternated = [];
-      validNonSystem.forEach((msg) => {
-        const last = alternated[alternated.length - 1];
-        if (last && last.role === msg.role) {
-          last.content = mergeMessageContent(last.content, msg.content);
-          if (msg.prefill) last.prefill = true;
-        } else {
-          alternated.push({
-            role: msg.role,
-            content: msg.content,
-            ...(msg.prefill ? { prefill: true } : {})
-          });
-        }
-      });
-
-      // 确保非系统对话消息序列必须以 user 消息开头
-      if (alternated.length > 0 && alternated[0].role !== "user") {
-        alternated.unshift({
-          role: "user",
-          content: "[对话历史开始]"
-        });
-      }
-
-      // 后处理校验：确保消息严格按照 User -> Assistant -> User -> Assistant 交替
-      const strictAlternated = [];
-      alternated.forEach((msg) => {
-        const last = strictAlternated[strictAlternated.length - 1];
-        if (!last) {
-          strictAlternated.push(msg);
-        } else if (last.role === msg.role) {
-          last.content = mergeMessageContent(last.content, msg.content);
-          if (msg.prefill) last.prefill = true;
-        } else {
-          strictAlternated.push(msg);
-        }
-      });
-
-      const result = [];
-
-      // 集中合并的所有系统提示词置于首位
-      if (systemContents.length > 0) {
-        result.push({
-          role: "system",
-          content: systemContents.join("\n\n")
-        });
-      }
-
-      return result.concat(strictAlternated);
-    }
-
     function mergeMessageContent(previous, current) {
       const previousContent = normalizeMessageContent(previous);
       const currentContent = normalizeMessageContent(current);
@@ -24945,69 +25091,45 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         return previousParts.concat(currentParts);
       }
 
-      return `${previousContent}\n\n${currentContent}`;
+      const prevStr = String(previousContent || "");
+      const currStr = String(currentContent || "");
+      if (!prevStr) return currStr;
+      if (!currStr) return prevStr;
+      return `${prevStr}\n\n${currStr}`;
     }
 
     function normalizeMessages(messages) {
-      const systemContents = [];
-      const chatMessages = [];
+      const result = [];
 
       (Array.isArray(messages) ? messages : []).forEach((message) => {
         if (!message || !message.role) return;
 
-        if (message.role === "system") {
-          const content = typeof message.content === "string"
-            ? message.content
-            : JSON.stringify(message.content ?? "");
-          if (content.trim()) systemContents.push(content);
-          return;
+        // 将所有非 user 消息（包括误传的 assistant）彻底转为 system 角色
+        if (message.role === "system" || message.role === "assistant") {
+          result.push({
+            role: "system",
+            content: typeof message.content === "string"
+              ? message.content
+              : (Array.isArray(message.content) ? message.content : JSON.stringify(message.content ?? ""))
+          });
+        } else {
+          result.push({
+            role: "user",
+            content: normalizeMessageContent(message.content)
+          });
         }
-
-        chatMessages.push({
-          ...message,
-          content: message.content ?? ""
-        });
       });
 
-      const normalized = [];
-
-      if (systemContents.length) {
-        normalized.push({
-          role: "system",
-          content: systemContents.join("\n\n")
-        });
-      }
-
-      let lastMessage = null;
-
-      chatMessages.forEach((message) => {
-        if (lastMessage && lastMessage.role === message.role) {
-          lastMessage.content = mergeMessageContent(lastMessage.content, message.content);
-          return;
-        }
-
-        const clonedMessage = {
-          ...message,
-          content: normalizeMessageContent(message.content)
-        };
-
-        normalized.push(clonedMessage);
-        lastMessage = clonedMessage;
-      });
-
-      const firstNonSystemIndex = normalized.findIndex((message) => message.role !== "system");
-
-      if (
-        firstNonSystemIndex !== -1 &&
-        normalized[firstNonSystemIndex].role === "assistant"
-      ) {
-        normalized.splice(firstNonSystemIndex, 0, {
+      // 确保消息列表中至少包含一条 user 触发消息
+      const hasUserMessage = result.some((msg) => msg.role === "user");
+      if (!hasUserMessage) {
+        result.push({
           role: "user",
-          content: "[对话开始]"
+          content: "[继续回复]"
         });
       }
 
-      return normalized;
+      return result;
     }
 
     function parseAPIResponse(responseText) {
@@ -27981,7 +28103,7 @@ function extractRoleReplyLines(reply) {
         `系统设定：${settings.forceVoice ? "当前模式下，角色的每一句话都必须被包裹在 [语音:...] 内，强制所有回复发语音条。" : "按正常逻辑选择文字还是语音"}`,
         getRealityTimePromptLine(),
         `当前调用模型：${appState.api.modelName || "未知模型"}`,
-        "下面是我和角色的线上聊天记录。user 代表我，assistant 代表你正在扮演的角色。",
+        "下面是我和角色的线上聊天记录。user 代表我发送的消息，system 代表你正在扮演的角色历史回复（标有[角色历史回复]）。",
 		"要求助手像演员“进入角色”一样进行写作生成，以角色的视角和口吻思考，让输出自然承载其独特的语言节奏和思维方式。",
 		"在角色向User表达喜欢、亲密、有恋爱感的情景时，需严格遵循以下规则：角色不得给User起小绰号。角色尽可能保持纯情，情商高的设定——不故作暧昧，不像古早霸总的感觉。角色不能变态——是的，请你当做你在正经地写，不能像玩梗和擦边博热度的那种低质网络小说。",
 		"有效地防止对话中的信息量堆砌，频繁的信息容易让读者陷入理解困难的状态，人物说话时或许只是一句闲聊，或许只是胡说八道，或许只是脑子一热说错了话——**记住，对话不一定要讲述事件信息和人物信息，但一定要体现人物独特个性，合理运用潜台词技巧",
@@ -28237,16 +28359,16 @@ function extractRoleReplyLines(reply) {
 
         if (appState.api.globalVisionEnabled && (item.type === "image" || (item.type === "sticker" && item.url))) {
           return {
-            role: item.sender === "friend" ? "assistant" : "user",
+            role: item.sender === "friend" ? "system" : "user",
             content: [
-              { type: "text", text: textContent },
+              { type: "text", text: item.sender === "friend" ? `[角色历史回复]：${textContent}` : textContent },
               { type: "image_url", image_url: { url: item.url, detail: "low" } }
             ]
           };
         }
         return {
-          role: item.sender === "friend" ? "assistant" : "user",
-          content: textContent
+          role: item.sender === "friend" ? "system" : "user",
+          content: item.sender === "friend" ? `[角色历史回复]：${textContent}` : textContent
         };
       });
 
