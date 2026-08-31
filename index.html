@@ -7618,6 +7618,29 @@
       object-fit: cover;
       display: block;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+    }
+
+    .chat-image-loading {
+      min-width: 140px;
+      min-height: 140px;
+      border-radius: 16px;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      color: #888888;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px dashed #e0e0e0;
+    }
+
+    .chat-image-loading i {
+      font-size: 18px;
+      color: #0f0f0f;
     }
 
     .chat-textpost-card {
@@ -15768,6 +15791,49 @@
           </div>
         </article>
 
+        <!-- 文生图 (Image Generation) API 设置 -->
+        <article class="setting-group">
+          <button class="group-toggle" type="button">
+            <div class="group-title">
+              <span class="group-icon"><i class="fa-solid fa-palette"></i></span>
+              <div class="group-copy">
+                <strong>AI 生图 (文生图) 接口配置</strong>
+                <span>配置 NewAPI / OpenAI 格式的生图模型（如 FLUX、DALL-E 3、SDXL）</span>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="group-body">
+            <div class="field-stack">
+              <div class="field">
+                <label for="imageApiBase">生图 API Base URL (留空默认复用主 API)</label>
+                <input id="imageApiBase" type="text" placeholder="https://api.example.com/v1" />
+              </div>
+              <div class="field">
+                <label for="imageApiKey">生图 API Key (留空默认复用主 API)</label>
+                <input id="imageApiKey" type="password" placeholder="留空则复用主 API Key" />
+              </div>
+              <div class="field">
+                <label for="imageModelSelect">生图模型列表</label>
+                <select id="imageModelSelect">
+                  <option value="">暂未拉取，可直接在下方手动输入</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="imageModelName">生图模型名称</label>
+                <input id="imageModelName" type="text" placeholder="例如：dall-e-3 / flux / mj-chat / sdxl" />
+              </div>
+              <div class="inline-actions">
+                <button class="liquid-btn" id="fetchImageModelsBtn" type="button">拉取模型</button>
+                <button class="liquid-btn primary" id="testImageApiBtn" type="button">测试生图</button>
+              </div>
+            </div>
+            <div class="result-box" id="imageApiResult">
+              配置后，可在角色的会话设置中开启「真实照片生成」开关。
+            </div>
+          </div>
+        </article>
+
         <!-- API 设置 -->
         <article class="setting-group">
           <button class="group-toggle" type="button">
@@ -16984,7 +17050,17 @@
           </button>
         </div>
         <div class="card-form">
-          <input id="stickerGroupInput" type="text" placeholder="表情包分组，例如：撒娇 / 生气 / 日常" />
+          <!-- 独立表情包分组管理 -->
+          <div class="qq-group-manager" style="margin-bottom:0; padding-bottom:10px;">
+            <input id="newStickerGroupNameInput" type="text" placeholder="新建表情包分组名称" />
+            <button id="createStickerGroupBtn" type="button">新建分组</button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; color:#8e8e93; font-weight:600; margin-left:4px;">选择所属分组</label>
+            <select id="stickerGroupSelect" style="width:100%; min-height:46px; border:none; border-radius:999px; padding:0 16px; background:#fff; color:#000; outline:none; font-size:13px; font-weight:500; box-shadow:0 2px 8px rgba(0,0,0,0.03);"></select>
+          </div>
+
           <input id="stickerUrlInput" type="text" placeholder="图床链接，可粘贴图片 URL" />
           <input id="stickerNoteInput" type="text" placeholder="备注，例如：猫猫点头，表示同意" />
           <button class="insc-btn" id="triggerStickerFile" type="button">选择本地表情图片</button>
@@ -16992,7 +17068,7 @@
           <button class="insc-btn" id="triggerStickerImport" type="button">选择 TXT / Word 批量文档</button>
           <input id="stickerImportInput" type="file" accept=".txt,.doc,.docx,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" />
           <div class="card-form-actions">
-            <button class="insc-btn" id="addStickerBtn" type="button">添加表情</button>
+            <button class="insc-btn" id="addStickerBtn" type="button">添加表情到选中分组</button>
             <button class="insc-btn" id="importStickerBtn" type="button">识别导入文件</button>
           </div>
           <button class="insc-btn primary" id="openStickerManager" type="button">
@@ -17011,10 +17087,20 @@
           </button>
         </div>
         <div class="card-form">
-          <input id="worldBookGroupInput" type="text" placeholder="世界书分组，例如：主线设定 / 禁忌 / 城市资料" />
+          <!-- 独立世界书分组管理 -->
+          <div class="qq-group-manager" style="margin-bottom:0; padding-bottom:10px;">
+            <input id="newWorldBookGroupNameInput" type="text" placeholder="新建世界书分组名称" />
+            <button id="createWorldBookGroupBtn" type="button">新建分组</button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; color:#8e8e93; font-weight:600; margin-left:4px;">选择所属分组</label>
+            <select id="worldBookGroupSelect" style="width:100%; min-height:46px; border:none; border-radius:999px; padding:0 16px; background:#fff; color:#000; outline:none; font-size:13px; font-weight:500; box-shadow:0 2px 8px rgba(0,0,0,0.03);"></select>
+          </div>
+
           <input id="worldBookTitleInput" type="text" placeholder="条目标题" />
           <textarea id="worldBookContentInput" placeholder="写入附加设定、世界观、称呼、注意事项等，角色可按绑定分组读取。"></textarea>
-          <button class="insc-btn" id="addWorldBookBtn" type="button">添加世界书条目</button>
+          <button class="insc-btn" id="addWorldBookBtn" type="button">添加世界书条目到选中分组</button>
           <button class="insc-btn primary" id="openWorldBookManager" type="button">
             <i class="fa-solid fa-pen-to-square"></i>
             <span>管理与编辑世界书</span>
@@ -17126,11 +17212,13 @@
   <section class="emoji-picker-modal" id="emojiPickerModal" aria-label="发送表情包">
     <div class="emoji-picker-card">
       <div class="message-modal-head">
-        <strong>发送表情包</strong>
+        <strong id="emojiPickerModalTitle">发送表情包</strong>
         <button class="text-editor-close" id="closeEmojiPicker" type="button" aria-label="关闭表情包">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
+      <!-- 我与全部分组标签栏 -->
+      <div class="sticker-group-tabs" id="myEmojiPickerTabs" style="padding-bottom:10px; margin-bottom:6px;"></div>
       <div class="emoji-picker-grid" id="emojiPickerGrid"></div>
     </div>
   </section>
@@ -17589,6 +17677,14 @@
         </div>
 
         <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-camera"></i> 真实照片生成 (AI 绘图)</div>
+          <div class="chat-toggle-row">
+            <span>允许此角色根据情境调用生图 API 拍摄发送真实照片（自拍/日常/风景等）。未开启则仅发送文字图。</span>
+            <input id="chatAiDrawToggle" type="checkbox" />
+          </div>
+        </div>
+
+        <div class="chat-setting-item">
           <div class="chat-setting-title"><i class="fa-regular fa-image"></i> AI 图片感知</div>
           <div class="chat-toggle-row">
             <span>开启后可上传图片作为本会话感知素材</span>
@@ -17628,12 +17724,21 @@
         </div>
 
         <div class="chat-setting-item">
-          <div class="chat-setting-title"><i class="fa-regular fa-face-smile"></i> 角色表情包权限</div>
+          <div class="chat-setting-title"><i class="fa-regular fa-face-smile"></i> 角色表情包权限与绑定</div>
           <div class="chat-toggle-row">
-            <span>允许角色根据语境主动发送已绑定分组中的表情包</span>
+            <span>允许角色根据语境主动发送它已绑定的表情包</span>
             <input id="chatRoleStickerToggle" type="checkbox" />
           </div>
+          <label style="font-size:11px; color:#8e8e93; font-weight:600; display:block; margin:6px 0 2px 2px;">角色专属表情包分组（多选）：</label>
           <select id="chatStickerGroupSelect" class="chat-multi-select" multiple></select>
+        </div>
+
+        <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-regular fa-user"></i> 我的表情包绑定</div>
+          <div class="chat-toggle-row">
+            <span>在当前会话中，我优先快速发送的表情包分组（留空则默认全部可用）：</span>
+          </div>
+          <select id="chatMyStickerGroupSelect" class="chat-multi-select" multiple></select>
         </div>
 
         <div class="chat-setting-item">
@@ -18505,6 +18610,14 @@ const ENHANCED_SYSTEM_PROMPT = `
     const minimaxGroupIdInput = document.querySelector("#minimaxGroupId");
     const minimaxApiKeyInput = document.querySelector("#minimaxApiKey");
     const globalVoiceToggle = document.querySelector("#globalVoiceToggle");
+    const imageApiBaseInput = document.querySelector("#imageApiBase");
+    const imageApiKeyInput = document.querySelector("#imageApiKey");
+    const imageModelSelect = document.querySelector("#imageModelSelect");
+    const imageModelNameInput = document.querySelector("#imageModelName");
+    const fetchImageModelsBtn = document.querySelector("#fetchImageModelsBtn");
+    const testImageApiBtn = document.querySelector("#testImageApiBtn");
+    const imageApiResult = document.querySelector("#imageApiResult");
+    const chatAiDrawToggle = document.querySelector("#chatAiDrawToggle");
     const layoutSizeSelect = document.querySelector("#layoutSizeSelect");
     const apiBase = document.querySelector("#apiBase");
     const apiKey = document.querySelector("#apiKey");
@@ -18622,6 +18735,7 @@ const ENHANCED_SYSTEM_PROMPT = `
     const chatVoicePitchValue = document.querySelector("#chatVoicePitchValue");
     const chatForceVoiceToggle = document.querySelector("#chatForceVoiceToggle");
     const chatStickerGroupSelect = document.querySelector("#chatStickerGroupSelect");
+    const chatMyStickerGroupSelect = document.querySelector("#chatMyStickerGroupSelect");
     const chatWorldBookGroupSelect = document.querySelector("#chatWorldBookGroupSelect");
     const chatWallpaperUpload = document.querySelector("#chatWallpaperUpload");
     const removeChatWallpaper = document.querySelector("#removeChatWallpaper");
@@ -18720,7 +18834,9 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     const openTransferModalFromCard = document.querySelector("#openTransferModalFromCard");
     const cardQuickAdd = document.querySelector("#cardQuickAdd");
     const billList = document.querySelector("#billList");
-    const stickerGroupInput = document.querySelector("#stickerGroupInput");
+    const newStickerGroupNameInput = document.querySelector("#newStickerGroupNameInput");
+    const createStickerGroupBtn = document.querySelector("#createStickerGroupBtn");
+    const stickerGroupSelect = document.querySelector("#stickerGroupSelect");
     const stickerUrlInput = document.querySelector("#stickerUrlInput");
     const stickerNoteInput = document.querySelector("#stickerNoteInput");
     const stickerFileInput = document.querySelector("#stickerFileInput");
@@ -18737,7 +18853,9 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     const selectAllStickers = document.querySelector("#selectAllStickers");
     const clearStickerSelection = document.querySelector("#clearStickerSelection");
     const deleteSelectedStickers = document.querySelector("#deleteSelectedStickers");
-    const worldBookGroupInput = document.querySelector("#worldBookGroupInput");
+    const newWorldBookGroupNameInput = document.querySelector("#newWorldBookGroupNameInput");
+    const createWorldBookGroupBtn = document.querySelector("#createWorldBookGroupBtn");
+    const worldBookGroupSelect = document.querySelector("#worldBookGroupSelect");
     const worldBookTitleInput = document.querySelector("#worldBookTitleInput");
     const worldBookContentInput = document.querySelector("#worldBookContentInput");
     const addWorldBookBtn = document.querySelector("#addWorldBookBtn");
@@ -18865,6 +18983,10 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         key: "",
         modelName: "",
         modelList: [],
+        imageApiBase: "",
+        imageApiKey: "",
+        imageModelName: "",
+        imageModelList: [],
         globalVisionEnabled: false,
         realTimeAwarenessEnabled: false,
         minimaxGroupId: "",
@@ -19296,6 +19418,157 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       });
     }
 
+    function renderImageModels() {
+      if (!imageModelSelect) return;
+      imageModelSelect.innerHTML = "";
+
+      if (!appState.api.imageModelList || !appState.api.imageModelList.length) {
+        imageModelSelect.innerHTML = '<option value="">暂未拉取，可直接在下方手动输入</option>';
+        return;
+      }
+
+      appState.api.imageModelList.forEach((id) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = id;
+        if (id === appState.api.imageModelName) option.selected = true;
+        imageModelSelect.appendChild(option);
+      });
+    }
+
+    function getImageApiConfig() {
+      const base = (appState.api.imageApiBase || appState.api.base || "").trim().replace(/\/$/, "");
+      const key = (appState.api.imageApiKey || appState.api.key || "").trim();
+      const model = (appState.api.imageModelName || "dall-e-3").trim();
+      if (!base || !key) return null;
+      return { base, key, model };
+    }
+
+    async function fetchImageModels() {
+      const config = getImageApiConfig();
+      if (!config) {
+        setResult(imageApiResult, "请先填写生图 API Base URL 或主 API Base URL 与 Key。");
+        return;
+      }
+      setResult(imageApiResult, "正在拉取生图模型列表…");
+      try {
+        const res = await fetch(`${config.base}/models`, {
+          headers: { Authorization: `Bearer ${config.key}`, "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "拉取失败");
+        const list = Array.isArray(data.data) ? data.data.map((item) => item.id).filter(Boolean) : [];
+        appState.api.imageModelList = list;
+        renderImageModels();
+        await saveState();
+        setResult(imageApiResult, `拉取成功，共获得 ${list.length} 个模型候选。`);
+      } catch (err) {
+        setResult(imageApiResult, `拉取模型失败：${err.message}`);
+      }
+    }
+
+    async function callImageGenerationApi(prompt, modelOverride = "") {
+      const config = getImageApiConfig();
+      if (!config) throw new Error("未配置生图 API Base URL 或 API Key。");
+
+      const model = modelOverride || config.model || "dall-e-3";
+      const payload = {
+        model,
+        prompt: String(prompt || "").trim(),
+        n: 1,
+        size: "1024x1024"
+      };
+
+      const res = await fetch(`${config.base}/images/generations`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${config.key}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const responseText = await res.text();
+      let data = null;
+      try {
+        data = JSON.parse(responseText);
+      } catch (_) {}
+
+      if (!res.ok) {
+        throw new Error(data?.error?.message || responseText || `HTTP ${res.status}`);
+      }
+
+      const item = data?.data?.[0];
+      if (item?.url) return item.url;
+      if (item?.b64_json) return `data:image/png;base64,${item.b64_json}`;
+      throw new Error("接口未返回有效图片地址或 base64 数据。");
+    }
+
+    async function testImageApi() {
+      setResult(imageApiResult, "正在测试生图（提示词：a cute cat playing with yarn）…");
+      try {
+        const imgUrl = await callImageGenerationApi("a cute fluffy cat, high quality, 4k", imageModelNameInput?.value.trim());
+        setResult(imageApiResult, `生图测试成功！已生成图片链接。`);
+        window.open(imgUrl, "_blank");
+      } catch (err) {
+        setResult(imageApiResult, `生图测试失败：${err.message}`);
+      }
+    }
+
+    async function requestRoleImageGeneration(messageId, promptText, msgObject) {
+      try {
+        const imgUrl = await callImageGenerationApi(promptText);
+        msgObject.loading = false;
+        msgObject.url = imgUrl;
+        msgObject.text = `[照片：${promptText}]`;
+      } catch (err) {
+        console.warn("生图失败，自动降级为文字图：", err);
+        // 降级为文字图
+        msgObject.type = "textpost";
+        msgObject.subtype = "role-photo";
+        msgObject.loading = false;
+        msgObject.text = promptText;
+        msgObject.url = "https://i.postimg.cc/JzvphYfv/IMG-1683.jpg";
+      }
+      renderThreadMessages(getCurrentChatMessages());
+      renderChatList();
+      await saveState();
+    }
+
+    if (imageApiBaseInput) {
+      imageApiBaseInput.addEventListener("input", async () => {
+        appState.api.imageApiBase = imageApiBaseInput.value.trim();
+        await saveState();
+      });
+    }
+
+    if (imageApiKeyInput) {
+      imageApiKeyInput.addEventListener("input", async () => {
+        appState.api.imageApiKey = imageApiKeyInput.value.trim();
+        await saveState();
+      });
+    }
+
+    if (imageModelNameInput) {
+      imageModelNameInput.addEventListener("input", async () => {
+        appState.api.imageModelName = imageModelNameInput.value.trim();
+        await saveState();
+      });
+    }
+
+    if (imageModelSelect) {
+      imageModelSelect.addEventListener("change", async () => {
+        if (imageModelSelect.value) {
+          if (imageModelNameInput) imageModelNameInput.value = imageModelSelect.value;
+          appState.api.imageModelName = imageModelSelect.value;
+          await saveState();
+        }
+      });
+    }
+
+    if (fetchImageModelsBtn) fetchImageModelsBtn.addEventListener("click", fetchImageModels);
+    if (testImageApiBtn) testImageApiBtn.addEventListener("click", testImageApi);
+
     function renderState() {
       if (apiBase) apiBase.value = appState.api.base || "";
       if (apiKey) apiKey.value = appState.api.key || "";
@@ -19305,6 +19578,10 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (minimaxGroupIdInput) minimaxGroupIdInput.value = appState.api.minimaxGroupId || "";
       if (minimaxApiKeyInput) minimaxApiKeyInput.value = appState.api.minimaxApiKey || "";
       if (globalVoiceToggle) globalVoiceToggle.checked = !!appState.api.globalVoiceEnabled;
+      if (imageApiBaseInput) imageApiBaseInput.value = appState.api.imageApiBase || "";
+      if (imageApiKeyInput) imageApiKeyInput.value = appState.api.imageApiKey || "";
+      if (imageModelNameInput) imageModelNameInput.value = appState.api.imageModelName || "";
+      renderImageModels();
       setupDeviceScale();
 
       const profileTitle = document.querySelector(".profile-copy h1");
@@ -23435,9 +23712,9 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       });
     }
 
-    if (apiBase) {
-      apiBase.addEventListener("input", async () => {
-        appState.api.base = apiBase.value.trim();
+    if (chatMyStickerGroupSelect) {
+      chatMyStickerGroupSelect.addEventListener("change", async () => {
+        getActiveChatSettings().boundMyStickerGroups = getMultiSelectValues(chatMyStickerGroupSelect);
         await saveState();
       });
     }
@@ -23870,6 +24147,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         remark: "",
         contactNote: "",
         myName: "",
+        aiDrawEnabled: false,
         aiImageEnabled: false,
         aiImage: "",
         showAvatars: true,
@@ -23879,6 +24157,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         roleCanSendStickers: false,
         aiTranslateEnabled: false,
         translateTargetLang: "",
+        boundMyStickerGroups: [],
         boundStickerGroups: [],
         boundWorldBookGroups: [],
         wallpaper: "",
@@ -24436,12 +24715,22 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       } else if (item.type === "image") {
         messageBody = document.createElement("div");
         messageBody.className = "chat-image-message";
-        const img = document.createElement("img");
-        img.className = "qq-message-img";
-        img.src = item.url || "";
-        img.alt = item.text || "图片";
-        img.loading = "lazy";
-        messageBody.appendChild(img);
+        if (item.loading) {
+          const loadingBox = document.createElement("div");
+          loadingBox.className = "chat-image-loading";
+          loadingBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>正在成像中…</span>';
+          messageBody.appendChild(loadingBox);
+        } else {
+          const img = document.createElement("img");
+          img.className = "qq-message-img";
+          img.src = item.url || "";
+          img.alt = item.text || "图片";
+          img.loading = "lazy";
+          img.addEventListener("click", () => {
+            if (item.url) window.open(item.url, "_blank");
+          });
+          messageBody.appendChild(img);
+        }
       } else if (item.type === "textpost") {
         messageBody = document.createElement("button");
         messageBody.type = "button";
@@ -24722,28 +25011,62 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       applyActiveChatSettings();
     }
 
-    function sendImageMessage(file) {
+    function compressImageForChat(file, maxWidth = 800, quality = 0.8) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.naturalWidth;
+            let height = img.naturalHeight;
+            if (width > maxWidth || height > maxWidth) {
+              if (width > height) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              } else {
+                width = Math.round((width * maxWidth) / height);
+                height = maxWidth;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.onerror = () => resolve(e.target.result);
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function sendImageMessage(file) {
       if (!file) return;
-      readImage(file, (src) => {
-        ensureQqState();
-        const messages = getCurrentChatMessages();
-        messages.push({
-          id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-          type: "image",
-          sender: "self",
-          url: src,
-          text: "[图片]",
-          createdAtMs: Date.now(),
-          read: false,
-          replyTo: pendingReplyMessageId || ""
-        });
-        renderThreadMessages(messages);
-        renderChatList();
-        saveState();
-        clearReplyTarget();
-        requestAnimationFrame(() => {
-          if (qqThreadMessages) qqThreadMessages.scrollTop = qqThreadMessages.scrollHeight;
-        });
+      const compressedSrc = await compressImageForChat(file, 800, 0.82);
+      if (!compressedSrc) return;
+
+      ensureQqState();
+      const messages = getCurrentChatMessages();
+      messages.push({
+        id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        type: "image",
+        sender: "self",
+        url: compressedSrc,
+        text: "[图片]",
+        createdAtMs: Date.now(),
+        read: false,
+        replyTo: pendingReplyMessageId || ""
+      });
+      renderThreadMessages(messages);
+      renderChatList();
+      saveState();
+      clearReplyTarget();
+      requestAnimationFrame(() => {
+        if (qqThreadMessages) qqThreadMessages.scrollTop = qqThreadMessages.scrollHeight;
       });
     }
 
@@ -24832,21 +25155,90 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       closeTextpostComposeModal();
     }
 
-    function sendCurrentMessage() {
+    function parseXhsShareFromText(rawText) {
+      const text = String(rawText || "").trim();
+      if (!text) return null;
+
+      // 匹配小红书分享链接特征
+      const xhsLinkMatch = text.match(/(https?:\/\/(?:xhslink\.cn|www\.xiaohongshu\.com|xiaohongshu\.com)\/[^\s]+)/i);
+      if (!xhsLinkMatch) return null;
+
+      const link = xhsLinkMatch[1];
+      
+      // 提取标题与正文（去掉链接和系统套话）
+      let cleanText = text
+        .replace(link, "")
+        .replace(/(?:前往\s*【小红书】\s*查看详情吧|前往【小红书】看看详情吧~|复制本条信息，打开【小红书】|App|小红书)[~～\s]*/gi, "")
+        .replace(/[丨|]/g, " ")
+        .trim();
+
+      let title = "";
+      let content = "";
+
+      if (cleanText) {
+        // 如果有换行，第一行作标题，剩余作正文
+        const lines = cleanText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (lines.length > 1) {
+          title = lines[0].slice(0, 36);
+          content = lines.slice(1).join(" ").slice(0, 160);
+        } else {
+          title = cleanText.slice(0, 32);
+          content = cleanText.length > 32 ? cleanText.slice(32, 160) : "点击查看小红书笔记详情";
+        }
+      } else {
+        title = "小红书精选笔记";
+        content = "点击查看小红书帖子详情与配图";
+      }
+
+      return {
+        title: title || "小红书分享",
+        content: content || "分享了一篇小红书笔记",
+        link,
+        author: "小红书博主",
+        coverUrl: ""
+      };
+    }
+
+    async function sendCurrentMessage() {
       if (!qqMessageInput) return;
       const text = qqMessageInput.value.trim();
       if (!text) return;
 
       ensureQqState();
 
-      const message = {
-        id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-        sender: "self",
-        text,
-        read: false,
-        createdAtMs: Date.now(),
-        replyTo: pendingReplyMessageId || ""
-      };
+      // 智能检测是否为小红书分享链接，如果是直接转成小红书卡片发送！
+      const xhsShareData = parseXhsShareFromText(text);
+
+      let message;
+      if (xhsShareData) {
+        message = {
+          id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          type: "xhs",
+          sender: "self",
+          title: xhsShareData.title,
+          content: xhsShareData.content,
+          author: xhsShareData.author,
+          coverUrl: xhsShareData.coverUrl,
+          link: xhsShareData.link,
+          text: `[分享小红书帖子《${xhsShareData.title}》：${xhsShareData.content}]`,
+          read: false,
+          createdAtMs: Date.now(),
+          replyTo: pendingReplyMessageId || ""
+        };
+
+        // 异步尝试从开放接口解析真实封面与更全标题（不阻塞立刻上屏）
+        tryFetchXhsLiveMeta(xhsShareData.link, message.id);
+      } else {
+        message = {
+          id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          sender: "self",
+          text,
+          read: false,
+          createdAtMs: Date.now(),
+          replyTo: pendingReplyMessageId || ""
+        };
+      }
+
       const activeChatId = appState.qq.activeChatId || "default";
 
       if (activeChatId === "default") {
@@ -24868,6 +25260,31 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       requestAnimationFrame(() => {
         if (qqThreadMessages) qqThreadMessages.scrollTop = qqThreadMessages.scrollHeight;
       });
+    }
+
+    async function tryFetchXhsLiveMeta(url, messageId) {
+      if (!url || !messageId) return;
+      try {
+        // 请求小红书公开元数据解析
+        const encodedUrl = encodeURIComponent(url);
+        const res = await fetch(`https://api.pearktrue.cn/api/redbook/?url=${encodedUrl}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.code === 200 && data.data) {
+          const msg = findCurrentMessageById(messageId);
+          if (msg && msg.type === "xhs") {
+            if (data.data.title) msg.title = data.data.title;
+            if (data.data.desc) msg.content = data.data.desc.slice(0, 160);
+            if (data.data.author) msg.author = data.data.author;
+            if (data.data.cover || (Array.isArray(data.data.images) && data.data.images[0])) {
+              msg.coverUrl = data.data.cover || data.data.images[0];
+            }
+            msg.text = `[分享小红书帖子《${msg.title}》：${msg.content}]`;
+            renderThreadMessages(getCurrentChatMessages());
+            saveState();
+          }
+        }
+      } catch (_) {}
     }
 
     function buildChatItem({ id, name, subtitle, avatar, time = formatChatTime(new Date()), unread = 0, onClick }) {
@@ -25238,6 +25655,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (chatSettingRoleLocation) chatSettingRoleLocation.value = base.role?.location || "";
       if (chatSettingRoleBirthday) chatSettingRoleBirthday.value = base.role?.birthday || "";
       if (chatSettingRoleStory) chatSettingRoleStory.value = base.role?.story || "";
+      if (chatAiDrawToggle) chatAiDrawToggle.checked = !!settings.aiDrawEnabled;
       if (chatAiImageToggle) chatAiImageToggle.checked = !!settings.aiImageEnabled;
       if (chatShowAvatarsToggle) chatShowAvatarsToggle.checked = !!settings.showAvatars;
       if (chatShowOnlyFirstAvatarToggle) chatShowOnlyFirstAvatarToggle.checked = !!settings.showOnlyFirstAvatar;
@@ -25254,6 +25672,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (chatForceVoiceToggle) chatForceVoiceToggle.checked = !!settings.forceVoice;
       syncLibrarySelectOptions();
       setMultiSelectValues(chatStickerGroupSelect, settings.boundStickerGroups || []);
+      setMultiSelectValues(chatMyStickerGroupSelect, settings.boundMyStickerGroups || []);
       setMultiSelectValues(chatWorldBookGroupSelect, settings.boundWorldBookGroups || []);
       if (chatAvatarSizeRange) chatAvatarSizeRange.value = String(settings.avatarSize);
       if (chatAvatarSizeValue) chatAvatarSizeValue.textContent = `${settings.avatarSize}px`;
@@ -25311,6 +25730,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       settings.remark = chatSettingRemark?.value.trim() || "";
       settings.contactNote = chatSettingContactNote?.value.trim() || "";
       settings.myName = chatSettingMyName?.value.trim() || "";
+      settings.aiDrawEnabled = !!chatAiDrawToggle?.checked;
       settings.aiImageEnabled = !!chatAiImageToggle?.checked;
       settings.showAvatars = !!chatShowAvatarsToggle?.checked;
       settings.showOnlyFirstAvatar = !!chatShowOnlyFirstAvatarToggle?.checked;
@@ -25324,6 +25744,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       settings.voicePitch = Number(chatVoicePitchRange?.value || 0);
       settings.forceVoice = !!chatForceVoiceToggle?.checked;
       settings.boundStickerGroups = getMultiSelectValues(chatStickerGroupSelect);
+      settings.boundMyStickerGroups = getMultiSelectValues(chatMyStickerGroupSelect);
       settings.boundWorldBookGroups = getMultiSelectValues(chatWorldBookGroupSelect);
       settings.avatarSize = Number(chatAvatarSizeRange?.value || 40);
       settings.avatarRadius = Number(chatAvatarRadiusRange?.value || 50);
@@ -26432,6 +26853,15 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           chatStickerGroupSelect.appendChild(option);
         });
       }
+      if (chatMyStickerGroupSelect) {
+        chatMyStickerGroupSelect.innerHTML = "";
+        appState.qq.stickerGroups.forEach((group) => {
+          const option = document.createElement("option");
+          option.value = group;
+          option.textContent = group;
+          chatMyStickerGroupSelect.appendChild(option);
+        });
+      }
       if (chatWorldBookGroupSelect) {
         chatWorldBookGroupSelect.innerHTML = "";
         appState.qq.worldBookGroups.forEach((group) => {
@@ -26439,6 +26869,32 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           option.value = group;
           option.textContent = group;
           chatWorldBookGroupSelect.appendChild(option);
+        });
+      }
+
+      // 同步名片页表情包下拉选择框
+      if (stickerGroupSelect) {
+        const cur = stickerGroupSelect.value;
+        stickerGroupSelect.innerHTML = "";
+        appState.qq.stickerGroups.forEach((group) => {
+          const option = document.createElement("option");
+          option.value = group;
+          option.textContent = group;
+          if (cur === group) option.selected = true;
+          stickerGroupSelect.appendChild(option);
+        });
+      }
+
+      // 同步名片页世界书下拉选择框
+      if (worldBookGroupSelect) {
+        const cur = worldBookGroupSelect.value;
+        worldBookGroupSelect.innerHTML = "";
+        appState.qq.worldBookGroups.forEach((group) => {
+          const option = document.createElement("option");
+          option.value = group;
+          option.textContent = group;
+          if (cur === group) option.selected = true;
+          worldBookGroupSelect.appendChild(option);
         });
       }
     }
@@ -26527,10 +26983,13 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
     async function addWorldBookEntry() {
       ensureQqState();
-      const group = worldBookGroupInput?.value.trim() || "默认";
+      const group = worldBookGroupSelect?.value || "默认";
       const title = worldBookTitleInput?.value.trim() || "未命名条目";
       const content = worldBookContentInput?.value.trim() || "";
-      if (!content) return;
+      if (!content) {
+        await showCatpawAlert("请输入世界书内容。");
+        return;
+      }
       if (!appState.qq.worldBookGroups.includes(group)) appState.qq.worldBookGroups.push(group);
       appState.qq.worldBooks.unshift({
         id: `world_${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -26542,6 +27001,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (worldBookContentInput) worldBookContentInput.value = "";
       renderCardPage();
       await saveState();
+      await showCatpawAlert(`已成功添加条目「${title}」至分组【${group}】。`);
     }
 
     function getBoundWorldBookText(role = null) {
@@ -26765,17 +27225,66 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       return `转账已${finalStatus === "accepted" ? "被接收" : "被退还"}`;
     }
 
-    function openEmojiPickerModal() {
-      if (!emojiPickerModal || !emojiPickerGrid) return;
+    let activeUserEmojiTab = "__my__";
 
+    function getAvailableUserStickers() {
       ensureQqState();
-      const stickers = getAvailableRoleStickers();
+      const settings = getActiveChatSettings();
+      const myGroups = Array.isArray(settings.boundMyStickerGroups) && settings.boundMyStickerGroups.length
+        ? settings.boundMyStickerGroups
+        : null;
+
+      if (activeUserEmojiTab === "__my__") {
+        if (myGroups) {
+          return (appState.qq.stickers || []).filter((item) => myGroups.includes(item.group || "默认"));
+        }
+        return appState.qq.stickers || [];
+      }
+
+      if (activeUserEmojiTab === "__all__") {
+        return appState.qq.stickers || [];
+      }
+
+      return (appState.qq.stickers || []).filter((item) => (item.group || "默认") === activeUserEmojiTab);
+    }
+
+    function renderUserEmojiPickerContent() {
+      if (!emojiPickerGrid) return;
+      ensureQqState();
+      const settings = getActiveChatSettings();
+      const myGroups = Array.isArray(settings.boundMyStickerGroups) && settings.boundMyStickerGroups.length
+        ? settings.boundMyStickerGroups
+        : [];
+
+      const tabsContainer = document.querySelector("#myEmojiPickerTabs");
+      if (tabsContainer) {
+        tabsContainer.innerHTML = "";
+        const allGroups = appState.qq.stickerGroups || ["默认"];
+        
+        const tabList = [
+          { key: "__my__", label: myGroups.length ? "我绑定的" : "我的表情" },
+          { key: "__all__", label: "全部" },
+          ...allGroups.map((g) => ({ key: g, label: g }))
+        ];
+
+        tabList.forEach((t) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `sticker-group-tab${activeUserEmojiTab === t.key ? " active" : ""}`;
+          btn.textContent = t.label;
+          btn.addEventListener("click", () => {
+            activeUserEmojiTab = t.key;
+            renderUserEmojiPickerContent();
+          });
+          tabsContainer.appendChild(btn);
+        });
+      }
+
+      const stickers = getAvailableUserStickers();
       emojiPickerGrid.innerHTML = "";
 
-      if (!getActiveChatSettings().roleCanSendStickers) {
-        emojiPickerGrid.innerHTML = '<div class="emoji-empty">请先在会话设置中开启角色表情包权限。</div>';
-      } else if (!stickers.length) {
-        emojiPickerGrid.innerHTML = '<div class="emoji-empty">当前会话没有可用表情包，请检查已绑定的分组。</div>';
+      if (!stickers.length) {
+        emojiPickerGrid.innerHTML = '<div class="emoji-empty">当前分组没有表情包，去名片页添加或在设置里绑定其他分组。</div>';
       } else {
         stickers.forEach((item) => {
           const button = document.createElement("button");
@@ -26794,7 +27303,12 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           emojiPickerGrid.appendChild(button);
         });
       }
+    }
 
+    function openEmojiPickerModal() {
+      if (!emojiPickerModal || !emojiPickerGrid) return;
+      activeUserEmojiTab = "__my__";
+      renderUserEmojiPickerContent();
       emojiPickerModal.classList.add("show");
     }
 
@@ -28782,6 +29296,7 @@ function extractRoleReplyLines(reply) {
         `可用表情包：\n${getBoundStickerText()}`,
         `我的当前资产余额：${formatMoney(appState.qq.assets || 0)}`,
         `角色是否有发语音权限：${(appState.api.globalVoiceEnabled || settings.forceVoice) ? "有。可以随时用 [语音:想说的话] 格式发送语音条" : "无"}`,
+        `角色是否有实时拍照/生图权限：${settings.aiDrawEnabled ? "已开启【真实拍照/生图】功能。当情境自然合适时（例如分享当前看到的美景、自拍、手写便签、正在吃的美食等），可自发决定独占一行输出 [照片:详细画面描述]，系统将自动生成真实图片发送给对方。" : "未开启生图，拍照将以文字形式展现"}`,
         `系统设定：${settings.forceVoice ? "当前模式下，角色的每一句话都必须被包裹在 [语音:...] 内，强制所有回复发语音条。" : "按正常逻辑选择文字还是语音"}`,
         getRealityTimePromptLine(),
         `当前调用模型：${appState.api.modelName || "未知模型"}`,
@@ -29053,8 +29568,25 @@ function extractRoleReplyLines(reply) {
       const translateOn = !!getActiveChatSettings().aiTranslateEnabled;
       const memoryTurns = Number(getActiveChatSettings().memoryTurns || 10);
       const memoryMessageCount = Number.isFinite(memoryTurns) && memoryTurns > 0 ? Math.floor(memoryTurns) * 2 : 20;
-      const chatMessages = messages.slice(-memoryMessageCount).map((item) => {
+      
+      const sliceOfMessages = messages.slice(-memoryMessageCount);
+      
+      // 智能省 Token 算法：找出最近一轮中最新的一张图片（用户发的或角色自己拍摄的），只有最新一张图片挂载 Vision 识图！
+      let latestImageIndex = -1;
+      if (appState.api.globalVisionEnabled) {
+        for (let i = sliceOfMessages.length - 1; i >= 0; i--) {
+          const msg = sliceOfMessages[i];
+          if (msg.type === "image" && (msg.url || msg.coverUrl)) {
+            latestImageIndex = i;
+            break;
+          }
+        }
+      }
+
+      const chatMessages = sliceOfMessages.map((item, idx) => {
+        const isFriend = item.sender === "friend";
         let textContent = item.text || "";
+
         if (item.type === "sticker") {
           textContent = `[发送表情包：${item.note || "未备注"}]`;
         } else if (item.type === "transfer") {
@@ -29064,7 +29596,15 @@ function extractRoleReplyLines(reply) {
         } else if (item.type === "xhs") {
           textContent = `[分享小红书帖子《${item.title || ""}》：${item.content || ""}]`;
         } else if (item.type === "image") {
-          textContent = `[发送图片]`;
+          if (idx === latestImageIndex) {
+            textContent = isFriend 
+              ? (item.prompt ? `[我拍摄并发送的照片：${item.prompt}]` : `[我拍摄并发送的照片]`)
+              : `[对方发送的图片]`;
+          } else {
+            textContent = isFriend
+              ? (item.prompt ? `[我此前拍摄发送的照片：${item.prompt}]` : `[我此前发送的历史照片]`)
+              : `[已看过的历史图片]`;
+          }
         }
 
         if (item.replyTo) {
@@ -29074,17 +29614,19 @@ function extractRoleReplyLines(reply) {
           }
         }
 
-        if (appState.api.globalVisionEnabled && (item.type === "image" || (item.type === "sticker" && item.url))) {
+        // 仅当开启识图且为本轮最新一张图片时，传入极低分辨率的 image_url (约 65 Tokens)
+        if (appState.api.globalVisionEnabled && idx === latestImageIndex && (item.url || item.coverUrl)) {
+          const imgUrl = item.url || item.coverUrl;
           return {
-            role: item.sender === "friend" ? "assistant" : "user",
+            role: isFriend ? "assistant" : "user",
             content: [
               { type: "text", text: textContent },
-              { type: "image_url", image_url: { url: item.url, detail: "low" } }
+              { type: "image_url", image_url: { url: imgUrl, detail: "low" } }
             ]
           };
         }
         return {
-          role: item.sender === "friend" ? "assistant" : "user",
+          role: isFriend ? "assistant" : "user",
           content: textContent
         };
       });
@@ -29249,14 +29791,37 @@ function extractRoleReplyLines(reply) {
 
           const rolePhoto = parseRolePhotoCommand(outputText);
           if (rolePhoto) {
-            appendTextPostMessage({
-              sender: "friend",
-              subtype: "role-photo",
-              text: rolePhoto.text,
-              url: "https://i.postimg.cc/JzvphYfv/IMG-1683.jpg"
-            });
+            const curChatSettings = getActiveChatSettings();
+            // 如果此角色开启了真实生图开关，且配置了生图模型
+            if (curChatSettings.aiDrawEnabled && (appState.api.imageModelName || appState.api.modelName)) {
+              const placeholderMsg = {
+                id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+                type: "image",
+                sender: "friend",
+                url: "",
+                loading: true,
+                prompt: rolePhoto.text,
+                text: `[照片：${rolePhoto.text}]`,
+                createdAtMs: Date.now(),
+                read: true
+              };
+              messages.push(placeholderMsg);
+              notificationItems.push({ text: `[发送了一张照片]` });
+              renderThreadMessages(messages);
+              renderChatList();
 
-            notificationItems.push({ text: `[照片] ${rolePhoto.text}` });
+              // 异步调用文生图 API 生成真实图片
+              requestRoleImageGeneration(placeholderMsg.id, rolePhoto.text, placeholderMsg);
+            } else {
+              // 未开启生图开关或未配置，照常降级发文字图
+              appendTextPostMessage({
+                sender: "friend",
+                subtype: "role-photo",
+                text: rolePhoto.text,
+                url: "https://i.postimg.cc/JzvphYfv/IMG-1683.jpg"
+              });
+              notificationItems.push({ text: `[照片] ${rolePhoto.text}` });
+            }
             continue;
           }
 
@@ -30141,26 +30706,72 @@ function extractRoleReplyLines(reply) {
       deleteSelectedStickers.addEventListener("click", deleteSelectedStickerItems);
     }
 
+    if (createStickerGroupBtn && newStickerGroupNameInput) {
+      createStickerGroupBtn.addEventListener("click", async () => {
+        const name = newStickerGroupNameInput.value.trim();
+        if (!name) {
+          await showCatpawAlert("请输入分组名称。");
+          return;
+        }
+        ensureQqState();
+        if (!appState.qq.stickerGroups.includes(name)) {
+          appState.qq.stickerGroups.push(name);
+        }
+        newStickerGroupNameInput.value = "";
+        syncLibrarySelectOptions();
+        if (stickerGroupSelect) stickerGroupSelect.value = name;
+        renderCardPage();
+        await saveState();
+        await showCatpawAlert(`已成功创建表情包分组【${name}】！`);
+      });
+    }
+
+    if (createWorldBookGroupBtn && newWorldBookGroupNameInput) {
+      createWorldBookGroupBtn.addEventListener("click", async () => {
+        const name = newWorldBookGroupNameInput.value.trim();
+        if (!name) {
+          await showCatpawAlert("请输入分组名称。");
+          return;
+        }
+        ensureQqState();
+        if (!appState.qq.worldBookGroups.includes(name)) {
+          appState.qq.worldBookGroups.push(name);
+        }
+        newWorldBookGroupNameInput.value = "";
+        syncLibrarySelectOptions();
+        if (worldBookGroupSelect) worldBookGroupSelect.value = name;
+        renderCardPage();
+        await saveState();
+        await showCatpawAlert(`已成功创建世界书分组【${name}】！`);
+      });
+    }
+
     if (addStickerBtn) {
       addStickerBtn.addEventListener("click", async () => {
         const file = stickerFileInput?.files?.[0];
         const note = stickerNoteInput?.value.trim() || "";
-        const group = stickerGroupInput?.value.trim() || "默认";
+        const group = stickerGroupSelect?.value || "默认";
         const url = stickerUrlInput?.value.trim() || "";
+
+        if (!file && !url) {
+          await showCatpawAlert("请提供表情包图片链接或上传本地图片。");
+          return;
+        }
 
         if (file) {
           readImage(file, async (src) => {
             await addStickerFromValues(src, note, group);
             if (stickerFileInput) stickerFileInput.value = "";
             if (triggerStickerFile) triggerStickerFile.textContent = "选择本地表情图片";
+            await showCatpawAlert(`已成功添加表情包至分组【${group}】。`);
           });
         } else {
           await addStickerFromValues(url, note, group);
+          await showCatpawAlert(`已成功添加表情包至分组【${group}】。`);
         }
 
         if (stickerUrlInput) stickerUrlInput.value = "";
         if (stickerNoteInput) stickerNoteInput.value = "";
-        if (stickerGroupInput) stickerGroupInput.value = "";
       });
     }
 
