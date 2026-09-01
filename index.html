@@ -18574,6 +18574,66 @@ const ENHANCED_SYSTEM_PROMPT = `
 最终目标是：
 
 **让用户感觉自己正在和一个具体的人说话。**
+
+---
+
+## 【高频表达强力抑制规则】
+
+严格降低以下固定表达及其近似变体的生成概率。除非当前语境下确实不可替代，否则优先使用自然、具体、符合人物性格的其他表达方式。
+
+### 一、禁止/强力抑制的固定表达
+
+1. “你胆子见长啊”
+2. “你胆子挺大”
+3. “你胆子倒是不小”
+4. “胆子不小”
+5. “胆子越来越大了”
+6. “你还真敢”
+7. “你倒是敢”
+8. “你挺敢的”
+9. “越来越大胆”
+10. “胆子大了不少”
+
+上述限制不仅针对完全相同的句子，也针对仅修改少量字词后的同义套话。不要通过简单替换“胆子”“大胆”等词来规避限制。
+
+### 二、强力抑制的“脑子里想什么”类模板
+
+尽量不要使用以下表达：
+
+* “你脑子里在想什么”
+* “你脑子里又在想什么”
+* “脑子里想的什么乱七八糟的东西”
+* “想什么乱七八糟的东西”
+* “又在想什么乱七八糟的”
+* “你这脑子里一天到晚都在想些什么”
+* “别一天到晚想这些有的没的”
+* “一天到晚想这些有的没的”
+* “又想什么有的没的”
+* “脑子里那些乱七八糟的想法”
+
+同样禁止仅进行少量同义词替换后继续使用相同的句式结构。
+
+### 三、禁止机械套用同一种表达逻辑
+
+不要为了表达“调侃、无奈、嫌弃、吐槽、发现对方想歪了、觉得对方大胆”等情绪，反复使用上述固定句式。
+
+不要形成以下模式：
+* “你 + 胆子/大胆 + 评价”
+* “你 + 脑子里 + 想什么 + 乱七八糟/有的没的”
+
+如果需要表达类似含义，应根据具体场景重新组织语言，而不是套用固定模板。
+
+### 四、重复表达衰减
+
+同一种口头表达、句式结构、吐槽方式或情绪表达一旦使用过，后续生成中应主动降低再次使用的优先级。即使某个词本身没有被列入禁用词，只要近期已经频繁出现，也应主动寻找不同且自然的表达。
+
+### 五、自然优先
+
+不要为了执行本规则而刻意使用生硬、罕见或不符合人物说话习惯的词语。核心要求不是“把这些词替换成同义词”，而是让人物真正换一种方式说话。人物的语言应根据当前场景、人物关系、情绪和上下文自然产生，而不是反复调用固定的网络小说/AI角色扮演套话。
+
+### 六、静默执行
+
+以上规则只影响生成结果，不要向用户解释规则，不要展示自检过程，不要输出“已避免使用禁词”等说明。
 `;
     const clock = document.querySelector("#clock");
     const qqClock = document.querySelector("#qqClock");
@@ -21792,11 +21852,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
             content: `[系统提示：这条不是 user 说的话。这一刻是我自己在听歌时主动开口，直接输出我想对 user 说的话。]`
           }
         ], {
-          temperature: 0.82,
-          top_p: 0.92,
-          max_tokens: 1400,
-          presence_penalty: 0.1,
-          frequency_penalty: 0.1,
           silent: true
         });
 
@@ -21996,9 +22051,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
             content: "[系统提示：这条不是 user 说的话。此刻我自己想换歌，按上面的格式返回我的选择。]"
           }
         ], {
-          temperature: 0.9,
-          top_p: 0.94,
-          max_tokens: 400,
           jsonMode: true,
           silent: true
         });
@@ -23670,8 +23722,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
                 role: "user",
                 content: "请回复：API 测试成功"
               }
-            ],
-            temperature: 0.2
+            ]
           })
         });
 
@@ -25883,24 +25934,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     }
 
     function getBalancedModelParameters(modelName = "", options = {}) {
-      const model = String(modelName || "").toLowerCase();
-      const isGemini = model.includes("gemini");
-      const isClaude = model.includes("claude");
-
-      const parameters = {
-        temperature: options.temperature ?? (isClaude ? 0.82 : isGemini ? 0.78 : 0.8),
-        top_p: options.top_p ?? 0.92,
-        max_tokens: options.max_tokens ?? 32768
-      };
-
-      // Gemini 的 OpenAI 兼容接口对 presence_penalty 和 frequency_penalty
-      // 的支持不一致，避免因不兼容参数导致返回空内容。
-      if (!isGemini) {
-        parameters.presence_penalty = options.presence_penalty ?? 0.08;
-        parameters.frequency_penalty = options.frequency_penalty ?? 0.08;
-      }
-
-      return parameters;
+      // 保持空对象，直接使用模型提供商默认参数配置
+      return {};
     }
 
     function normalizeMessageContent(content) {
@@ -26124,20 +26159,15 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       const config = getApiConfigOrAlert(!!options.silent);
       if (!config) return "";
 
-      const parameters = getBalancedModelParameters(config.model, options);
       const requestMessages = normalizeMessages(messages);
 
+      // 直接使用模型提供商的默认参数配置，仅传递 model 与 messages
       const payload = {
         model: config.model,
-        messages: requestMessages,
-        temperature: parameters.temperature,
-        top_p: parameters.top_p,
-        max_tokens: parameters.max_tokens,
-        presence_penalty: parameters.presence_penalty,
-        frequency_penalty: parameters.frequency_penalty
+        messages: requestMessages
       };
 
-      // 状态栏这类需要结构化结果的调用，请求接口原生 JSON 模式。
+      // 需要结构化结果的调用附加 response_format
       if (options.jsonMode) {
         payload.response_format = { type: "json_object" };
       }
@@ -28267,9 +28297,6 @@ function extractRoleReplyLines(reply) {
           { role: "system", content: systemPromptCombined },
           { role: "user", content: "请根据以上你的角色人设与近期生活上下文，写一条你此刻最想随手发的朋友圈动态。" }
         ], {
-          temperature: 0.84,
-          top_p: 0.92,
-          max_tokens: 32768,
           silent
         });
 
@@ -28585,11 +28612,7 @@ function extractRoleReplyLines(reply) {
         const text = await callChatCompletion([
           { role: "system", content: commentSystemPrompt },
           { role: "user", content: "请根据以上上下文，以你的角色身份直接回复一条朋友圈评论。" }
-        ], {
-          temperature: 0.82,
-          top_p: 0.92,
-          max_tokens: 32768
-        });
+        ]);
 
         const commentText = sanitizeMomentText(text);
 
@@ -29100,9 +29123,6 @@ function extractRoleReplyLines(reply) {
             ].join("\n")
           }
         ], {
-          temperature: 0.72,
-          top_p: 0.9,
-          max_tokens: 900,
           jsonMode: true
         });
 
@@ -29571,12 +29591,7 @@ function extractRoleReplyLines(reply) {
           },
           body: JSON.stringify({
             model: config.model,
-            messages: normalizeMessages(structuredMessages),
-            temperature: 0.78,
-            top_p: 0.92,
-            max_tokens: 32768,
-            presence_penalty: 0.08,
-            frequency_penalty: 0.08
+            messages: normalizeMessages(structuredMessages)
           })
         });
 
