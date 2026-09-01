@@ -8943,6 +8943,42 @@
       transform: none;
     }
 
+    /* QQ 美化全屏管理页 · 纯黑底白字大圆角按钮 */
+    #qqThemeManagerModal .insc-btn {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 16px;
+      border: 0 !important;
+      border-radius: 999px !important;
+      background: #0f0f0f !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+      color: #ffffff !important;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: opacity 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    }
+
+    #qqThemeManagerModal .insc-btn:active {
+      background: #2a2a2a !important;
+      opacity: 0.85;
+      transform: scale(0.985);
+    }
+
+    #qqThemeManagerModal .insc-btn.danger-btn {
+      background: #1c1c1c !important;
+      color: #ff4d4f !important;
+    }
+
+    #qqThemeManagerModal .insc-btn.danger-btn:active {
+      background: #2d1b1c !important;
+    }
+
     #stickerManagerModal .sticker-group-tabs {
       gap: 8px;
       padding: 0 0 16px;
@@ -17043,6 +17079,10 @@
           <span class="insc-highlight-circle"><i class="fa-solid fa-book-open"></i></span>
           <span>世界书</span>
         </button>
+        <button class="insc-highlight" type="button" id="openQqThemeManagerBtn">
+          <span class="insc-highlight-circle"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <span>QQ美化</span>
+        </button>
       </nav>
 
       <section class="card-panel" id="billPanel">
@@ -17121,6 +17161,64 @@
         </div>
         <div class="library-list" id="worldBookList"></div>
       </section>
+    </div>
+  </section>
+
+  <!-- QQ 全局美化独立全屏管理页 -->
+  <section class="sticker-manager-modal" id="qqThemeManagerModal" aria-label="QQ全局美化管理">
+    <div class="sticker-manager-card">
+      <header class="sticker-manager-head">
+        <button class="card-back" id="closeQqThemeManager" type="button" aria-label="关闭美化管理">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="sticker-manager-title">
+          <strong>QQ 全局美化</strong>
+          <span id="qqThemeCurrentStatus">实时覆盖界面 CSS</span>
+        </div>
+        <button class="card-add" id="copyQqThemeTemplateBtn" type="button" aria-label="复制完整CSS选择器模板" title="一键复制全套选择器模板">
+          <i class="fa-regular fa-copy"></i>
+        </button>
+      </header>
+
+      <div class="card-form" style="padding-top: 4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin: 4px 0 6px 2px;">
+          <label style="font-size:11px; color:#8e8e93; font-weight:700; text-transform:uppercase;">自定义 QQ CSS 代码 (!important 层级)</label>
+          <span style="font-size:10px; color:#a9a9a9;">保存后立即全局生效</span>
+        </div>
+        
+        <textarea id="customQqCssInput" placeholder="在此粘贴或编写你的自定义 CSS 代码..." style="min-height: 280px; font-family: monospace; font-size: 11.5px; line-height: 1.5; white-space: pre; tab-size: 2; resize: vertical; border-radius: 18px; padding: 14px;"></textarea>
+
+        <div class="card-form-actions" style="margin-top: 8px;">
+          <button class="insc-btn" id="saveCustomQqCssBtn" type="button">
+            <i class="fa-solid fa-check"></i>保存并应用美化
+          </button>
+          <button class="insc-btn" id="copyAllSelectorsBtn" type="button">
+            <i class="fa-solid fa-code"></i>复制全套选择器
+          </button>
+        </div>
+
+        <div class="card-form-actions" style="margin-top: 6px;">
+          <button class="insc-btn" id="triggerImportQqTheme" type="button">
+            <i class="fa-solid fa-file-import"></i>导入预设 (.json / .css)
+          </button>
+          <button class="insc-btn" id="exportQqThemeFileBtn" type="button">
+            <i class="fa-solid fa-file-export"></i>导出当前美化代码
+          </button>
+          <input id="importQqThemeInput" type="file" accept=".json,.css,text/plain" style="display:none;" />
+        </div>
+
+        <div style="margin-top: 6px;">
+          <button class="insc-btn danger-btn" id="resetQqThemeBtn" type="button">
+            <i class="fa-solid fa-rotate-left"></i>恢复默认 QQ 界面
+          </button>
+        </div>
+
+        <div style="margin-top:14px; padding:14px 16px; border-radius:18px; background:#fafafa; font-size:11.5px; color:#666; line-height:1.6;">
+          <strong style="color:#111; display:block; margin-bottom:4px;"><i class="fa-solid fa-circle-info" style="margin-right:4px;"></i> 编写与添加新选择器说明：</strong>
+          你可以自由在上方代码框添加任何新的 CSS 选择器（包括自定义的 class、动画 @keyframes 或标签样式）。<br>
+          点击【保存并应用】，所有代码会以最高优先级注入到界面中。如果想换回原版外观，随时点击【恢复默认 QQ 界面】即可。
+        </div>
+      </div>
     </div>
   </section>
 
@@ -18946,6 +19044,145 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     const worldBookContentInput = document.querySelector("#worldBookContentInput");
     const addWorldBookBtn = document.querySelector("#addWorldBookBtn");
     const worldBookList = document.querySelector("#worldBookList");
+    // QQ 全局美化管理界面相关节点与逻辑
+    const openQqThemeManagerBtn = document.querySelector("#openQqThemeManagerBtn");
+    const qqThemeManagerModal = document.querySelector("#qqThemeManagerModal");
+    const closeQqThemeManager = document.querySelector("#closeQqThemeManager");
+    const copyQqThemeTemplateBtn = document.querySelector("#copyQqThemeTemplateBtn");
+    const copyAllSelectorsBtn = document.querySelector("#copyAllSelectorsBtn");
+    const customQqCssInput = document.querySelector("#customQqCssInput");
+    const saveCustomQqCssBtn = document.querySelector("#saveCustomQqCssBtn");
+    const resetQqThemeBtn = document.querySelector("#resetQqThemeBtn");
+    const exportQqThemeFileBtn = document.querySelector("#exportQqThemeFileBtn");
+    const triggerImportQqTheme = document.querySelector("#triggerImportQqTheme");
+    const importQqThemeInput = document.querySelector("#importQqThemeInput");
+    const qqThemeCurrentStatus = document.querySelector("#qqThemeCurrentStatus");
+
+    function applyCustomQqCss(cssText = "") {
+      const styleId = "catpaw-custom-qq-theme";
+      let styleTag = document.querySelector(`#${styleId}`);
+
+      if (!cssText.trim()) {
+        if (styleTag) styleTag.remove();
+        if (qqThemeCurrentStatus) qqThemeCurrentStatus.textContent = "当前使用系统默认界面";
+        return;
+      }
+
+      if (!styleTag) {
+        styleTag = document.createElement("style");
+        styleTag.id = styleId;
+        document.head.appendChild(styleTag);
+      }
+
+      styleTag.textContent = cssText;
+      if (qqThemeCurrentStatus) qqThemeCurrentStatus.textContent = "已应用自定义美化预设 (生效中)";
+    }
+
+    function openQqThemeManager() {
+      if (!qqThemeManagerModal) return;
+      if (customQqCssInput) {
+        customQqCssInput.value = appState.theme.customQqCss || "";
+      }
+      applyCustomQqCss(appState.theme.customQqCss || "");
+      qqThemeManagerModal.classList.add("show");
+    }
+
+    function closeQqThemeManagerModal() {
+      if (qqThemeManagerModal) {
+        qqThemeManagerModal.classList.remove("show");
+      }
+    }
+
+    async function copyQqThemeTemplate() {
+      try {
+        await navigator.clipboard.writeText(QQ_SELECTORS_TEMPLATE);
+        await showCatpawAlert("已成功复制【QQ全套选择器代码模板】！\n可直接粘贴进行编辑修改。", "复制成功");
+      } catch (err) {
+        if (customQqCssInput) customQqCssInput.value = QQ_SELECTORS_TEMPLATE;
+        await showCatpawAlert("已将选择器模板填入下方代码框，可直接查看与编辑。", "提示");
+      }
+    }
+
+    if (openQqThemeManagerBtn) {
+      openQqThemeManagerBtn.addEventListener("click", openQqThemeManager);
+    }
+    if (closeQqThemeManager) {
+      closeQqThemeManager.addEventListener("click", closeQqThemeManagerModal);
+    }
+    if (copyQqThemeTemplateBtn) {
+      copyQqThemeTemplateBtn.addEventListener("click", copyQqThemeTemplate);
+    }
+    if (copyAllSelectorsBtn) {
+      copyAllSelectorsBtn.addEventListener("click", copyQqThemeTemplate);
+    }
+
+    if (saveCustomQqCssBtn) {
+      saveCustomQqCssBtn.addEventListener("click", async () => {
+        const cssCode = customQqCssInput?.value || "";
+        appState.theme.customQqCss = cssCode;
+        applyCustomQqCss(cssCode);
+        await saveState();
+        await showCatpawAlert("自定义 QQ 美化 CSS 已保存并实时生效！", "美化已生效");
+      });
+    }
+
+    if (resetQqThemeBtn) {
+      resetQqThemeBtn.addEventListener("click", async () => {
+        const confirmed = await showCatpawConfirm("确定要清除自定义美化代码，恢复默认的 QQ 界面吗？", "恢复默认界面");
+        if (!confirmed) return;
+        appState.theme.customQqCss = "";
+        if (customQqCssInput) customQqCssInput.value = "";
+        applyCustomQqCss("");
+        await saveState();
+        await showCatpawAlert("已恢复默认 QQ 界面！", "提示");
+      });
+    }
+
+    if (exportQqThemeFileBtn) {
+      exportQqThemeFileBtn.addEventListener("click", () => {
+        const cssCode = customQqCssInput?.value || appState.theme.customQqCss || "";
+        if (!cssCode.trim()) {
+          showCatpawAlert("当前代码框为空，请先编写或应用美化代码后再导出。");
+          return;
+        }
+        const payload = {
+          name: "CatPaw QQ Theme",
+          version: 1,
+          exportedAt: new Date().toLocaleString("zh-CN"),
+          css: cssCode
+        };
+        downloadJson("catpaw-qq-theme.json", payload);
+      });
+    }
+
+    if (triggerImportQqTheme && importQqThemeInput) {
+      triggerImportQqTheme.addEventListener("click", () => importQqThemeInput.click());
+      importQqThemeInput.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          let cssToApply = "";
+          try {
+            const parsed = JSON.parse(text);
+            cssToApply = parsed.css || (typeof parsed === "string" ? parsed : text);
+          } catch (_) {
+            cssToApply = text; // 纯 CSS 文本
+          }
+
+          if (customQqCssInput) customQqCssInput.value = cssToApply;
+          appState.theme.customQqCss = cssToApply;
+          applyCustomQqCss(cssToApply);
+          await saveState();
+          await showCatpawAlert("美化预设文件导入成功并已即时生效！", "导入成功");
+        } catch (err) {
+          await showCatpawAlert(`导入失败：${err.message}`, "错误");
+        }
+        importQqThemeInput.value = "";
+      });
+    }
+
     const openWorldBookManager = document.querySelector("#openWorldBookManager");
     const worldBookManagerModal = document.querySelector("#worldBookManagerModal");
     const closeWorldBookManager = document.querySelector("#closeWorldBookManager");
@@ -19063,6 +19300,576 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
     const DEFAULT_PWA_DESKTOP_ICON = "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg";
 
+    // QQ 全局选择器完整模板与注释
+    const QQ_SELECTORS_TEMPLATE = `/* ============================================================
+   🐱 猫爪机 · QQ APP 全局美化选择器模板（完整注释版）
+   提示：在属性后添加 !important 可确保强制覆盖默认样式
+   ============================================================ */
+
+/* 1. QQ 页面主背景与容器 */
+#qqPage {
+  /* QQ 页面最外层容器背景 */
+  background: #ffffff !important;
+}
+#qqPage .qq-shell {
+  /* 页面主体区域 */
+  background: #ffffff !important;
+}
+
+/* 2. 消息主页 - 顶部用户名栏 */
+.qq-page:not(.thread-mode) .qq-hero-head {
+  background: #ffffff !important; /* 顶栏背景色 */
+}
+.qq-page:not(.thread-mode) .qq-title-block h2 {
+  color: #0f0f0f !important; /* 顶部显示的用户名颜色 */
+  font-size: 15px !important;
+}
+.qq-page:not(.thread-mode) .qq-back,
+.qq-page:not(.thread-mode) .qq-create-btn {
+  color: #0f0f0f !important; /* 顶栏返回/搜索/添加按钮图标颜色 */
+}
+
+/* 3. 消息主页 - 个人资料与数据卡 */
+.msg-profile-top {
+  /* 个人资料头部区域 */
+}
+.msg-listen-bubble {
+  background: #ffffff !important; /* 听歌状态浮动气泡背景 */
+  color: #4a4a4a !important; /* 听歌文字颜色 */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09) !important;
+}
+.ins-avatar-box {
+  /* 头像外圈圆环 */
+  box-shadow: 0 0 0 3px #f4f4f4 !important;
+}
+.ins-stat-num {
+  color: #000000 !important; /* 统计数字颜色 (消息数/角色数) */
+}
+.ins-stat-label {
+  color: #9a9a9a !important; /* 统计标签颜色 */
+}
+.msg-name-row strong {
+  color: #0f0f0f !important; /* 昵称大标题颜色 */
+}
+#qqHomeSubtitle {
+  color: #4a4a4a !important; /* 个人签名/简介颜色 */
+}
+.msg-bio-link {
+  color: #0f0f0f !important; /* 简介下方外链颜色 */
+}
+.msg-pill {
+  background: #f5f5f5 !important; /* 联系人/分组/动态快捷胶囊背景 */
+  color: #4a4a4a !important;
+}
+.msg-insight {
+  background: #f5f5f5 !important; /* 对话概览灰卡背景 */
+}
+
+/* 4. 消息主页 - 宽按键与联系人快照 (Highlights) */
+.ins-wide-btn {
+  background: #f5f5f5 !important; /* 浅灰宽按钮背景 (新建角色/我的名片) */
+  color: #0f0f0f !important;
+}
+.ins-wide-btn.primary {
+  background: #0f0f0f !important; /* 黑色主要按钮背景 */
+  color: #ffffff !important;
+}
+.ins-highlight-circle {
+  box-shadow: 0 0 0 2px #f2f2f2 !important; /* 联系人头像圆环外框 */
+}
+
+/* 5. 消息主页 - 搜索栏与会话列表 */
+.qq-banner-card .qq-search-bar {
+  background: #f5f5f5 !important; /* 搜索栏背景 */
+}
+.qq-search-input-field {
+  color: #000000 !important; /* 搜索框文字颜色 */
+}
+.qq-chat-row {
+  /* 单个会话条目 */
+}
+.qq-chat-avatar {
+  background-color: #f5f5f5 !important; /* 会话头像底色 */
+}
+.qq-chat-copy strong {
+  color: #000000 !important; /* 会话角色名字颜色 */
+}
+.qq-chat-copy p {
+  color: #9a9a9a !important; /* 会话最后一条消息预览颜色 */
+}
+.qq-chat-meta span {
+  color: #b4b4b4 !important; /* 会话时间颜色 */
+}
+
+/* 6. 底部悬浮导航栏 */
+.qq-bottom-bar {
+  background: #ffffff !important; /* 底部导航胶囊背景 */
+  border: 1px solid #f4f4f4 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+.qq-nav-item {
+  color: #c7c7cc !important; /* 未选中导航图标颜色 */
+}
+.qq-nav-item.active {
+  color: #000000 !important; /* 选中的导航图标颜色 */
+}
+
+/* 7. 好友列表页面 (Contacts) */
+#qqPanelContacts.active {
+  background: #ffffff !important; /* 好友列表全屏背景 */
+}
+.contacts-page-head {
+  background: #ffffff !important; /* 顶部导航栏背景 */
+}
+.contacts-page-title strong {
+  color: #0f0f0f !important; /* “好友列表”大标题颜色 */
+  font-size: 24px !important;
+}
+.contacts-page-title span {
+  color: #b4b4b4 !important; /* 联系人总数副标题颜色 */
+}
+#qqPanelContacts .qq-group-manager input {
+  background: #f5f5f5 !important; /* 新建分组输入框背景 */
+  color: #0f0f0f !important;
+}
+#qqPanelContacts .qq-group-manager button {
+  background: #0f0f0f !important; /* 新建分组按钮背景 */
+  color: #ffffff !important;
+}
+#qqPanelContacts .qq-group-head {
+  color: #0f0f0f !important; /* 分组展开标题栏文字 */
+}
+#qqPanelContacts .qq-contact-avatar {
+  background-color: #f5f5f5 !important; /* 联系人卡片头像底色 */
+}
+#qqPanelContacts .qq-contact-copy strong {
+  color: #0f0f0f !important; /* 联系人卡片角色名称 */
+}
+#qqPanelContacts .qq-role-group-select {
+  background: #f5f5f5 !important; /* 分组移动下拉框背景 */
+  color: #8a8a8a !important;
+}
+#qqPanelContacts .qq-role-mini-btn {
+  background: #f5f5f5 !important; /* “聊天”小按钮背景 */
+  color: #0f0f0f !important;
+}
+
+/* 8. 会话设置页面 (Chat Settings) */
+.chat-settings-card {
+  background: #ffffff !important; /* 会话设置全屏背景 */
+}
+.chat-settings-head {
+  background: #ffffff !important; /* 会话设置顶栏 */
+}
+.chat-settings-head h3 {
+  color: #1a1a1a !important; /* “会话设置”标题颜色 */
+}
+.chat-avatar-pair {
+  background: #ffffff !important; /* 双方头像展示卡片区域 */
+}
+.chat-avatar-ring {
+  background: #ffffff !important; /* 头像外围圆环 */
+  border: 1px solid #ececec !important;
+}
+.chat-avatar-face {
+  background-color: #f2f2f2 !important; /* 头像内部底色 */
+}
+.chat-avatar-slot strong {
+  color: #1a1a1a !important; /* 我的头像 / 对方头像 文字 */
+}
+.chat-setting-item {
+  background: #ffffff !important; /* 单个设置项容器 */
+  border-top: 1px solid #f5f5f5 !important;
+}
+.chat-setting-title {
+  color: #1a1a1a !important; /* 设置项小标题文字 */
+}
+.chat-setting-item input[type="text"],
+.chat-setting-item textarea,
+.chat-setting-item input[type="search"] {
+  background: #f7f7f7 !important; /* 设置项内输入框背景 */
+  color: #1a1a1a !important;
+}
+.chat-setting-item .upload-item {
+  background: #fbfbfb !important; /* 图片上传卡片背景 */
+}
+.chat-multi-select {
+  background: #f7f7f7 !important; /* 多选下拉列表背景 */
+  color: #1a1a1a !important;
+}
+.chat-slider-block {
+  background: #fbfbfb !important; /* 滑块容器区域背景 */
+}
+.chat-slider-value {
+  background: #ffffff !important; /* 滑块数值气泡背景 */
+  color: #1a1a1a !important;
+}
+.chat-settings-card .liquid-btn {
+  background: #f7f7f7 !important; /* 会话设置内功能按钮 */
+  color: #1a1a1a !important;
+}
+.chat-settings-card .liquid-btn.primary {
+  background: #1a1a1a !important; /* “保存设置”主要按钮 */
+  color: #ffffff !important;
+}
+.chat-delete-contact {
+  background: #fbfbfb !important; /* “清除角色记忆” / “删除联系人”按钮 */
+  color: #9a9a9a !important;
+}
+
+/* 9. 聊天会话页 - 顶栏与开场卡 */
+.qq-page.thread-mode {
+  background: #fbfbfb !important; /* 聊天室全屏背景 */
+}
+.qq-page.thread-mode .qq-thread-head {
+  /* 聊天室顶栏 */
+}
+.qq-page.thread-mode .qq-thread-name {
+  color: #1b1b1b !important; /* 聊天室顶栏角色名 */
+}
+.thr-intro strong {
+  color: #1b1b1b !important; /* 会话开场大标题 */
+}
+.thr-intro p {
+  color: #a6a6a6 !important; /* 会话开场人设描述 */
+}
+.thr-intro-date {
+  background: #f4f4f4 !important; /* 会话开场日期胶囊 */
+  color: #a0a0a0 !important;
+}
+
+/* 10. 聊天会话页 - 消息气泡与引文 */
+.qq-message-bubble {
+  font-size: 14px !important; /* 气泡字体大小 */
+}
+.qq-page.thread-mode .qq-message-row.friend .qq-message-bubble {
+  background: #f2f2f2 !important; /* 对方发送的气泡背景色 */
+  color: #262626 !important; /* 对方气泡文字颜色 */
+}
+.qq-page.thread-mode .qq-message-row.self .qq-message-bubble {
+  background: #ececec !important; /* 我发送的气泡背景色 */
+  color: #262626 !important; /* 我的气泡文字颜色 */
+}
+.qq-message-quote {
+  background: #ffffff !important; /* 引用回复卡片背景 */
+  color: #9a9a9a !important; /* 引用回复文字颜色 */
+}
+.qq-message-time-gap {
+  color: #bcbcbc !important; /* 消息之间的时间居中分隔条 */
+}
+.qq-message-timestamp {
+  color: #bebebe !important; /* 消息时间戳文字 */
+}
+
+/* 11. 聊天会话页 - 底部输入栏 */
+.qq-page.thread-mode .qq-thread-compose {
+  background: #fbfbfb !important; /* 输入栏背景 */
+  box-shadow: inset 0 1px 0 #f0f0f0 !important;
+}
+.qq-page.thread-mode .qq-compose-input {
+  color: #1b1b1b !important; /* 输入框文本颜色 */
+}
+.qq-page.thread-mode .qq-compose-input::placeholder {
+  color: #c2c2c2 !important; /* 输入框占位提示词颜色 */
+}
+.qq-page.thread-mode .qq-compose-heart-btn,
+.qq-page.thread-mode .qq-compose-icon-btn {
+  color: #1b1b1b !important; /* 附加功能(+)、发送、回复按钮颜色 */
+}
+
+/* 10. 朋友圈主页与资料卡 (Moments Profile) */
+#qqPanelMoments {
+  background: #ffffff !important; /* 朋友圈全屏主背景 */
+}
+#qqPanelMoments .moments-page-head {
+  /* 顶部悬浮导航栏 */
+}
+#qqPanelMoments .moments-page-back,
+#qqPanelMoments .moments-page-search {
+  background: rgba(255, 255, 255, 0.86) !important; /* 顶部返回与搜索圆形按钮背景 */
+  color: #0f0f0f !important; /* 顶部按钮图标颜色 */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07) !important;
+}
+#qqPanelMoments .moments-page-title strong {
+  color: #0f0f0f !important; /* 顶部居中“朋友圈”标题颜色 */
+}
+.mo-cover {
+  /* 朋友圈顶部背景封面高度与渐变底色 */
+  background: linear-gradient(160deg, #f4f4f4 0%, #ebebeb 52%, #e2e2e2 100%) !important;
+}
+#qqPanelMoments .moments-profile-avatar-box {
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px #ffffff, 0 6px 18px rgba(0, 0, 0, 0.07) !important; /* 头像外围白色描边与光晕 */
+}
+#qqPanelMoments .moments-profile-avatar {
+  background-color: #f2f2f2 !important; /* 头像内部底色 */
+}
+#qqPanelMoments .moments-profile-copy strong {
+  color: #0f0f0f !important; /* 个人主页昵称大标题颜色 */
+  font-size: 20px !important;
+}
+.mo-verified {
+  background: #f5f5f5 !important; /* “本机记录”认证胶囊背景 */
+  color: #8a8a8a !important; /* 认证文字颜色 */
+}
+.mo-verified i {
+  color: #b4b4b4 !important; /* 认证勾选小图标颜色 */
+}
+#qqPanelMoments .moments-profile-email {
+  color: #8a8a8a !important; /* 邮箱/联系方式外链文字颜色 */
+}
+#qqPanelMoments .moments-profile-email i {
+  color: #a9a9a9 !important; /* 链接回形针图标颜色 */
+}
+#qqPanelMoments .moments-profile-copy p {
+  color: #4a4a4a !important; /* 个性签名/简介文本颜色 */
+  font-size: 12px !important;
+}
+.mo-stats {
+  color: #9a9a9a !important; /* 统计条灰色标签 (条动态/位角色/次互动) */
+}
+.mo-stats b {
+  color: #0f0f0f !important; /* 统计条重点数字颜色 */
+}
+#qqPanelMoments .moments-action-btns .ins-wide-btn {
+  background: #f5f5f5 !important; /* “发布动态”与“刷新朋友圈”圆角宽按钮背景 */
+  color: #0f0f0f !important;
+}
+#qqPanelMoments .moments-action-btns .ins-wide-btn i {
+  color: #8a8a8a !important;
+}
+
+/* 11. 朋友圈 - 分类切换 Tab 栏与搜索框 */
+.mo-tabs {
+  /* “全部 / 我的 / 角色”三栏 Tab 容器 */
+  box-shadow: inset 0 -1px 0 #f2f2f2 !important; /* 底部分割线 */
+}
+.mo-tab {
+  color: #b4b4b4 !important; /* 未选中分类 Tab 文字与图标颜色 */
+}
+.mo-tab.active {
+  color: #0f0f0f !important; /* 选中的分类 Tab 文字高亮颜色 */
+}
+.mo-tab.active::after {
+  background: #0f0f0f !important; /* 选中分类下方的黑色指示滑条 */
+}
+.mo-search {
+  background: #f5f5f5 !important; /* 朋友圈展开后的搜索框底色 */
+}
+.mo-search input {
+  color: #0f0f0f !important; /* 搜索框输入文本颜色 */
+}
+
+/* 12. 朋友圈 - 动态列表与单条动态卡片 */
+.moment-card,
+#qqPanelMoments .moment-card {
+  background: #ffffff !important; /* 单条动态卡片背景 */
+  box-shadow: inset 0 -1px 0 #f3f3f3 !important; /* 动态之间的发丝分割线 */
+}
+.mo-card-avatar {
+  background-color: #f4f4f4 !important; /* 动态发布者头像底色 */
+  box-shadow: 0 0 0 2px #f7f7f7 !important;
+}
+.mo-card-id strong {
+  color: #0f0f0f !important; /* 动态发布者昵称颜色 */
+}
+.mo-card-id span {
+  color: #b4b4b4 !important; /* 动态发布时间及可见范围说明文字 */
+}
+.mo-card-more {
+  color: #c4c4c4 !important; /* 动态右上角删除/更多操作按钮颜色 */
+}
+.mo-card-text {
+  color: #262626 !important; /* 动态正文段落文字颜色 */
+  font-size: 13.5px !important;
+}
+.mo-card-bar {
+  color: #b4b4b4 !important; /* “X 条回复”小栏目提示 */
+}
+.mo-thread-item p {
+  color: #4a4a4a !important; /* 评论区单条评论内容文本 */
+}
+.mo-thread-item p b {
+  color: #0f0f0f !important; /* 评论者名字高亮色 */
+}
+.mo-reply-target {
+  background: #f5f5f5 !important; /* “正在回复 XXX”提示小胶囊背景 */
+  color: #8a8a8a !important;
+}
+.mo-reply-input {
+  background: #f5f5f5 !important; /* 评论输入框背景 */
+  color: #0f0f0f !important;
+}
+.mo-reply-send {
+  background: #0f0f0f !important; /* 评论发送按钮背景 */
+  color: #ffffff !important; /* 发送按钮文字颜色 */
+}
+
+/* 13. 朋友圈 - 空状态提示与右下角浮动发布按键 (FAB) */
+.mo-empty strong {
+  color: #0f0f0f !important; /* “写下第一条动态”大标题颜色 */
+  font-size: 24px !important;
+}
+.mo-empty p {
+  color: #a9a9a9 !important; /* 空状态说明文案颜色 */
+}
+.mo-empty button {
+  background: #0f0f0f !important; /* 空状态中的“立即发布”大按钮背景 */
+  color: #ffffff !important;
+}
+.mo-fab {
+  background: #0f0f0f !important; /* 右下角悬浮发布圆形大按钮 (+) 背景 */
+  color: #ffffff !important; /* 加号图标颜色 */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22) !important;
+}
+
+/* 14. 会话输入栏 - 更多功能弹窗菜单 (Attach Menu) */
+#qqAttachMenu .qq-attach-menu-inner {
+  background: #ffffff !important; /* 更多功能抽屉面板背景 */
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1) !important;
+}
+#qqAttachMenu .qq-attach-menu-inner::before {
+  background: #ececec !important; /* 抽屉顶部小灰条把手 */
+}
+#qqAttachMenu .qq-attach-menu-preview {
+  color: #c0c0c0 !important; /* “更多功能”小标题文字 */
+}
+#qqAttachMenu .qq-compose-round {
+  color: #1b1b1b !important; /* 菜单项（表情包/转账/发图片/发文字图/小红书/重回）文字颜色 */
+}
+#qqAttachMenu .qq-compose-round i {
+  color: #1b1b1b !important; /* 菜单项左侧图标颜色 */
+}
+#qqAttachMenu .qq-compose-round:active {
+  background: #f5f5f5 !important; /* 点击菜单项时的浅灰高亮底色 */
+}
+
+/* 15. 聊天消息 - 长按操作弹出菜单 (Message Action Sheet) */
+.message-action-sheet {
+  background: #ffffff !important; /* 长按操作面板全景背景 */
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1) !important;
+}
+.message-action-sheet::before {
+  background: #ececec !important; /* 长按面板顶部小把手 */
+}
+.message-action-preview {
+  background: #fafafa !important; /* 被长按消息的文字内容预览框背景 */
+  color: #4a4a4a !important; /* 预览文字颜色 */
+}
+.message-action-btn {
+  color: #1b1b1b !important; /* 操作按钮（回复/编辑/收藏/多选/删除）文字颜色 */
+}
+.message-action-btn i {
+  color: #1b1b1b !important; /* 操作按钮图标颜色 */
+}
+.message-action-btn:active {
+  background: #f5f5f5 !important; /* 点击按钮时的高亮底色 */
+}
+.message-action-btn.danger,
+.message-action-btn.danger i {
+  color: #ff3b30 !important; /* “删除该消息”危险警示红字 */
+}
+`;
+
+    // 内置主题预设
+    const BUILTIN_THEME_CYBER = `/* 黑金暗黑风主题 */
+#qqPage, #qqPage .qq-shell, .qq-page.thread-mode, #qqPanelMoments, #qqPanelContacts.active {
+  background: #121212 !important;
+  color: #e5e5e5 !important;
+}
+.qq-page:not(.thread-mode) .qq-hero-head, .qq-page.thread-mode .qq-thread-compose, .moments-page-head, .contacts-page-head {
+  background: #181818 !important;
+  border-color: #242424 !important;
+}
+.qq-page:not(.thread-mode) .qq-title-block h2, .qq-page.thread-mode .qq-thread-name, .msg-name-row strong, .contacts-page-title strong, .mo-card-id strong {
+  color: #d4af37 !important; /* 黄金色标题 */
+}
+.qq-page:not(.thread-mode) .qq-back, .qq-page:not(.thread-mode) .qq-create-btn, .qq-page.thread-mode .qq-thread-back, .qq-page.thread-mode .qq-thread-video, .qq-page.thread-mode .qq-compose-icon-btn, .qq-page.thread-mode .qq-compose-heart-btn {
+  color: #d4af37 !important;
+}
+.ins-wide-btn, .msg-pill, .msg-insight, .qq-banner-card .qq-search-bar, .mo-reply-input, #qqContactsPanel .qq-group-manager input {
+  background: #1e1e1e !important;
+  color: #e0e0e0 !important;
+}
+.ins-wide-btn.primary, .mo-reply-send, #qqContactsPanel .qq-group-manager button {
+  background: #d4af37 !important;
+  color: #121212 !important;
+  font-weight: 700 !important;
+}
+.qq-chat-copy strong {
+  color: #ffffff !important;
+}
+.qq-chat-copy p, #qqHomeSubtitle, .mo-card-text {
+  color: #a0a0a0 !important;
+}
+.qq-bottom-bar {
+  background: #181818 !important;
+  border-color: #282828 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+.qq-nav-item.active {
+  color: #d4af37 !important;
+}
+.qq-page.thread-mode .qq-message-row.friend .qq-message-bubble {
+  background: #242424 !important;
+  color: #f0f0f0 !important;
+}
+.qq-page.thread-mode .qq-message-row.self .qq-message-bubble {
+  background: #2d2613 !important;
+  color: #f7e7b4 !important;
+  border: 1px solid #4a3e1b !important;
+}
+.qq-page.thread-mode .qq-compose-input {
+  color: #ffffff !important;
+}
+`;
+
+    const BUILTIN_THEME_PINK = `/* 甜樱奶油风主题 */
+#qqPage, #qqPage .qq-shell, .qq-page.thread-mode, #qqPanelMoments, #qqPanelContacts.active {
+  background: #fdf8f9 !important;
+  color: #4a383d !important;
+}
+.qq-page:not(.thread-mode) .qq-hero-head, .qq-page.thread-mode .qq-thread-compose, .moments-page-head, .contacts-page-head {
+  background: #fff0f3 !important;
+  border-color: #f8d7df !important;
+}
+.qq-page:not(.thread-mode) .qq-title-block h2, .qq-page.thread-mode .qq-thread-name, .msg-name-row strong, .contacts-page-title strong, .mo-card-id strong {
+  color: #d84b72 !important;
+}
+.qq-page:not(.thread-mode) .qq-back, .qq-page:not(.thread-mode) .qq-create-btn, .qq-page.thread-mode .qq-thread-back, .qq-page.thread-mode .qq-thread-video, .qq-page.thread-mode .qq-compose-icon-btn, .qq-page.thread-mode .qq-compose-heart-btn {
+  color: #d84b72 !important;
+}
+.ins-wide-btn, .msg-pill, .msg-insight, .qq-banner-card .qq-search-bar, .mo-reply-input, #qqContactsPanel .qq-group-manager input {
+  background: #fae8ec !important;
+  color: #5c444a !important;
+}
+.ins-wide-btn.primary, .mo-reply-send, #qqContactsPanel .qq-group-manager button {
+  background: #ff7597 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+.qq-chat-copy strong {
+  color: #3b2a2e !important;
+}
+.qq-bottom-bar {
+  background: #ffffff !important;
+  border: 1px solid #ffd6e0 !important;
+  box-shadow: 0 4px 20px rgba(230, 100, 140, 0.12) !important;
+}
+.qq-nav-item.active {
+  color: #ff547d !important;
+}
+.qq-page.thread-mode .qq-message-row.friend .qq-message-bubble {
+  background: #ffffff !important;
+  color: #3b2a2e !important;
+  box-shadow: 0 2px 8px rgba(220, 150, 170, 0.08) !important;
+}
+.qq-page.thread-mode .qq-message-row.self .qq-message-bubble {
+  background: #ffe3eb !important;
+  color: #4a2d34 !important;
+}
+`;
+
     const appState = {
       api: {
         base: "",
@@ -19120,6 +19927,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         cardProfileName: "CatPaw Keeper",
         cardProfileBio: "把角色关系、转账记录、表情和世界观设定收进一张透明卡片。",
         cardProfileCoverImage: "",
+        customQqCss: "",
         layoutSize: "default"
       },
       qq: {
@@ -19716,6 +20524,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       applyCoverImage(qqFeatureArt, null, appState.theme.qqFeatureArtImage);
       applyCoverImage(qqCoverThumb, null, appState.theme.qqCoverThumbImage);
       applyCoverImage(cardProfileCover, null, appState.theme.cardProfileCoverImage);
+      applyCustomQqCss(appState.theme.customQqCss || "");
       renderPwaIconManagerUi();
       renderRoleList();
       renderCardPage();
