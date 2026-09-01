@@ -18157,6 +18157,19 @@
   </section>
 
   <script>
+    // 拦截与隔离外部浏览器扩展/第三方注入脚本的无关报错，保证应用稳定运行
+    window.addEventListener("error", (event) => {
+      if (
+        event?.message?.includes("compInstance") ||
+        event?.message?.includes("pluginList") ||
+        event?.filename?.includes("chrome-extension://") ||
+        event?.filename?.includes("safari-extension://")
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        return true;
+      }
+    }, true);
 
 // ========== 增强版系统提示词（提取自 Moon 小手机） ==========
 const ENHANCED_SYSTEM_PROMPT = `
