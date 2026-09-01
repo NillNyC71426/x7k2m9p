@@ -27038,10 +27038,11 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
     function getBoundStickerText() {
       const settings = getActiveChatSettings();
-      const groups = settings.boundStickerGroups || [];
-      const stickers = (appState.qq.stickers || []).filter((item) => !groups.length || groups.includes(item.group));
+      const groups = Array.isArray(settings.boundStickerGroups) ? settings.boundStickerGroups : [];
+      const stickers = (appState.qq.stickers || []).filter((item) => !groups.length || groups.includes(item.group || "默认"));
       if (!stickers.length) return "暂无可用表情包。";
-      return stickers.slice(0, 40).map((item) => `表情ID:${item.id}；分组:${item.group || "默认"}；备注:${item.note || "未备注"}；链接:${item.url}`).join("\n");
+      // 绝对禁止将 url (特别是本地 Base64 字符串) 传给大模型，只传 ID 和备注含义，省下数十万 Tokens！
+      return stickers.slice(0, 40).map((item, idx) => `${idx + 1}. [表情ID: ${item.id || idx}] 含义/备注: ${item.note || item.group || "日常表情"}`).join("\n");
     }
 
     function openTransferDialog() {
