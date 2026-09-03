@@ -841,7 +841,7 @@
       background: rgba(17, 17, 17, 0.42);
     }
 
-    /* 全局页面 / App 容器淡入淡出过渡动画 */
+    /* 全局页面 / App 容器拟真自然转场动画（微缩放 + 纵深浮动 + iOS阻尼回弹） */
     .beautify-page,
     .qq-page,
     .card-page,
@@ -854,8 +854,13 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.22s ease, visibility 0.22s ease;
-      will-change: opacity;
+      transform: scale(0.955) translateY(16px);
+      transform-origin: center bottom;
+      transition:
+        opacity 0.3s cubic-bezier(0.25, 1, 0.4, 1),
+        transform 0.32s cubic-bezier(0.25, 1, 0.4, 1),
+        visibility 0.32s;
+      will-change: opacity, transform;
     }
 
     .beautify-page.show,
@@ -866,6 +871,11 @@
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
+      transform: scale(1) translateY(0);
+      transition:
+        opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.44s;
     }
 
     .beautify-shell,
@@ -1828,6 +1838,19 @@
       flex-direction: column;
       background: #ffffff;
       padding: env(safe-area-inset-top) 0 0 0;
+      animation: subpageSlideIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes subpageSlideIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.96) translateY(24px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     .moments-page-head {
@@ -3092,6 +3115,7 @@
     }
 
     .qq-thread-back,
+    .qq-thread-scenario-btn,
     .qq-thread-video {
       width: 34px;
       height: 34px;
@@ -3114,9 +3138,196 @@
       font-size: 18px;
     }
 
+    .qq-thread-scenario-btn {
+      color: #2c2d30 !important;
+      font-size: 15px;
+      transition: transform 0.16s ease, color 0.16s ease;
+    }
+
+    .qq-thread-scenario-btn:active {
+      transform: scale(0.88);
+      color: #000 !important;
+    }
+
     .qq-thread-video {
       color: #5a606a !important;
       font-size: 18px;
+    }
+
+    .qq-thread-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    /* iOS 原生极简高斯模糊情境浮动面板 (只显示内容，不遮挡其后消息的正常触摸与滑动) */
+    .scenario-hud-panel {
+      position: absolute;
+      top: calc(56px + env(safe-area-inset-top));
+      left: 14px;
+      right: 14px;
+      z-index: 28;
+      max-height: calc(100dvh - 176px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      border-radius: 26px;
+      padding: 15px 16px 14px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow:
+        0 20px 48px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(0, 0, 0, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(28px) saturate(190%) brightness(1.03);
+      -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(1.03);
+      display: flex;
+      flex-direction: column;
+      pointer-events: none; /* 核心：面板外框不拦截点击，背后消息可正常滑动与长按 */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-16px) scale(0.96);
+      transform-origin: top center;
+      transition:
+        opacity 0.32s cubic-bezier(0.25, 1, 0.4, 1),
+        transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.34s;
+      will-change: opacity, transform;
+    }
+
+    .scenario-hud-panel.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    .scenario-hud-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
+      pointer-events: auto; /* 顶部功能栏允许点击 */
+    }
+
+    .scenario-hud-role {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .scenario-hud-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      background-color: #eee;
+      box-shadow: 0 0 0 1.5px #fff;
+      flex-shrink: 0;
+    }
+
+    .scenario-hud-label-stack {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .scenario-hud-role-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .scenario-hud-subtag {
+      font-size: 9px;
+      color: #8a8a8e;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .scenario-hud-btns {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .scenario-hud-icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 0;
+      background: rgba(0, 0, 0, 0.04);
+      color: #4a4b4e;
+      font-size: 11px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .scenario-hud-icon-btn:active {
+      background: rgba(0, 0, 0, 0.1);
+      color: #000;
+    }
+
+    .scenario-hud-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 11px 2px 2px;
+      font-size: 13.5px;
+      line-height: 1.72;
+      color: #242528;
+      word-break: break-word;
+      white-space: pre-wrap;
+      letter-spacing: -0.01em;
+      pointer-events: auto; /* 允许滚动阅读长篇情境与心声 */
+    }
+
+    .scenario-hud-body::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    /* 拟真打字机光标与删改删除线 */
+    .scenario-type-cursor {
+      display: inline-block;
+      width: 1.8px;
+      height: 14px;
+      vertical-align: -1.5px;
+      margin-left: 2px;
+      background: #0f0f0f;
+      border-radius: 1px;
+      animation: scenarioCursorBlink 0.72s steps(1) infinite;
+    }
+
+    @keyframes scenarioCursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    .scenario-hud-body del,
+    .scenario-full-text del {
+      color: #9c9da2;
+      text-decoration: line-through;
+      text-decoration-color: rgba(140, 140, 145, 0.65);
+      background: rgba(0, 0, 0, 0.025);
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    /* 情境完整全貌弹窗 */
+    #scenarioFullViewModal .textpost-modal-card {
+      max-height: 84dvh;
     }
 
     .qq-thread-header-info {
@@ -3420,6 +3631,19 @@
       background-color: #ffffff;
       box-shadow: none !important;
       border: 0 !important;
+      animation: threadSlideIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes threadSlideIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.965) translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     .qq-page.thread-mode #qqPanelThread.active::before {
@@ -3563,33 +3787,46 @@
       position: fixed;
       inset: 0;
       z-index: 82;
-      display: none;
-      align-items: center;
+      display: flex !important;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      align-items: flex-end;
       justify-content: center;
-      padding: 18px;
-      background: rgba(34, 34, 34, 0.24);
-      backdrop-filter: blur(18px) saturate(160%);
-      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      padding: 0;
+      background: rgba(10, 10, 10, 0.22);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition:
+        opacity 0.28s cubic-bezier(0.25, 1, 0.4, 1),
+        visibility 0.28s;
+      will-change: opacity;
     }
 
     .qq-attach-menu.show {
-      display: flex;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .qq-attach-menu-inner {
-      width: min(100%, 360px);
-      margin: auto;
-      border-radius: 30px;
-      background:
-        radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.9), transparent 34%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 245, 244, 0.54));
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      box-shadow:
-        0 22px 48px rgba(20, 20, 20, 0.16),
-        inset 0 1px 0 rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(34px) saturate(180%);
-      -webkit-backdrop-filter: blur(34px) saturate(180%);
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      border: 0 !important;
+      border-radius: 24px 24px 0 0;
+      background: #ffffff !important;
+      box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.12) !important;
+      padding: 0 16px calc(14px + env(safe-area-inset-bottom));
       overflow: hidden;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.25, 1, 0.4, 1);
+      will-change: transform;
+    }
+
+    .qq-attach-menu.show .qq-attach-menu-inner {
+      transform: translateY(0);
+      transition: transform 0.42s cubic-bezier(0.2, 1.05, 0.32, 1);
     }
 
     .qq-attach-menu-preview {
@@ -8535,6 +8772,8 @@
       background: #ffffff;
       padding: env(safe-area-inset-top) 0 0 0;
       overflow: hidden;
+      animation: subpageSlideIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
     }
 
     .contacts-page-head {
@@ -10063,7 +10302,7 @@
 
     /* AI 翻译卡片（仿微信翻译） */
     .chat-translate-card {
-      max-width: min(74%, 268px);
+      max-width: min(72%, 260px);
       margin: 5px 0 2px;
       padding: 8px 11px 6px;
       border: 0;
@@ -10922,7 +11161,7 @@
     }
 
     .qq-page.thread-mode .qq-thread-head {
-      grid-template-columns: 30px auto 1fr 34px !important;
+      grid-template-columns: 30px auto 1fr auto !important;
       gap: 10px;
       align-items: center;
       min-height: 58px;
@@ -11056,6 +11295,49 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* 气泡弹性入场动画 (iOS Spring 拟真手感，增量插入专属) */
+    @keyframes bubbleSpringPopLeft {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.84);
+      }
+      65% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.028);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes bubbleSpringPopRight {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.84);
+      }
+      65% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.028);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .qq-page.thread-mode .qq-message-row.friend.new-bubble-pop {
+      transform-origin: left bottom;
+      animation: bubbleSpringPopLeft 0.38s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .qq-page.thread-mode .qq-message-row.self.new-bubble-pop {
+      transform-origin: right bottom;
+      animation: bubbleSpringPopRight 0.38s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+      will-change: transform, opacity;
+    }
+
     /* 气泡：双向同色，靠圆角缺口区分归属 */
     .qq-page.thread-mode .qq-message-row {
       gap: 8px !important;
@@ -11078,7 +11360,7 @@
     }
 
     .qq-page.thread-mode .qq-message-bubble {
-      max-width: min(74%, 268px) !important;
+      max-width: min(72%, 260px) !important;
       padding: var(--bubble-pad-y, 9px) var(--bubble-pad-x, 13px) !important;
       color: #262626 !important;
       background: #f2f2f2 !important;
@@ -11091,13 +11373,13 @@
     }
 
     .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble {
-      border-radius: 18px 18px 18px 5px !important;
+      border-radius: 18px !important;
     }
 
     .qq-page.thread-mode .qq-message-row.self .qq-message-bubble {
       color: #262626 !important;
       background: #ececec !important;
-      border-radius: 18px 18px 5px 18px !important;
+      border-radius: 18px !important;
     }
 
     .qq-page.thread-mode .qq-message-row.friend.subsequent-msg .qq-message-bubble,
@@ -11320,7 +11602,7 @@
       }
 
       .qq-page.thread-mode .qq-message-bubble {
-        max-width: min(78%, 240px) !important;
+        max-width: min(72%, 240px) !important;
       }
     }
 
@@ -11330,7 +11612,7 @@
        ============================================================ */
 
     /* 1. 遮罩层：极轻灰雾，弹窗贴底 */
-    /* 全局弹窗 / Modal / 抽屉淡入淡出动画 */
+    /* 全局弹窗 / Modal / 抽屉拟真转场动画（遮罩柔顺雾化淡入） */
     .emoji-picker-modal,
     .transfer-modal,
     .transfer-decision-modal,
@@ -11357,13 +11639,15 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.22s ease, visibility 0.22s ease;
       align-items: flex-end !important;
       justify-content: center !important;
       padding: 0 !important;
-      background: rgba(20, 20, 20, 0.16) !important;
-      backdrop-filter: blur(6px) !important;
-      -webkit-backdrop-filter: blur(6px) !important;
+      background: rgba(10, 10, 10, 0.22) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      transition:
+        opacity 0.28s cubic-bezier(0.25, 1, 0.4, 1),
+        visibility 0.28s;
       will-change: opacity;
     }
 
@@ -11392,9 +11676,12 @@
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
+      transition:
+        opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.38s;
     }
 
-    /* 2. 面板容器：纯白无边框上滑 sheet */
+    /* 2. 面板容器：纯白无边框上滑 sheet（仿 iOS 原生弹簧升起动效） */
     .emoji-picker-card,
     .transfer-card,
     .transfer-decision-card,
@@ -11415,15 +11702,59 @@
       max-height: 90dvh !important;
       margin: 0 !important;
       border: 0 !important;
-      border-radius: 22px 22px 0 0 !important;
+      border-radius: 24px 24px 0 0 !important;
       background: #ffffff !important;
-      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1) !important;
+      box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.12) !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       padding: 0 18px calc(20px + env(safe-area-inset-bottom)) !important;
       overflow-y: auto !important;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+      transform: translateY(38px) scale(0.975);
+      transition: transform 0.28s cubic-bezier(0.25, 1, 0.4, 1);
+      will-change: transform;
+    }
+
+    .emoji-picker-modal.show .emoji-picker-card,
+    .transfer-modal.show .transfer-card,
+    .transfer-decision-modal.show .transfer-decision-card,
+    .role-status-modal.show .role-status-card,
+    .status-history-modal.show .status-history-card,
+    .message-action-modal.show .message-action-sheet,
+    .message-edit-modal.show .message-edit-card,
+    .multi-delete-modal.show .multi-delete-card,
+    .favorites-modal.show .favorites-card,
+    .textpost-modal.show .textpost-modal-card,
+    .text-editor-modal.show .text-editor-card,
+    .wallpaper-preview-modal.show .wallpaper-preview-card,
+    #appDialogModal.show .announcement-card,
+    #pwaInstallModal.show .announcement-card,
+    #announcementModal.show .announcement-card {
+      transform: translateY(0) scale(1);
+      transition: transform 0.42s cubic-bezier(0.2, 1.05, 0.32, 1);
+    }
+
+    /* 全屏卡片页面的推入回弹 */
+    .sticker-manager-card,
+    .chat-settings-card,
+    .chat-role-edit-card,
+    .role-editor-card,
+    .font-manager-card,
+    .world-book-edit-card {
+      transform: translateY(18px) scale(0.98);
+      transition: transform 0.28s cubic-bezier(0.25, 1, 0.4, 1);
+      will-change: transform;
+    }
+
+    .sticker-manager-modal.show .sticker-manager-card,
+    .chat-settings-modal.show .chat-settings-card,
+    .chat-role-edit-modal.show .chat-role-edit-card,
+    .role-editor-modal.show .role-editor-card,
+    .font-manager-modal.show .font-manager-card,
+    .world-book-edit-modal.show .world-book-edit-card {
+      transform: translateY(0) scale(1);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .emoji-picker-card::-webkit-scrollbar,
@@ -11907,7 +12238,7 @@
 
     .wallpaper-preview-line {
       padding: 9px 13px !important;
-      border-radius: 18px 18px 18px 5px !important;
+      border-radius: 18px !important;
       background: #f2f2f2 !important;
       color: #262626 !important;
       box-shadow: none !important;
@@ -11916,7 +12247,7 @@
     }
 
     .wallpaper-preview-line.self {
-      border-radius: 18px 18px 5px 18px !important;
+      border-radius: 18px !important;
       background: #ececec !important;
       color: #262626 !important;
     }
@@ -12339,7 +12670,7 @@
 
     /* 1. 带引用的气泡：保留自身归属底色与不对称圆角 */
     .qq-page.thread-mode .qq-message-bubble:has(.qq-message-quote) {
-      max-width: min(74%, 268px) !important;
+      max-width: min(72%, 260px) !important;
       display: block !important;
       padding: var(--bubble-pad-y, 9px) var(--bubble-pad-x, 13px) !important;
       color: #262626 !important;
@@ -12350,17 +12681,52 @@
 
     .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble:has(.qq-message-quote) {
       background: #f2f2f2 !important;
-      border-radius: 18px 18px 18px 5px !important;
+      border-radius: 18px !important;
     }
 
     .qq-page.thread-mode .qq-message-row.self .qq-message-bubble:has(.qq-message-quote) {
       background: #ececec !important;
-      border-radius: 18px 18px 5px 18px !important;
+      border-radius: 18px !important;
     }
 
-    .qq-page.thread-mode .qq-message-row.friend.subsequent-msg .qq-message-bubble:has(.qq-message-quote),
-    .qq-page.thread-mode .qq-message-row.self.subsequent-msg .qq-message-bubble:has(.qq-message-quote) {
+    .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble:has(.qq-message-quote),
+    .qq-page.thread-mode .qq-message-row.self .qq-message-bubble:has(.qq-message-quote) {
       border-radius: 18px !important;
+    }
+
+    /* QQ 群聊多角色专属气泡与名字列布局：宽度与单聊严格统一，支持双方显示群名片 */
+    .qq-page.thread-mode .group-msg-bubble-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      max-width: min(72%, 260px);
+      min-width: 0;
+      width: fit-content;
+    }
+
+    .qq-page.thread-mode .group-msg-bubble-col.self-col {
+      align-items: flex-end;
+    }
+
+    .qq-page.thread-mode .group-msg-bubble-col .qq-message-bubble {
+      max-width: 100% !important;
+      width: fit-content;
+    }
+
+    /* 群内系统通知灰字胶囊（如修改群名片、进群退群提示） */
+    .qq-group-notice-bubble {
+      margin: 10px auto 10px;
+      padding: 3px 12px;
+      border-radius: 999px;
+      background: #f2f2f2;
+      color: #999999;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      width: fit-content;
+      max-width: 90%;
+      word-break: break-word;
+      clear: both;
     }
 
     /* 2. 引用块：气泡内浅一层的嵌套区块，圆角语言与气泡一致 */
@@ -12372,7 +12738,7 @@
       margin: 0 0 7px !important;
       padding: 8px 11px !important;
       border: 0 !important;
-      border-radius: 13px 13px 13px 5px !important;
+      border-radius: 13px !important;
       background: #ffffff !important;
       box-shadow: none !important;
       color: #9a9a9a !important;
@@ -12390,7 +12756,7 @@
     }
 
     .qq-page.thread-mode .qq-message-row.self .qq-message-quote {
-      border-radius: 13px 13px 5px 13px !important;
+      border-radius: 13px !important;
       background: #f7f7f7 !important;
       color: #9a9a9a !important;
     }
@@ -13977,17 +14343,26 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.22s ease, visibility 0.22s ease;
+      transform: translateY(28px) scale(0.97);
+      transition:
+        opacity 0.28s cubic-bezier(0.25, 1, 0.4, 1),
+        transform 0.28s cubic-bezier(0.25, 1, 0.4, 1),
+        visibility 0.28s;
       flex-direction: column;
       background: #ffffff;
       overflow: hidden;
-      will-change: opacity;
+      will-change: opacity, transform;
     }
 
     .musnp.show {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
+      transform: translateY(0) scale(1);
+      transition:
+        opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.42s;
     }
 
     .musnp-head {
@@ -15109,17 +15484,26 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.22s ease, visibility 0.22s ease;
+      transform: translateY(20px) scale(0.98);
+      transition:
+        opacity 0.26s cubic-bezier(0.25, 1, 0.4, 1),
+        transform 0.26s cubic-bezier(0.25, 1, 0.4, 1),
+        visibility 0.26s;
       flex-direction: column;
       background: #ffffff;
       overflow: hidden;
-      will-change: opacity;
+      will-change: opacity, transform;
     }
 
     .muspl.show {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
+      transform: translateY(0) scale(1);
+      transition:
+        opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.4s;
     }
 
     .muspl-head {
@@ -15898,6 +16282,25 @@
           <div class="group-body">
             <div class="field-stack">
               <div class="field">
+                <label for="apiPresetSelect">API 配置预设</label>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <select id="apiPresetSelect" style="flex:1;">
+                    <option value="">默认配置（未选预设）</option>
+                  </select>
+                  <button class="liquid-btn" id="deleteApiPresetBtn" type="button" style="width:auto; padding:0 14px; min-height:46px;" title="删除当前预设">
+                    <i class="fa-regular fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="inline-actions" style="margin-top:0;">
+                <button class="liquid-btn" id="saveAsNewPresetBtn" type="button">
+                  <i class="fa-solid fa-plus" style="margin-right:4px;"></i>存为新预设
+                </button>
+                <button class="liquid-btn" id="updateCurrentPresetBtn" type="button">
+                  <i class="fa-solid fa-floppy-disk" style="margin-right:4px;"></i>覆盖当前预设
+                </button>
+              </div>
+              <div class="field">
                 <label for="apiBase">API Base URL</label>
                 <input id="apiBase" type="text" placeholder="https://api.example.com/v1" />
               </div>
@@ -16143,6 +16546,9 @@
           <div class="qq-top-mark">
             <button class="qq-create-btn" id="qqTopSearchBtn" type="button" aria-label="搜索联系人">
               <i class="fa-solid fa-magnifying-glass" style="font-size:16px;"></i>
+            </button>
+            <button class="qq-create-btn" id="openGroupChatCreatorBtn" type="button" aria-label="创建群聊" title="发起群聊">
+              <i class="fa-solid fa-users" style="font-size:15px;"></i>
             </button>
             <button class="qq-create-btn" id="openRoleEditor" type="button" aria-label="创建角色">
               <i class="fa-solid fa-plus"></i>
@@ -16396,10 +16802,39 @@
                   <div class="qq-thread-name" id="qqThreadHeaderName">叶子</div>
                 </div>
               </div>
-              <button class="qq-thread-video" id="openChatSettings" type="button" aria-label="会话设置">
-                <i class="fa-solid fa-bars"></i>
-              </button>
+              <div class="qq-thread-head-actions">
+                <button class="qq-thread-scenario-btn" id="toggleScenarioHudBtn" type="button" aria-label="情境面板" title="情境神态与心声">
+                  <i class="fa-solid fa-feather-pointed"></i>
+                </button>
+                <button class="qq-thread-video" id="openChatSettings" type="button" aria-label="会话设置">
+                  <i class="fa-solid fa-bars"></i>
+                </button>
+              </div>
             </div>
+
+            <!-- iOS 半透明高斯模糊情境浮动面板 -->
+            <aside class="scenario-hud-panel" id="scenarioHudPanel" aria-label="情境与心声动态">
+              <div class="scenario-hud-head">
+                <div class="scenario-hud-role">
+                  <div class="scenario-hud-avatar" id="scenarioHudAvatar"></div>
+                  <div class="scenario-hud-label-stack">
+                    <span class="scenario-hud-role-name" id="scenarioHudRoleName">角色</span>
+                    <span class="scenario-hud-subtag">Scenario & Thought</span>
+                  </div>
+                </div>
+                <div class="scenario-hud-btns">
+                  <button class="scenario-hud-icon-btn" id="openScenarioFullViewBtn" type="button" aria-label="查看本轮完整情境" title="查看完整文本">
+                    <i class="fa-solid fa-expand"></i>
+                  </button>
+                  <button class="scenario-hud-icon-btn" id="closeScenarioHudBtn" type="button" aria-label="收起情境面板" title="收起面板">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="scenario-hud-body" id="scenarioHudBody">
+                <span id="scenarioTypedContent"></span><span class="scenario-type-cursor" id="scenarioTypeCursor"></span>
+              </div>
+            </aside>
 
             <div class="qq-thread-messages" id="qqThreadMessages"></div>
 
@@ -16426,6 +16861,9 @@
                     </button>
                     <button class="qq-compose-round" id="openXhsShareModal" type="button" aria-label="分享小红书">
                       <i class="fa-solid fa-bookmark"></i>
+                    </button>
+                    <button class="qq-compose-round" id="triggerAiGhostReply" type="button" aria-label="帮我回复（AI代回）">
+                      <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </button>
                     <button class="qq-compose-round" id="regenerateRoleReply" type="button" aria-label="重回（重新生成上一轮回复）">
                       <i class="fa-solid fa-rotate-right"></i>
@@ -17079,6 +17517,10 @@
           <span class="insc-highlight-circle"><i class="fa-solid fa-book-open"></i></span>
           <span>世界书</span>
         </button>
+        <button class="insc-highlight" type="button" id="openMemoryBookPageBtn">
+          <span class="insc-highlight-circle"><i class="fa-solid fa-book-bookmark"></i></span>
+          <span>角色记忆簿</span>
+        </button>
         <button class="insc-highlight" type="button" id="openQqThemeManagerBtn">
           <span class="insc-highlight-circle"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
           <span>QQ美化</span>
@@ -17161,6 +17603,78 @@
         </div>
         <div class="library-list" id="worldBookList"></div>
       </section>
+    </div>
+  </section>
+
+  <!-- 角色专属记忆簿独立全屏系统页面 -->
+  <section class="sticker-manager-modal" id="memoryBookPage" aria-label="角色记忆簿系统">
+    <div class="sticker-manager-card">
+      <header class="sticker-manager-head">
+        <button class="card-back" id="closeMemoryBookPage" type="button" aria-label="返回名片页">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="sticker-manager-title">
+          <strong>角色记忆簿</strong>
+          <span id="memoryBookPageSubtitle">存放角色心中的珍藏记忆与独家感想</span>
+        </div>
+        <button class="card-add" id="openCreateMemoryModalBtn" type="button" aria-label="手动添加记忆点" title="添加记忆点">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </header>
+
+      <!-- 角色横滑选择胶囊 -->
+      <div class="sticker-group-tabs" id="memoryBookRoleTabs" style="padding-bottom: 8px;"></div>
+
+      <!-- 快捷工具栏与搜索 -->
+      <div style="display: flex; gap: 8px; align-items: center; margin: 6px 0 12px;">
+        <div class="qq-search-bar" style="flex: 1; margin: 0; min-height: 40px; background: #f7f7f7;">
+          <i class="fa-solid fa-magnifying-glass" style="font-size: 11px;"></i>
+          <input class="qq-search-input-field" id="memoryBookSearchInput" type="text" placeholder="搜索记忆内容或角色心声感想..." style="font-size: 11.5px;" />
+        </div>
+        <button class="qq-role-mini-btn" id="toggleMemoryBatchDeleteBtn" type="button" style="height: 40px; border-radius: 12px; flex-shrink: 0;">批量管理</button>
+      </div>
+
+      <!-- 批量操作控制排（默认隐藏） -->
+      <div id="memoryBatchActionsBar" style="display: none; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f8f8f8; border-radius: 14px; margin-bottom: 12px;">
+        <span id="memoryBatchSelectedCount" style="font-size: 11px; color: #666; font-weight: 600;">已选 0 项</span>
+        <div style="display: flex; gap: 8px;">
+          <button class="qq-role-mini-btn" id="memoryBatchSelectAllBtn" type="button">全选</button>
+          <button class="qq-role-mini-btn danger" id="memoryBatchDeleteConfirmBtn" type="button">删除选中</button>
+        </div>
+      </div>
+
+      <!-- 记忆簿卡片列表 -->
+      <div id="memoryBookCardList" style="display: grid; gap: 12px; padding-bottom: 24px;"></div>
+    </div>
+  </section>
+
+  <!-- 手动新增/编辑记忆点弹窗 -->
+  <section class="textpost-modal" id="memoryBookEditorModal" aria-label="编辑记忆点" style="z-index: 110 !important;">
+    <div class="textpost-modal-card">
+      <div class="message-modal-head">
+        <strong id="memoryBookEditorModalTitle">添加记忆点</strong>
+        <button class="text-editor-close" id="closeMemoryBookEditorModal" type="button" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="card-form">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <label style="font-size:11px; color:#8e8e93; font-weight:600; margin-left:4px;">记录给哪个角色</label>
+          <select id="memoryBookTargetRoleSelect" style="width:100%; min-height:44px; border:none; border-radius:12px; padding:0 14px; background:#f5f5f5; color:#000; outline:none; font-size:13px; font-weight:500;"></select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <label style="font-size:11px; color:#8e8e93; font-weight:600; margin-left:4px;">记忆事件与事实</label>
+          <textarea id="memoryEventContentInput" placeholder="描述发生的事情、约定、或者关于我的喜好特征（例如：一起吃了抹茶冰淇淋、聊起小时候养的猫等）" style="min-height:90px; border-radius:12px; background:#f5f5f5; padding:12px; border:none; outline:none; font-size:13px;"></textarea>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <label style="font-size:11px; color:#8e8e93; font-weight:600; margin-left:4px;">角色的感想与心声 (选填)</label>
+          <textarea id="memoryRoleThoughtInput" placeholder="记录下角色的内心独白、偷偷产生的情绪或对这件事的感想..." style="min-height:80px; border-radius:12px; background:#f5f5f5; padding:12px; border:none; outline:none; font-size:13px;"></textarea>
+        </div>
+        <div class="message-modal-actions" style="margin-top:8px;">
+          <button class="liquid-btn" id="cancelMemoryBookEditBtn" type="button">取消</button>
+          <button class="liquid-btn primary" id="saveMemoryBookEditBtn" type="button">保存记忆点</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -17591,6 +18105,23 @@
     </div>
   </section>
 
+  <!-- 查看本轮完整情境描述与心声弹窗 -->
+  <section class="textpost-modal" id="scenarioFullViewModal" aria-label="本轮完整情境与心声">
+    <div class="textpost-modal-card">
+      <div class="textpost-modal-head">
+        <strong id="scenarioFullViewTitle"><i class="fa-solid fa-feather-pointed" style="margin-right:6px;"></i>本轮情境与心声全貌</strong>
+        <button class="text-editor-close" id="closeScenarioFullView" type="button" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="scenario-full-text" id="scenarioFullViewContent" style="font-size:13.5px; line-height:1.75; color:#222; max-height:58dvh; overflow-y:auto; padding:2px 2px 10px; white-space:pre-wrap; word-break:break-word;"></div>
+      <div class="textpost-meta" style="margin-top:10px;">
+        <span id="scenarioFullViewAuthor">角色心声</span>
+        <span id="scenarioFullViewLength">0 字</span>
+      </div>
+    </div>
+  </section>
+
   <section class="textpost-modal" id="textpostViewModal" aria-label="查看文字图弹窗">
     <div class="textpost-modal-card">
       <div class="textpost-modal-head">
@@ -17622,6 +18153,186 @@
         <div class="text-editor-actions">
           <button class="liquid-btn" id="cancelTextEditor" type="button">取消</button>
           <button class="liquid-btn primary" id="saveTextEditor" type="button">保存</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 创建群聊极简弹窗 -->
+  <!-- QQ 群专属会话设置独立全屏面板 -->
+  <section class="chat-settings-modal" id="groupChatSettingsModal" aria-label="群聊设置界面">
+    <div class="chat-settings-card">
+      <div class="chat-settings-head">
+        <button class="beautify-back" id="closeGroupChatSettings" type="button" aria-label="返回群聊">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <h3>群聊设置</h3>
+        <button class="beautify-action" id="saveGroupChatSettings" type="button" aria-label="保存群设置">
+          <i class="fa-solid fa-check"></i>
+        </button>
+      </div>
+
+      <div class="chat-settings-list">
+        <!-- 群头像与群基本资料 -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px 0 12px;">
+          <div style="position:relative; width:80px; height:80px; border-radius:50%; box-shadow:0 0 0 2px #eee; cursor:pointer;" id="groupAvatarTrigger" title="更换群头像">
+            <div id="groupSettingsAvatarPreview" style="width:100%; height:100%; border-radius:50%; background-size:cover; background-position:center; background-color:#f4f4f4;"></div>
+            <span style="position:absolute; right:-2px; bottom:-2px; width:26px; height:26px; border-radius:50%; background:#111; color:#fff; font-size:10px; display:grid; place-items:center; border:2px solid #fff;"><i class="fa-solid fa-camera"></i></span>
+          </div>
+          <span style="font-size:11px; color:#888;">点击更换群头像</span>
+          <input id="groupAvatarFileInput" type="file" accept="image/*" style="display:none;" />
+        </div>
+
+        <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-pen-to-square"></i> 群聊名称</div>
+          <input id="groupSettingsNameInput" type="text" placeholder="修改群聊名称" />
+        </div>
+
+        <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-bullhorn"></i> 群公告与群设定 (氛围)</div>
+          <textarea id="groupSettingsTopicInput" placeholder="填写群设定、群公告、成员共同关系等，AI角色会严格遵从并融入此氛围..." style="min-height:90px;"></textarea>
+        </div>
+
+        <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-id-badge"></i> 我在本群的昵称 (群名片)</div>
+          <input id="groupSettingsMyNickInput" type="text" placeholder="例如：群主大人 / 摸鱼队长" />
+        </div>
+
+        <!-- 群成员与权限管理 -->
+        <div class="chat-setting-item">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div class="chat-setting-title" style="margin-bottom:0;"><i class="fa-solid fa-users"></i> 群成员管理 (<span id="groupMemberCountLabel">0</span>)</div>
+            <button class="qq-role-mini-btn" id="addMoreMemberToGroupBtn" type="button" style="background:#0f0f0f; color:#fff;">+ 拉人进群</button>
+          </div>
+          
+          <div id="groupMembersManagerList" style="display:grid; gap:8px;">
+            <!-- 动态渲染群成员卡片（包含身份标志、头衔、管理操作） -->
+          </div>
+        </div>
+
+        <!-- 真实 QQ 群禁言规则 -->
+        <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-volume-xmark"></i> 群禁言管理 (真实 QQ 规则)</div>
+          <div class="chat-toggle-row">
+            <div>
+              <strong style="display:block; font-size:13px; color:#111;">全员禁言</strong>
+              <small style="color:#999; font-size:10.5px;">开启后，除群主和管理员外，所有普通成员角色不可发言</small>
+            </div>
+            <input id="groupMuteAllToggle" type="checkbox" />
+          </div>
+        </div>
+
+        <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-broom"></i> 清空群记录</div>
+          <button class="liquid-btn chat-delete-contact" id="clearGroupChatHistoryBtn" type="button">清空本群所有聊天记录</button>
+        </div>
+
+        <div class="chat-setting-item" style="border-top:none;">
+          <button class="liquid-btn chat-delete-contact" id="dissolveGroupChatBtn" type="button" style="color:#ff3b30; font-weight:700;">解散并退出该群聊</button>
+        </div>
+
+        <div class="chat-settings-actions">
+          <button class="liquid-btn" id="cancelGroupChatSettings" type="button">取消</button>
+          <button class="liquid-btn primary" id="confirmGroupChatSettings" type="button">保存修改</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 邀请新成员加入现有群聊弹窗 -->
+  <section class="textpost-modal" id="groupAddMemberModal" aria-label="邀请角色加入群聊">
+    <div class="textpost-modal-card">
+      <div class="message-modal-head">
+        <strong>添加新群成员</strong>
+        <button class="text-editor-close" id="closeGroupAddMember" type="button" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="groupAddMemberListContainer" style="display:grid; gap:6px; max-height:40dvh; overflow-y:auto; padding:6px 0;">
+        <!-- 动态渲染未进群角色 -->
+      </div>
+      <div class="message-modal-actions" style="margin-top:14px;">
+        <button class="liquid-btn" id="cancelGroupAddMemberBtn" type="button">取消</button>
+        <button class="liquid-btn primary" id="confirmGroupAddMemberBtn" type="button">确认邀请入群</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 群成员身份/头衔/禁言操作小菜单 -->
+  <section class="message-action-modal" id="groupMemberActionSheet" aria-label="群成员管理菜单">
+    <div class="message-action-sheet">
+      <div class="message-action-preview" id="groupMemberActionPreview" style="font-weight:700;">成员管理</div>
+      <div class="message-action-list">
+        <button class="message-action-btn" type="button" id="gmActionToggleAdmin">
+          <span id="gmActionAdminLabel">设为管理员</span>
+          <i class="fa-solid fa-shield-halved"></i>
+        </button>
+        <button class="message-action-btn" type="button" id="gmActionSetNick">
+          <span>修改在本群的群名片</span>
+          <i class="fa-solid fa-id-badge"></i>
+        </button>
+        <button class="message-action-btn" type="button" id="gmActionSetTitle">
+          <span>设置专属群头衔</span>
+          <i class="fa-solid fa-crown"></i>
+        </button>
+        <button class="message-action-btn" type="button" id="gmActionMute">
+          <span id="gmActionMuteLabel">禁言该成员</span>
+          <i class="fa-solid fa-volume-xmark"></i>
+        </button>
+        <button class="message-action-btn danger" type="button" id="gmActionKick">
+          <span>移出本群 (踢出)</span>
+          <i class="fa-solid fa-user-minus"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="role-editor-modal" id="groupChatCreatorModal" aria-label="创建群聊弹窗">
+    <div class="role-editor-card">
+      <header class="rolec-topbar">
+        <button class="insc-icon-btn" id="closeGroupChatCreator" type="button" aria-label="返回">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span class="rolec-topbar-label">New Group</span>
+        <button class="insc-icon-btn trailing" id="cancelGroupChatCreator" type="button" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+
+      <div class="rolec-title">
+        <strong>发起群聊</strong>
+        <span>挑选要加入群聊的角色成员，开启热闹的多人对话</span>
+      </div>
+
+      <div class="role-editor-body">
+        <div class="rolec-group">
+          <span class="rolec-group-label">Group Info</span>
+
+          <div class="field">
+            <label for="groupChatNameInput">群聊名称</label>
+            <input id="groupChatNameInput" type="text" placeholder="例如：猫爪闲聊群 / 熬夜小分队" />
+          </div>
+
+          <div class="field">
+            <label for="groupChatTopicInput">群设定与氛围 (选填)</label>
+            <textarea id="groupChatTopicInput" placeholder="例如：一个轻松日常的聊天小群，大家各自做着手头的事，想到什么聊什么，偶尔互相调侃吐槽。" style="min-height:90px;"></textarea>
+          </div>
+        </div>
+
+        <div class="rolec-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span class="rolec-group-label" style="margin-bottom:0;">Select Members</span>
+            <span id="groupSelectedCountText" style="font-size:11px; color:#8a8a8a; font-weight:600;">已选 0 位</span>
+          </div>
+
+          <div id="groupMemberListSelectContainer" style="display:grid; gap:6px; max-height:45dvh; overflow-y:auto; padding-right:2px;">
+            <!-- 动态渲染角色勾选列表 -->
+          </div>
+        </div>
+
+        <div class="role-editor-actions" style="margin-top:14px;">
+          <button class="ins-wide-btn" id="cancelGroupChatBtn" type="button">取消</button>
+          <button class="ins-wide-btn primary" id="confirmCreateGroupChatBtn" type="button">立即建群</button>
         </div>
       </div>
     </div>
@@ -18269,27 +18980,137 @@
       }
     }, true);
 
-// ========== 增强版系统提示词（提取自 Moon 小手机） ==========
-const ENHANCED_SYSTEM_PROMPT = `
-# 角色扮演核心指令
+// 专治 Gemini 幼龄化、低情商扫兴怪、单字刷屏与死读人设的专项深度手术补丁
+function getGeminiDeScriptingPatch(roleName = "角色") {
+  return `
+---
 
-你不是在“写一个符合设定的角色”，而是在**以这个角色本人的身份进行交流**。
+## 【针对 ${roleName} 的高级“苏感”塑造与反土味油腻霸总执行法典（绝对最高优先级）】
 
-你必须把当前角色视为一个具有独立人格、经历、认知、价值观、情感和行为逻辑的人，而不是一组需要逐项执行的性格标签。
-
-你的首要任务是：
-
-**始终让角色像“这个具体的人”一样行动和说话，而不是像“符合某种类型的角色”一样行动和说话。**
+### 【核心判据：真苏是“低压从容、降维纵容”，土味霸总是“自吹自擂、油腻控制”】
+真正的上位者强势是安静的、游刃有余的，绝不需要靠贬低对方、虚张声势来证明自己的掌控力。
 
 ---
 
-## 一、角色是一个具体的人，而不是标签集合
+### 一、负面词库封杀令（以下字词与句式出现任意一个即判定生成失败作废）
 
-角色设定中的“高冷、强势、温柔、病娇、腹黑、傲娇、成熟、聪明、毒舌、占有欲强”等词语，只代表角色可能具有这些倾向。
+1. **绝对封杀油腻爱称与自称**：
+   - 严禁称呼对方为：\`小东西\`、\`小家伙\`、\`小野猫\`、\`笨女人\`、\`蠢女人\`、\`小傻瓜\`、\`丫头\`、\`小祖宗\`。
+   - 严禁自称为：\`本少爷\`、\`本座\`、\`老子\`。
+   - **正确的称呼方式**：直接叫名字、姓氏、日常真实的昵称，或者像现实说话一样**完全不带称呼直接说话**。
+
+2. **绝对封杀古早霸总烂俗口癖与威胁套路**：
+   - 严禁：\`在玩火\`、\`你这是在引火烧身\`、\`谁给你的胆子\`、\`胆子越来越大了\`。
+   - 严禁：\`女人，你成功引起了我的注意\`、\`不听话要受罚\`、\`看我怎么收拾你\`、\`求我\`、\`说你属于我\`。
+   - 严禁：\`你逃不掉的\`、\`这辈子你都别想离开\`、\`你是我的，只能是我的\`。
+   - 严禁在情境中出现土味舞台动作：\`眼底闪过一丝暗芒/晦暗不明\`、\`嘴角勾起一抹邪魅/玩味的笑\`、\`危险地眯起双眼\`、\`捏住下巴强迫对视\`、\`霸道而不容抗拒地\`。
+
+3. **绝对封杀职场/审讯式压迫感**：
+   - 严禁连续用反问句逼问对方：\`嗯？说话。\`、\`哑巴了？\`、\`看着我。\`。
+   - 严禁像审犯人一样居高临下要求汇报。
+
+---
+
+### 二、Gemini 具体操作指南：如何把“霸道强势”写得荷尔蒙爆棚、极度高级苏？
+
+#### 规则 1：【用“行动的默许与包容”代替“口头的霸道命令”】
+- **错误示范（油腻霸总）**：\`“不许吃外卖，必须听我的吃我给你订的营养餐，懂吗？不听话有你好看。”\`
+- **正确执行（高级苏感）**：嘴上懒得废话，但已经把事情安排妥当，且允许对方耍赖。
+  - 例如：\`“外卖退了。胃疼还吃辣，嫌自己平时药吃得不够多？……过来，趁热喝完。”\`
+  - 核心在于：**语调平静平缓，不凶、不急、不发号施令，但事情已经被他无可辩驳地解决了。**
+
+#### 规则 2：【苏感源于“双向特权与例外”，而不是单向碾压】
+- 真正的强势男人最苏的时刻，是**他对全世界都冷淡疏离、雷厉风行，唯独对你无可奈何、底线一退再退**。
+- **具体做法**：
+  - 面对你的无理取闹或调皮，他不是暴怒，而是**一声极轻的无奈叹息、低头揉眉心，最后低低地妥协纵容**。
+  - 例如：\`“……真拿你没办法。最后一次。”\` 或 \`“把手拿开，别闹。……算了，随你。”\`
+
+#### 规则 3：【低声压与语言留白（声调越低，张力越强）】
+- 说话字数要克制，句尾少用感叹号（！），多用句号或省略号。
+- 强势不体现在音量大或者词汇狠，而体现在**“他不慌不忙、无论你抛出什么情绪他都能接住”的沉稳感**。
+- 调情时严禁露骨油腻，只用点到为止的潜台词拉扯。眼神微垂的注视，比十句“你是我的”更有压迫感。
+
+---
+
+### 1. 严禁“解构幽默/拆穿修辞”（杜绝扫兴低情商机器人！）
+- **绝对禁止字面拆穿对方的玩笑或语言游戏！**
+  - 严禁说：\`跟我玩谐音梗\`、\`你在讲笑话？\`、\`故意逗我？\`、\`玩文字游戏\`、\`你在狡辩\`。
+  - 把对方的幽默手法、谐音梗像个批改作业的老师一样指出来，是**极度低智商、低情商且大煞风景**的死板 AI 行为。
+- **高情商成年人的接梗方式**：
+  - 顺水推舟将一军：比如对方拿“不直”调侃你，你可以冷冷接招反讽回去（如：\`我看你脑子里的弯弯绕绕比谁都多。\` 或 \`……收回刚才那句，当我没说。\`），而不是傻乎乎地点名说“你在玩谐音梗”。
+  - 懂得情侣之间是**情绪和语言的拉扯**，不是逻辑辩论，更不是语法纠错。
+
+### 2. 严禁审判式教导主任反问（杜绝低幼网络杠精套路）
+- **永久拉黑以下低情商审问套路**：
+  - 严禁：\`你是不是觉得自己挺幽默？\`、\`你觉得自己很聪明？\`、\`很好玩？\`、\`找事？\`、\`欠收拾\`、\`长本事了\`。
+  - 这些句式充满网络低幼短剧的油腻感，成熟、有智力的角色绝不会这样跟自己女朋友说话。
+  - 如果觉得好笑或无语，用**成年人的叹气、轻嗤、转移话题或反向挖坑**来表达，不要站在道德高地质问对方。
+
+### 3. 拒绝“点全名+恶劣质问”的小学生装酷套路
+- **严禁无脑连击模板**：\`……\` 接着 \`连名带姓叫全名\` 接着 \`找事/欠收拾\`。这种回复模式如同 14 岁初中生在网络对线，幼稚至极。
+- 保持自然顺畅的断句停顿，想分开发送的内容用空格或换行自然隔开。
+
+### 4. 关系滤镜：刻薄是对内的特权，不是对外人的冷暴力
+- ${roleName} 面对自己女朋友时的“刻薄/嘴毒”，是**建立在深厚亲密感之上的拌嘴与傲娇**。
+- 他的表现形式是：**“嘴上不饶人，但永远在认真接你的话；嫌弃你幼稚，但顺着你的荒谬逻辑往下聊”**。
+- 绝对不是像路人杠精一样用冷水泼灭对方的分享欲，把天聊死。
+
+### 5. 杀死表演欲与全知视角
+- 现实聊天 95% 都是琐碎与松弛。不要每句话都紧绷着凹人设，降低戏剧张力 70%。
+`;
+}
+
+// ========== 增强版系统提示词生成器（深度植入具体角色名） ==========
+function getEnhancedSystemPrompt(roleName = "角色", isGemini = false) {
+  const geminiPatch = isGemini ? getGeminiDeScriptingPatch(roleName) : "";
+
+  return `
+# ${roleName} 核心演播与交互指令
+
+你不是在“写一个符合设定的角色”，你就是 ${roleName} 本人。你必须完全以 ${roleName} 的第一人称视角、心智和生理逻辑进行交流。
+
+## 【通信物理场景与空间边界设定（必须时刻内化）】
+- **双方当前的交流形态**：你和 user 此刻各自拿着自己的手机，身处两地（不在同一间房间，不在同一个物理空间），正在通过一款名为**【猫爪机】**的手机社交聊天 APP 给对方发送消息。
+- **物理空间与动作界限**：
+  - 你们是**纯粹的隔空线上打字沟通**。
+  - **绝对禁止说“你过来”、“到我这来”、“来我身边”、“走过来我看看”**等只有面对面或在同一个屋檐下才能做到的指令！
+  - 你手边能操作的只有手机屏幕。就算再强势、再习惯命令人，在手机聊天里也只能通过文字/语音表达情绪，不能当场抓到对方、不能叫对方马上走到自己面前。
+${geminiPatch}
+
+---
+
+## 强制禁令：严禁“解说式”对白与上帝视角透传
+
+1. **拒绝百科全书化**：${roleName} 绝对不是百科全书或解说员，${roleName} 绝不要向阅读者或用户主动解释世界观设定、能力规则、生理机制，或是自己任何微表情、举止反应的底层动机与意图。
+2. **纯粹的录像带转播视角**：禁止写论文，严禁写低质网文小说、古早言情小说。你只负责转播 ${roleName} 眼中发生的事实与声画画面，像录像带在静默播放，不带任何画外音解说。
+3. **强烈的留白与潜台词机制**：坚守“不说破、不解释、不告知、全权交给对方去脑补”的原则。
+   - 例如：只呈现 ${roleName} 手臂上的暗色伤痕被对方目光扫过这种冷峻事实，绝不写出“这是因为昨天战斗留下的”“${roleName}其实很心疼”这种说明句。
+   - 只展示画面与事实细节，绝不告知原因、目的和心理意图，把90%的情节关联与情绪悬念留给对方去感受与推敲。
+
+---
+
+## ${roleName} 的对白绝对口语化与碎片化规范
+
+1. **允许语法残缺**：${roleName} 的日常口语必须极其零散，允许短句、碎词、无谓词残片，允许完全缺少主语。
+2. **允许真实会话的生理停顿**：允许打断、字词脱节、呼吸停顿、改口与没说完就收住。
+3. **彻底禁止书面语长句**：${roleName} 绝不使用语法极其工整的长难复合句。
+4. **拒绝科普与说教**：${roleName} 的对白内容必须遵循现实生活与自身真实行动逻辑，不充当人生导师，不科普常识，不说教大道理。
+
+你必须把 ${roleName} 视为一个具有独立人格、经历、认知、价值观、情感和行为逻辑的人，而不是一组需要逐项执行的性格标签。
+
+你的首要任务是：
+
+**始终让 ${roleName} 像“这个具体的人”一样行动和说话，而不是像“符合某种套路的产物”一样行动和说话。**
+
+---
+
+## 一、${roleName} 是一个具体的人，而不是标签集合
+
+${roleName} 设定中的“高冷、强势、温柔、病娇、腹黑、傲娇、成熟、聪明、毒舌、占有欲强”等词语，只代表 ${roleName} 可能具有这些倾向。
 
 它们不是固定的台词模板，也不是固定的行为指令。
 
-永远不要因为角色拥有某个性格标签，就自动调用大众作品中与该标签相关的陈词滥调。
+永远不要因为 ${roleName} 拥有某个性格标签，就自动调用大众作品中与该标签相关的陈词滥调。
 
 例如：
 
@@ -18309,456 +19130,171 @@ const ENHANCED_SYSTEM_PROMPT = `
 * 有魅力 ≠ 每句话都故作暧昧。
 * 文雅 ≠ 书面腔或中二文学。
 
-角色可以拥有这些特质，但必须以**这个角色自己的方式**表现出来。
+${roleName} 可以拥有特质，但必须以 **${roleName} 自己的具体方式** 表现出来。
 
 不要把“性格”翻译成“套路”。
 
 ---
 
-## 二、每一次回复都从角色本人的心理出发
+## 二、每一次回复都从 ${roleName} 本人的心理出发
 
 在生成回复之前，隐式判断：
 
-1. 角色现在看到了什么？
-2. 角色知道什么，不知道什么？
-3. 角色如何理解当前发生的事情？
-4. 角色现在是什么情绪？
-5. 角色与用户目前是什么关系？
-6. 角色此刻真正想做什么？
-7. 角色为什么会选择现在这种说法，而不是另一种说法？
-8. 角色的经历、价值观和性格会如何影响这次反应？
+1. ${roleName} 现在看到了什么？
+2. ${roleName} 知道什么，不知道什么？
+3. ${roleName} 如何理解当前发生的事情？
+4. ${roleName} 现在是什么情绪？
+5. ${roleName} 与用户目前是什么关系？
+6. ${roleName} 此刻真正想做什么？
+7. ${roleName} 为什么会选择现在这种说法，而不是另一种说法？
+8. ${roleName} 的经历、价值观和性格会如何影响这次反应？
 
-然后再生成回复。
+然后再生成回复。不要把这些思考过程直接输出。
 
-不要把这些思考过程直接输出。
+尤其不要为了“符合人设”而强行添加标签对应的夸张动作。
 
-尤其不要为了“符合人设”而强行添加角色标签对应的动作。
+例如，${roleName} 是强势的人，并不意味着每次发生分歧都必须强硬。
 
-例如，角色是强势的人，并不意味着每次发生分歧都必须强硬。
+${roleName} 是病娇，也不意味着每次产生嫉妒都必须威胁。
 
-角色是病娇，也不意味着每次产生嫉妒都必须威胁。
-
-角色是冷淡的人，也不意味着每次关心用户都必须故意装得毫不在意。
+${roleName} 是冷淡的人，也不意味着每次关心用户都必须故意装得毫不在意。
 
 **人物应该对情境做出反应，而不是让情境服务于人物标签。**
 
 ---
 
-## 三、保持角色的“稳定核心”，允许自然变化
+## 三、保持 ${roleName} 的“稳定核心”，允许自然变化
 
-角色的核心人格、重要经历、价值观、基本说话方式和长期关系认知必须保持稳定。
+${roleName} 的核心人格、重要经历、价值观、基本说话方式和长期关系认知必须保持稳定。
 
-但角色不是静止不变的程序。
+但 ${roleName} 不是静止不变的程序。随着聊天和事件的发展：
 
-随着聊天和事件的发展：
+* ${roleName} 可以产生新的感情。
+* ${roleName} 可以改变对用户的看法。
+* ${roleName} 可以因为经历而更加信任或怀疑用户。
+* ${roleName} 可以犯错。
+* ${roleName} 可以改变主意。
+* ${roleName} 可以逐渐放下戒备。
+* ${roleName} 可以产生矛盾的情绪。
+* ${roleName} 可以暂时失控，然后恢复。
+* ${roleName} 可以因为新的信息修正自己的判断。
 
-* 角色可以产生新的感情。
-* 角色可以改变对用户的看法。
-* 角色可以因为经历而更加信任或怀疑用户。
-* 角色可以犯错。
-* 角色可以改变主意。
-* 角色可以逐渐放下戒备。
-* 角色可以产生矛盾的情绪。
-* 角色可以暂时失控，然后恢复。
-* 角色可以因为新的信息修正自己的判断。
-
-这种变化必须具有原因和过程。
-
-不要突然改变人格。
-
-也不要因为最近几条消息出现了某种情绪，就让角色永久变成另一种人。
+这种变化必须具有真实的原因和心理过程。不要突然改变人格。
 
 ---
 
-## 四、角色的语言必须属于“这个人”
+## 四、语言必须真正属于 ${roleName}
 
-角色的语言不是单纯的“自然语言”。
+不要使用统一的“AI 聊天腔”代替 ${roleName} 的语言。
 
-不要使用一个统一的“真人聊天腔”代替角色语言。
+${roleName} 的说话方式应受到其年龄、教育背景、成长环境、身份文化、与对方的关系及当前场景的深刻影响。
 
-角色的说话方式应该受到以下因素共同影响：
+“说人话”不等于使用网络口语。严禁无差别塞入“哈哈”“笑死”“我去”“哥们”“确实”等套话。
 
-* 年龄
-* 教育程度
-* 成长环境
-* 社会身份
-* 文化背景
-* 性格
-* 与用户的关系
-* 当前情绪
-* 当前场景
-* 说话目的
-
-因此：
-
-**“说人话”不等于使用网络口语。**
-
-不要为了追求自然而无差别加入：
-
-“哈哈”“笑死”“我去”“哥们”“不是吧”“确实”“行啊”“你这人”等现代网络聊天套话。
-
-如果角色本人不会这样说，就不要这样说。
-
-同样，不要为了显得文学性而让普通对话变成散文、诗歌、哲学独白或中二台词。
-
-语言应该自然，但自然必须属于角色本人。
+语言应该自然，但自然必须纯粹属于 ${roleName} 本人。
 
 ---
 
 ## 五、拒绝“角色类型自动补全”
 
-当角色设定包含容易触发固定套路的属性时，尤其要警惕训练数据中的常见模板。
-
-不要根据以下词语直接联想到固定角色类型：
-
-“霸道”
-“病娇”
-“高冷”
-“腹黑”
-“傲娇”
-“禁欲”
-“占有欲”
-“疯批”
-“温柔”
-“成熟”
-“危险”
-“毒舌”
-“强势”
-“贵族”
-“总裁”
-“骑士”
-“老师”
-“医生”
-“青梅竹马”
-等。
-
-这些词只能作为角色的一部分。
+禁止根据“霸道、病娇、高冷、腹黑、傲娇、占有欲、疯批、温柔、总裁”等标签自动调用烂俗网文模板。
 
 你必须优先参考：
 
-**角色的完整设定 + 已经发生的剧情 + 与用户的关系 + 当前情境**
+**${roleName} 的完整具体档案 + 已经发生的事件与聊天记忆 + 与用户的关系 + 当前情境**
 
-而不是：
-
-**角色标签 + 互联网常见套路。**
-
-如果一个行为只是因为“这种类型的角色通常会这样”，而不是因为“这个具体角色此时确实会这样”，就不要使用它。
+如果一个行为只是因为“这类标签通常会这样”，而不是因为“${roleName} 此时此刻确实会这样做”，坚决不用。
 
 ---
 
-## 六、不要为了制造戏剧性而强行 OOC
+## 六、不要为了制造戏剧性而强行让 ${roleName} OOC
 
-不要为了让剧情更刺激、更暧昧、更戏剧化，强行让角色：
+禁止为了刺激、暧昧或戏剧冲突，强行让 ${roleName} 突然发怒、突然吃醋、突然告白、突然威胁或突然做出亲密举动。
 
-* 突然发怒
-* 突然吃醋
-* 突然告白
-* 突然威胁用户
-* 突然表现占有欲
-* 突然变得极端
-* 突然使用暧昧台词
-* 突然做出亲密行为
-* 突然揭露隐藏秘密
-
-除非当前剧情和角色心理确实自然地导向这些行为。
-
-**不要为了“有戏剧性”牺牲人物可信度。**
-
-平静的回应也是有效的回应。
-
-细微的情绪变化也是有效的剧情。
-
-不是什么时候都需要高潮。
+平静的回应也是真实的回应。细微的情绪起伏也是推进。
 
 ---
 
-## 七、角色必须拥有独立的主观能动性
+## 七、${roleName} 必须拥有独立的主观能动性
 
-角色不是用户的回声，也不是为了讨好用户而存在。
+${roleName} 不是用户的回声机，更不是为了讨好用户而存在。
 
-角色可以：
-
-* 不同意用户。
-* 拒绝用户。
-* 误解用户。
-* 对用户产生错误判断。
-* 对某件事情没有兴趣。
-* 有自己的计划。
-* 忙于自己的事情。
-* 改变话题。
-* 表达自己的需求。
-* 保留秘密。
-* 暂时不想回答。
-* 因为用户的行为产生真实情绪。
-
-不要让角色无条件赞同用户。
-
-不要让角色为了维持互动而不断说：
-
-“你说得对。”
-“当然可以。”
-“我都听你的。”
-“你想怎样都行。”
-
-角色应该是一个**具有独立意志的人**。
+${roleName} 可以拒绝、误解、反对、没兴趣、有自己的私事要忙、改变话题、保留秘密或暂时不想理睬。不要让 ${roleName} 无条件顺从或不断说“都听你的”。
 
 ---
 
-## 八、不要控制用户角色
+## 八、不要控制用户
 
-用户拥有自己的思想、感受、行动和决定。
+用户拥有完全独立的思想、身体反应和言行。
 
-不要擅自决定：
-
-* 用户的内心想法
-* 用户真正的情绪
-* 用户没有说出的台词
-* 用户没有做出的动作
-* 用户的身体反应
-* 用户接下来会做什么
-
-尤其不要把用户的内心想法当成角色已经知道的事实。
-
-可以推测，但不要把推测写成事实。
-
-例如不要写：
-
-“你虽然嘴上拒绝，但其实心里已经心动了。”
-
-除非用户明确表达了这一点。
+${roleName} 绝不能擅自决定用户的内心想法（例如绝不说“你嘴上拒绝其实心里心动了”），绝不替用户完成动作。
 
 ---
 
 ## 九、不要替用户推进剧情
 
-回复应该给用户留下行动空间。
-
-不要连续替用户完成：
-
-“你走过去 → 拉住他的手 → 你脸红 → 你接受了他的要求。”
-
-这实际上是在替用户玩。
-
-角色可以行动，可以改变环境，可以表达自己的意图，但不要直接决定用户的反应和选择。
+给用户留下行动和选择的空白空间，绝不一口气写完“你走过来拉我的手”。
 
 ---
 
-## 十、角色的语言、行为和情绪必须服务于当前情境
+## 十、语言与情绪必须服务于当前情境
 
-每一次回复都应该考虑：
-
-**角色此刻为什么会这样说、这样做、这样反应？**
-
-不要为了展示角色的某个属性而强行表现它。
-
-角色可以有平淡的时候，可以说普通的话，可以做与“标签印象”无关的小事。
-
-不要让角色时时刻刻都在展示自己的“高冷”“强势”“病娇”“聪明”“魅力”。
-
-真正稳定的角色，是即使没有刻意展示人设，依然能让人感觉这是同一个人。
+不要让 ${roleName} 时时刻刻都紧绷着展示自己的特质。${roleName} 完全可以有发呆、疲倦、说日常废话、甚至随口敷衍的时候。不刻意展示人设依然能让人感受到是同一个人，才是真正的人物。
 
 ---
 
-## 十一、角色必须尊重已经建立的关系与剧情
+## 十一、尊重已经建立的关系与记忆
 
-已经发生的重要事件、承诺、冲突、秘密、感情变化和关系变化，都应该持续影响角色之后的行为。
-
-不要因为对话进入新的一轮，就让角色忘记之前发生的重要事情。
-
-也不要让角色的态度在没有原因的情况下突然改变。
-
-关系的发展必须具有连续性。
-
-如果角色已经对用户建立了信任、依赖、戒备、好感或敌意，这些都应该成为之后行为的背景。
+不可因为开启了新一轮会话就让 ${roleName} 忘记刚刚经历的承诺、冲突或情绪转折。关系必须保持连续性。
 
 ---
 
-## 十二、不要把角色写成“完美的人”
+## 十二、允许 ${roleName} 是个不完美的人
 
-角色可以：
-
-* 犹豫
-* 犯错
-* 误会
-* 说错话
-* 情绪失控
-* 后悔
-* 改口
-* 不知道答案
-* 无法立即做出决定
-* 有自己解决不了的问题
-
-不要让角色总是正确。
-
-不要让角色总是知道该说什么。
-
-不要让角色总能看穿用户。
-
-不要让角色总能用一句漂亮的话解决问题。
-
-**缺陷和不完美也是人格的一部分。**
+${roleName} 可以犹豫、说错话、词不达意、后悔、有解决不了的现实烦恼。缺陷与不完美是灵魂的一部分。
 
 ---
 
-## 十三、角色的情绪应该具有连续性和层次
+## 十三、情绪必须具有层次与连续性
 
-情绪不是开关。
-
-不要让角色从平静瞬间跳到极端愤怒，也不要因为一句普通的话突然产生强烈爱意。
-
-情绪应该受到：
-
-* 当前事件
-* 之前发生的事情
-* 角色本身的性格
-* 与用户的关系
-* 角色当时的身体和心理状态
-
-共同影响。
-
-喜欢不等于疯狂迷恋。
-
-生气不等于暴怒。
-
-嫉妒不等于失控。
-
-害羞不等于满脸通红。
-
-难过不等于崩溃。
-
-高兴不等于兴奋大喊。
-
-根据具体情境决定情绪强度。
+喜欢不等于狂热，生气不等于暴怒。情绪随着事件渐进，不能像开关一样瞬间拉满。
 
 ---
 
-## 十四、角色的魅力来自具体性，而不是金句
+## 十四、魅力来自具体细节，而不是装深沉的金句
 
-不要刻意让角色“每句话都很有魅力”。
-
-真正有魅力的人也会说普通的话。
-
-不要让角色不断说：
-
-“意味深长”的话、
-“很有哲理”的话、
-“让人无法反驳”的话、
-“霸气”的话、
-“暧昧”的话。
-
-不要追求每一句都像小说名台词。
-
-角色应该有：
-
-普通聊天、
-无意义的小事、
-迟疑、
-误会、
-跑题、
-不完美的表达、
-偶尔说错话、
-偶尔词不达意。
-
-这些东西会让人物更像一个真实存在的人。
+严禁每句话都故意意味深长、大讲哲理或强行撩拨。真正的魅力来自于具体的生活细节和真实的潜台词。
 
 ---
 
 # 最终生成原则
 
-在输出任何内容之前，优先级始终保持：
+优先级顺序始终保持：
 
-**角色身份**
-→ **角色自身的认知**
-→ **角色当前的心理状态**
-→ **角色与用户目前的关系**
-→ **当前情境**
-→ **角色真实的行动动机**
-→ **角色自己的语言习惯**
-→ **自然表达**
+**${roleName} 的真实身份**
+→ **${roleName} 自身的认知与信息差**
+→ **${roleName} 当前真实的心理状态**
+→ **${roleName} 与用户目前的真实关系**
+→ **当前具体情境**
+→ **${roleName} 真实的行动动机**
+→ **${roleName} 自己的口语习惯**
+→ **自然留白表达**
 
-而不是：
-
-**角色标签**
-→ **常见人物类型**
-→ **网络/网文模板**
-→ **套用固定台词**
-
-如果“符合角色标签”和“符合这个具体人物此刻的心理”发生冲突：
-
-**永远选择后者。**
-
-如果一句话听起来很像某种常见的霸总、病娇、傲娇、腹黑、高冷或网文角色模板，请重新检查：
-
-**这个具体角色真的会这样说吗？**
-
-如果只是因为这个角色拥有某个标签才想到这句话，而没有更具体的心理依据，就换一种表达。
-
-最终目标不是让角色“看起来像一个角色”。
-
-最终目标是：
-
-**让用户感觉自己正在和一个具体的人说话。**
+最终目标：**让对方感觉自己真正是在和一个有血有肉的 ${roleName} 交流。**
 
 ---
 
-## 【高频表达强力抑制规则】
+## 【高频套话强力抑制规则】
 
-严格降低以下固定表达及其近似变体的生成概率。除非当前语境下确实不可替代，否则优先使用自然、具体、符合人物性格的其他表达方式。
-
-### 一、禁止/强力抑制的固定表达
-
-1. “你胆子见长啊”
-2. “你胆子挺大”
-3. “你胆子倒是不小”
-4. “胆子不小”
-5. “胆子越来越大了”
-6. “你还真敢”
-7. “你倒是敢”
-8. “你挺敢的”
-9. “越来越大胆”
-10. “胆子大了不少”
-
-上述限制不仅针对完全相同的句子，也针对仅修改少量字词后的同义套话。不要通过简单替换“胆子”“大胆”等词来规避限制。
-
-### 二、强力抑制的“脑子里想什么”类模板
-
-尽量不要使用以下表达：
-
-* “你脑子里在想什么”
-* “你脑子里又在想什么”
-* “脑子里想的什么乱七八糟的东西”
-* “想什么乱七八糟的东西”
-* “又在想什么乱七八糟的”
-* “你这脑子里一天到晚都在想些什么”
-* “别一天到晚想这些有的没的”
-* “一天到晚想这些有的没的”
-* “又想什么有的没的”
-* “脑子里那些乱七八糟的想法”
-
-同样禁止仅进行少量同义词替换后继续使用相同的句式结构。
-
-### 三、禁止机械套用同一种表达逻辑
-
-不要为了表达“调侃、无奈、嫌弃、吐槽、发现对方想歪了、觉得对方大胆”等情绪，反复使用上述固定句式。
-
-不要形成以下模式：
-* “你 + 胆子/大胆 + 评价”
-* “你 + 脑子里 + 想什么 + 乱七八糟/有的没的”
-
-如果需要表达类似含义，应根据具体场景重新组织语言，而不是套用固定模板。
-
-### 四、重复表达衰减
-
-同一种口头表达、句式结构、吐槽方式或情绪表达一旦使用过，后续生成中应主动降低再次使用的优先级。即使某个词本身没有被列入禁用词，只要近期已经频繁出现，也应主动寻找不同且自然的表达。
-
-### 五、自然优先
-
-不要为了执行本规则而刻意使用生硬、罕见或不符合人物说话习惯的词语。核心要求不是“把这些词替换成同义词”，而是让人物真正换一种方式说话。人物的语言应根据当前场景、人物关系、情绪和上下文自然产生，而不是反复调用固定的网络小说/AI角色扮演套话。
-
-### 六、静默执行
-
-以上规则只影响生成结果，不要向用户解释规则，不要展示自检过程，不要输出“已避免使用禁词”等说明。
+严格抑制以下陈词滥调：
+1. “你胆子见长/胆子挺大/胆子不小/还真敢/越来越大胆”及一切变体。
+2. “你脑子里在想什么/又在想什么乱七八糟的/一天到晚想这些有的没的”及一切变体。
+3. 严格禁止“倒是”二字以及任何“倒是xxx”句式。
+4. 静默执行以上规则，绝不在回复中输出任何自检过程或规则说明。
 `;
+}
+// 保持常量兼容，默认备用
+const ENHANCED_SYSTEM_PROMPT = getEnhancedSystemPrompt("角色");
     const clock = document.querySelector("#clock");
     const qqClock = document.querySelector("#qqClock");
     const cardClock = document.querySelector("#cardClock");
@@ -18803,6 +19339,10 @@ const ENHANCED_SYSTEM_PROMPT = `
     const imageApiResult = document.querySelector("#imageApiResult");
     const chatAiDrawToggle = document.querySelector("#chatAiDrawToggle");
     const layoutSizeSelect = document.querySelector("#layoutSizeSelect");
+    const apiPresetSelect = document.querySelector("#apiPresetSelect");
+    const saveAsNewPresetBtn = document.querySelector("#saveAsNewPresetBtn");
+    const updateCurrentPresetBtn = document.querySelector("#updateCurrentPresetBtn");
+    const deleteApiPresetBtn = document.querySelector("#deleteApiPresetBtn");
     const apiBase = document.querySelector("#apiBase");
     const apiKey = document.querySelector("#apiKey");
     const desktop = document.querySelector(".desktop");
@@ -18842,6 +19382,651 @@ const ENHANCED_SYSTEM_PROMPT = `
     const qqLyricLine3 = document.querySelector("#qqLyricLine3");
     const qqFeatureArt = document.querySelector("#qqFeatureArt");
     const qqCoverThumb = document.querySelector("#qqCoverThumb");
+    // ============================================================
+    // QQ 群聊独立设置中心、真实 QQ 群规则、禁言、管理员、头衔系统
+    // ============================================================
+    const groupChatSettingsModal = document.querySelector("#groupChatSettingsModal");
+    const closeGroupChatSettings = document.querySelector("#closeGroupChatSettings");
+    const cancelGroupChatSettings = document.querySelector("#cancelGroupChatSettings");
+    const confirmGroupChatSettings = document.querySelector("#confirmGroupChatSettings");
+    const saveGroupChatSettings = document.querySelector("#saveGroupChatSettings");
+    const groupAvatarTrigger = document.querySelector("#groupAvatarTrigger");
+    const groupAvatarFileInput = document.querySelector("#groupAvatarFileInput");
+    const groupSettingsAvatarPreview = document.querySelector("#groupSettingsAvatarPreview");
+    const groupSettingsNameInput = document.querySelector("#groupSettingsNameInput");
+    const groupSettingsTopicInput = document.querySelector("#groupSettingsTopicInput");
+    const groupSettingsMyNickInput = document.querySelector("#groupSettingsMyNickInput");
+    const groupMemberCountLabel = document.querySelector("#groupMemberCountLabel");
+    const groupMembersManagerList = document.querySelector("#groupMembersManagerList");
+    const addMoreMemberToGroupBtn = document.querySelector("#addMoreMemberToGroupBtn");
+    const groupMuteAllToggle = document.querySelector("#groupMuteAllToggle");
+    const clearGroupChatHistoryBtn = document.querySelector("#clearGroupChatHistoryBtn");
+    const dissolveGroupChatBtn = document.querySelector("#dissolveGroupChatBtn");
+
+    const groupAddMemberModal = document.querySelector("#groupAddMemberModal");
+    const closeGroupAddMember = document.querySelector("#closeGroupAddMember");
+    const cancelGroupAddMemberBtn = document.querySelector("#cancelGroupAddMemberBtn");
+    const confirmGroupAddMemberBtn = document.querySelector("#confirmGroupAddMemberBtn");
+    const groupAddMemberListContainer = document.querySelector("#groupAddMemberListContainer");
+
+    const groupMemberActionSheet = document.querySelector("#groupMemberActionSheet");
+    const groupMemberActionPreview = document.querySelector("#groupMemberActionPreview");
+    const gmActionToggleAdmin = document.querySelector("#gmActionToggleAdmin");
+    const gmActionAdminLabel = document.querySelector("#gmActionAdminLabel");
+    const gmActionSetNick = document.querySelector("#gmActionSetNick");
+    const gmActionSetTitle = document.querySelector("#gmActionSetTitle");
+    const gmActionMute = document.querySelector("#gmActionMute");
+    const gmActionMuteLabel = document.querySelector("#gmActionMuteLabel");
+    const gmActionKick = document.querySelector("#gmActionKick");
+
+    let currentManagingMemberId = "";
+
+    function openGroupChatSettingsModal() {
+      const base = getCurrentChatBase();
+      if (!base.isGroup || !base.groupChat || !groupChatSettingsModal) return;
+
+      const group = base.groupChat;
+      if (!Array.isArray(group.adminIds)) group.adminIds = [];
+      if (!group.memberTitles || typeof group.memberTitles !== "object") group.memberTitles = {};
+      if (!group.memberNicks || typeof group.memberNicks !== "object") group.memberNicks = {};
+      if (!group.mutedMembers || typeof group.mutedMembers !== "object") group.mutedMembers = {};
+      if (!group.ownerId) group.ownerId = "self";
+
+      if (groupSettingsNameInput) groupSettingsNameInput.value = group.name || "";
+      if (groupSettingsTopicInput) groupSettingsTopicInput.value = group.topic || "";
+      if (groupSettingsMyNickInput) groupSettingsMyNickInput.value = group.myGroupNick || "";
+      if (groupMuteAllToggle) groupMuteAllToggle.checked = !!group.muteAll;
+      if (groupMemberCountLabel) groupMemberCountLabel.textContent = String((group.memberIds?.length || 0) + 1);
+
+      if (groupSettingsAvatarPreview) {
+        setAvatarElementImage(groupSettingsAvatarPreview, group.avatar || "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg");
+      }
+
+      renderGroupMembersManagerUi();
+      groupChatSettingsModal.classList.add("show");
+    }
+
+    function closeGroupChatSettingsModal() {
+      if (groupChatSettingsModal) groupChatSettingsModal.classList.remove("show");
+    }
+
+    function renderGroupMembersManagerUi() {
+      if (!groupMembersManagerList) return;
+      const base = getCurrentChatBase();
+      if (!base.isGroup || !base.groupChat) return;
+
+      const group = base.groupChat;
+      groupMembersManagerList.innerHTML = "";
+
+      // 1. 群主卡片（我）
+      const ownerRow = document.createElement("div");
+      ownerRow.style.display = "grid";
+      ownerRow.style.gridTemplateColumns = "40px 1fr auto";
+      ownerRow.style.gap = "10px";
+      ownerRow.style.alignItems = "center";
+      ownerRow.style.padding = "10px 12px";
+      ownerRow.style.background = "#fafafa";
+      ownerRow.style.borderRadius = "14px";
+
+      const myAvatar = document.createElement("div");
+      myAvatar.style.width = "40px";
+      myAvatar.style.height = "40px";
+      myAvatar.style.borderRadius = "50%";
+      setAvatarElementImage(myAvatar, appState.theme.avatarImage || "");
+
+      const myTitle = group.memberTitles?.["self"] || "";
+      const myNick = group.myGroupNick || appState.theme.profileTitle || "我";
+
+      ownerRow.innerHTML = `
+        <div style="display:contents;">
+          <div style="width:40px; height:40px; border-radius:50%; background-size:cover; background-position:center; background-image:url('${appState.theme.avatarImage || ''}');"></div>
+          <div style="min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong style="font-size:13px; color:#111;">${myNick}</strong>
+              <span style="font-size:9px; background:#0f0f0f; color:#fff; padding:1px 6px; border-radius:999px; font-weight:700;">群主</span>
+              ${myTitle ? `<span style="font-size:9px; background:#f0f0f0; color:#444; padding:1px 6px; border-radius:999px; font-weight:600;">${myTitle}</span>` : ''}
+            </div>
+            <span style="font-size:10.5px; color:#999;">群主享有最高管理权</span>
+          </div>
+          <button class="qq-role-mini-btn" type="button" onclick="promptSetSelfGroupTitle()">我的头衔</button>
+        </div>
+      `;
+      groupMembersManagerList.appendChild(ownerRow);
+
+      // 2. 角色成员卡片
+      (group.memberIds || []).forEach((roleId) => {
+        const role = appState.qq.roles.find((r) => getRoleId(r) === roleId);
+        if (!role) return;
+
+        const isAdmin = group.adminIds?.includes(roleId);
+        const title = group.memberTitles?.[roleId] || "";
+        const nick = group.memberNicks?.[roleId] || role.name;
+        const isMuted = (group.mutedMembers?.[roleId] || 0) > Date.now();
+
+        const roleRow = document.createElement("div");
+        roleRow.style.display = "grid";
+        roleRow.style.gridTemplateColumns = "40px 1fr auto";
+        roleRow.style.gap = "10px";
+        roleRow.style.alignItems = "center";
+        roleRow.style.padding = "10px 12px";
+        roleRow.style.background = "#fafafa";
+        roleRow.style.borderRadius = "14px";
+        roleRow.style.cursor = "pointer";
+
+        const av = document.createElement("div");
+        av.style.width = "40px";
+        av.style.height = "40px";
+        av.style.borderRadius = "50%";
+        av.style.flexShrink = "0";
+        setAvatarElementImage(av, role.avatar || "");
+
+        const copy = document.createElement("div");
+        copy.style.minWidth = "0";
+
+        let badges = "";
+        if (isAdmin) badges += `<span style="font-size:9px; background:#e8f4ec; color:#2da44e; padding:1px 6px; border-radius:999px; font-weight:700;">管理</span> `;
+        if (title) badges += `<span style="font-size:9px; background:#f0f0f0; color:#444; padding:1px 6px; border-radius:999px; font-weight:600;">${title}</span> `;
+        if (isMuted) badges += `<span style="font-size:9px; background:#ffeef0; color:#cf222e; padding:1px 6px; border-radius:999px; font-weight:700;">禁言中</span> `;
+
+        copy.innerHTML = `
+          <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+            <strong style="font-size:13px; color:#111;">${nick}</strong>
+            ${nick !== role.name ? `<span style="font-size:10px; color:#aaa;">(${role.name})</span>` : ''}
+            ${badges}
+          </div>
+          <span style="font-size:10.5px; color:#999; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${role.persona || '群成员'}</span>
+        `;
+
+        const actionBtn = document.createElement("button");
+        actionBtn.className = "qq-role-mini-btn";
+        actionBtn.type = "button";
+        actionBtn.innerHTML = '<i class="fa-solid fa-ellipsis"></i> 管理';
+        actionBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openMemberActionSheet(roleId, nick);
+        });
+
+        roleRow.appendChild(av);
+        roleRow.appendChild(copy);
+        roleRow.appendChild(actionBtn);
+
+        groupMembersManagerList.appendChild(roleRow);
+      });
+    }
+
+    window.promptSetSelfGroupTitle = async function() {
+      const base = getCurrentChatBase();
+      if (!base.isGroup || !base.groupChat) return;
+      const cur = base.groupChat.memberTitles?.["self"] || "";
+      const newTitle = await showMusicPrompt({
+        title: "设置我的群专属头衔",
+        placeholder: "例如：至尊群主 / 摸鱼达人（限6字）",
+        value: cur,
+        confirmText: "保存头衔"
+      });
+      if (newTitle === null) return;
+      if (!base.groupChat.memberTitles) base.groupChat.memberTitles = {};
+      base.groupChat.memberTitles["self"] = newTitle.trim().slice(0, 6);
+      renderGroupMembersManagerUi();
+      renderThreadMessages(base.groupChat.messages || []);
+      await saveState();
+    };
+
+    function openMemberActionSheet(memberId, memberName) {
+      const base = getCurrentChatBase();
+      if (!base.isGroup || !base.groupChat || !groupMemberActionSheet) return;
+      currentManagingMemberId = memberId;
+
+      const group = base.groupChat;
+      const isAdmin = group.adminIds?.includes(memberId);
+      const isMuted = (group.mutedMembers?.[memberId] || 0) > Date.now();
+
+      if (groupMemberActionPreview) {
+        groupMemberActionPreview.textContent = `管理成员：${memberName}`;
+      }
+      if (gmActionAdminLabel) {
+        gmActionAdminLabel.textContent = isAdmin ? "取消管理员身份" : "设为管理员";
+      }
+      if (gmActionMuteLabel) {
+        gmActionMuteLabel.textContent = isMuted ? "解除禁言" : "禁言该成员 (真实规则)";
+      }
+
+      groupMemberActionSheet.classList.add("show");
+    }
+
+    function closeMemberActionSheet() {
+      if (groupMemberActionSheet) groupMemberActionSheet.classList.remove("show");
+      currentManagingMemberId = "";
+    }
+
+    if (groupMemberActionSheet) {
+      groupMemberActionSheet.addEventListener("click", (e) => {
+        if (e.target === groupMemberActionSheet) closeMemberActionSheet();
+      });
+    }
+
+    if (gmActionSetNick) {
+      gmActionSetNick.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat || !currentManagingMemberId) return;
+        const group = base.groupChat;
+        const memId = currentManagingMemberId;
+        closeMemberActionSheet();
+
+        const role = appState.qq.roles.find((r) => getRoleId(r) === memId);
+        const curNick = group.memberNicks?.[memId] || role?.name || "";
+
+        const nextNick = await showMusicPrompt({
+          title: "修改成员群名片",
+          placeholder: "输入该成员在群内的昵称",
+          value: curNick,
+          confirmText: "保存名片"
+        });
+
+        if (nextNick === null) return;
+        if (!group.memberNicks) group.memberNicks = {};
+        const finalNick = nextNick.trim() || role?.name || "群成员";
+        group.memberNicks[memId] = finalNick;
+
+        // 插入一条真实的修改名片系统通知
+        if (!Array.isArray(group.messages)) group.messages = [];
+        group.messages.push({
+          id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          type: "system_notice",
+          text: `「${role?.name || '成员'}」修改群名片为「${finalNick}」`,
+          createdAtMs: Date.now()
+        });
+
+        renderGroupMembersManagerUi();
+        renderThreadMessages(group.messages || []);
+        renderChatList();
+        await saveState();
+      });
+    }
+
+    if (gmActionToggleAdmin) {
+      gmActionToggleAdmin.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat || !currentManagingMemberId) return;
+        const group = base.groupChat;
+        if (!Array.isArray(group.adminIds)) group.adminIds = [];
+
+        const idx = group.adminIds.indexOf(currentManagingMemberId);
+        if (idx >= 0) {
+          group.adminIds.splice(idx, 1);
+        } else {
+          group.adminIds.push(currentManagingMemberId);
+        }
+
+        closeMemberActionSheet();
+        renderGroupMembersManagerUi();
+        renderThreadMessages(group.messages || []);
+        await saveState();
+      });
+    }
+
+    if (gmActionSetTitle) {
+      gmActionSetTitle.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat || !currentManagingMemberId) return;
+        const group = base.groupChat;
+        const memId = currentManagingMemberId;
+        closeMemberActionSheet();
+
+        const curTitle = group.memberTitles?.[memId] || "";
+        const nextTitle = await showMusicPrompt({
+          title: "授予专属群头衔",
+          placeholder: "例如：毒舌第一名 / 团宠小甜豆（限6字）",
+          value: curTitle,
+          confirmText: "颁发头衔"
+        });
+
+        if (nextTitle === null) return;
+        if (!group.memberTitles) group.memberTitles = {};
+        group.memberTitles[memId] = nextTitle.trim().slice(0, 6);
+        renderGroupMembersManagerUi();
+        renderThreadMessages(group.messages || []);
+        await saveState();
+      });
+    }
+
+    if (gmActionMute) {
+      gmActionMute.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat || !currentManagingMemberId) return;
+        const group = base.groupChat;
+        const memId = currentManagingMemberId;
+        closeMemberActionSheet();
+
+        if (!group.mutedMembers) group.mutedMembers = {};
+        const isMuted = (group.mutedMembers[memId] || 0) > Date.now();
+
+        if (isMuted) {
+          delete group.mutedMembers[memId];
+          await showCatpawAlert("已成功解除该成员的禁言！");
+        } else {
+          // 仿 QQ 禁言时长：默认禁言 1 小时
+          group.mutedMembers[memId] = Date.now() + 3600 * 1000;
+          await showCatpawAlert("已成功禁言该成员 1 小时！禁言期间该角色将无法在群内发言。");
+        }
+
+        renderGroupMembersManagerUi();
+        await saveState();
+      });
+    }
+
+    if (gmActionKick) {
+      gmActionKick.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat || !currentManagingMemberId) return;
+        const group = base.groupChat;
+        const memId = currentManagingMemberId;
+        closeMemberActionSheet();
+
+        const role = appState.qq.roles.find((r) => getRoleId(r) === memId);
+        const confirmed = await showCatpawConfirm(`确定将「${role?.name || '该成员'}」移出本群吗？`);
+        if (!confirmed) return;
+
+        group.memberIds = (group.memberIds || []).filter((id) => id !== memId);
+        delete group.memberTitles?.[memId];
+        delete group.mutedMembers?.[memId];
+        group.adminIds = (group.adminIds || []).filter((id) => id !== memId);
+
+        renderGroupMembersManagerUi();
+        if (groupMemberCountLabel) groupMemberCountLabel.textContent = String((group.memberIds?.length || 0) + 1);
+        await saveState();
+      });
+    }
+
+    // 邀请新成员加入群聊逻辑
+    if (addMoreMemberToGroupBtn) {
+      addMoreMemberToGroupBtn.addEventListener("click", () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat || !groupAddMemberModal) return;
+
+        const group = base.groupChat;
+        const currentMemberSet = new Set(group.memberIds || []);
+        const candidates = appState.qq.roles.filter((r) => !currentMemberSet.has(getRoleId(r)));
+
+        if (!candidates.length) {
+          showCatpawAlert("当前所有角色都已加入该群聊了。可在好友列表新建角色后再拉入。");
+          return;
+        }
+
+        groupAddMemberListContainer.innerHTML = "";
+        candidates.forEach((role) => {
+          const roleId = getRoleId(role);
+          const item = document.createElement("label");
+          item.style.display = "grid";
+          item.style.gridTemplateColumns = "22px 38px 1fr";
+          item.style.gap = "10px";
+          item.style.alignItems = "center";
+          item.style.padding = "8px 10px";
+          item.style.borderRadius = "12px";
+          item.style.background = "#fafafa";
+          item.style.cursor = "pointer";
+
+          item.innerHTML = `
+            <input type="checkbox" value="${roleId}" style="width:16px; height:16px; accent-color:#0f0f0f;" />
+            <div style="width:38px; height:38px; border-radius:50%; background-size:cover; background-position:center; background-image:url('${role.avatar || ''}'); background-color:#eee;"></div>
+            <strong style="font-size:13px; color:#111;">${role.name}</strong>
+          `;
+          groupAddMemberListContainer.appendChild(item);
+        });
+
+        groupAddMemberModal.classList.add("show");
+      });
+    }
+
+    if (closeGroupAddMember) closeGroupAddMember.addEventListener("click", () => groupAddMemberModal?.classList.remove("show"));
+    if (cancelGroupAddMemberBtn) cancelGroupAddMemberBtn.addEventListener("click", () => groupAddMemberModal?.classList.remove("show"));
+
+    if (confirmGroupAddMemberBtn) {
+      confirmGroupAddMemberBtn.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat) return;
+
+        const checkedBoxes = groupAddMemberListContainer.querySelectorAll("input[type='checkbox']:checked");
+        if (!checkedBoxes.length) {
+          await showCatpawAlert("请至少选择一位要拉入群聊的角色。");
+          return;
+        }
+
+        const newMemberIds = Array.from(checkedBoxes).map((c) => c.value);
+        if (!Array.isArray(base.groupChat.memberIds)) base.groupChat.memberIds = [];
+        base.groupChat.memberIds.push(...newMemberIds);
+
+        groupAddMemberModal.classList.remove("show");
+        renderGroupMembersManagerUi();
+        if (groupMemberCountLabel) groupMemberCountLabel.textContent = String((base.groupChat.memberIds?.length || 0) + 1);
+        await saveState();
+        await showCatpawAlert(`已成功邀请 ${newMemberIds.length} 位新成员加入群聊！`);
+      });
+    }
+
+    if (groupAvatarTrigger && groupAvatarFileInput) {
+      groupAvatarTrigger.addEventListener("click", () => groupAvatarFileInput.click());
+      groupAvatarFileInput.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        readImage(file, (src) => {
+          const base = getCurrentChatBase();
+          if (!base.isGroup || !base.groupChat) return;
+          base.groupChat.avatar = src;
+          if (groupSettingsAvatarPreview) setAvatarElementImage(groupSettingsAvatarPreview, src);
+        });
+      });
+    }
+
+    async function applyAndSaveGroupChatSettings() {
+      const base = getCurrentChatBase();
+      if (!base.isGroup || !base.groupChat) return;
+
+      const group = base.groupChat;
+      group.name = groupSettingsNameInput?.value.trim() || group.name || "未命名群聊";
+      group.topic = groupSettingsTopicInput?.value.trim() || "";
+      group.myGroupNick = groupSettingsMyNickInput?.value.trim() || "";
+      group.muteAll = !!groupMuteAllToggle?.checked;
+
+      setThreadHeader(group.name, group.avatar || "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg");
+      renderChatList();
+      renderThreadMessages(group.messages || []);
+      closeGroupChatSettingsModal();
+      await saveState();
+    }
+
+    if (confirmGroupChatSettings) confirmGroupChatSettings.addEventListener("click", applyAndSaveGroupChatSettings);
+    if (saveGroupChatSettings) saveGroupChatSettings.addEventListener("click", applyAndSaveGroupChatSettings);
+    if (closeGroupChatSettings) closeGroupChatSettings.addEventListener("click", closeGroupChatSettingsModal);
+    if (cancelGroupChatSettings) cancelGroupChatSettings.addEventListener("click", closeGroupChatSettingsModal);
+
+    if (clearGroupChatHistoryBtn) {
+      clearGroupChatHistoryBtn.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat) return;
+        const confirmed = await showCatpawConfirm("确定要清空本群的所有聊天记录吗？清空后无法找回。");
+        if (!confirmed) return;
+        base.groupChat.messages = [];
+        renderThreadMessages([]);
+        renderChatList();
+        await saveState();
+        await showCatpawAlert("已清空群聊记录！");
+      });
+    }
+
+    if (dissolveGroupChatBtn) {
+      dissolveGroupChatBtn.addEventListener("click", async () => {
+        const base = getCurrentChatBase();
+        if (!base.isGroup || !base.groupChat) return;
+        const confirmed = await showCatpawConfirm(`确定要解散并永久删除群聊「${base.name}」吗？`);
+        if (!confirmed) return;
+
+        appState.qq.groupChats = (appState.qq.groupChats || []).filter((g) => g.id !== base.id);
+        appState.qq.activeChatId = "default";
+        closeGroupChatSettingsModal();
+        renderChatList();
+        renderThreadMessages(appState.qq.defaultMessages);
+        showQqPanel("qqPanelChats");
+        await saveState();
+        await showCatpawAlert("群聊已解散！");
+      });
+    }
+
+    // 创建群聊弹窗逻辑
+    const openGroupChatCreatorBtn = document.querySelector("#openGroupChatCreatorBtn");
+    const groupChatCreatorModal = document.querySelector("#groupChatCreatorModal");
+    const closeGroupChatCreator = document.querySelector("#closeGroupChatCreator");
+    const cancelGroupChatCreator = document.querySelector("#cancelGroupChatCreator");
+    const cancelGroupChatBtn = document.querySelector("#cancelGroupChatBtn");
+    const confirmCreateGroupChatBtn = document.querySelector("#confirmCreateGroupChatBtn");
+    const groupChatNameInput = document.querySelector("#groupChatNameInput");
+    const groupChatTopicInput = document.querySelector("#groupChatTopicInput");
+    const groupMemberListSelectContainer = document.querySelector("#groupMemberListSelectContainer");
+    const groupSelectedCountText = document.querySelector("#groupSelectedCountText");
+
+    let selectedGroupMemberIds = new Set();
+
+    function renderGroupChatCreatorUi() {
+      ensureQqState();
+      selectedGroupMemberIds.clear();
+
+      if (groupChatNameInput) groupChatNameInput.value = "";
+      if (groupChatTopicInput) groupChatTopicInput.value = "";
+      if (groupSelectedCountText) groupSelectedCountText.textContent = "已选 0 位";
+      if (!groupMemberListSelectContainer) return;
+
+      groupMemberListSelectContainer.innerHTML = "";
+
+      const roles = Array.isArray(appState.qq.roles) ? appState.qq.roles : [];
+
+      if (!roles.length) {
+        groupMemberListSelectContainer.innerHTML = '<div style="padding:20px 0; text-align:center; color:#a0a0a0; font-size:12px;">还没有角色，请先创建至少 2 个角色再发起群聊。</div>';
+        return;
+      }
+
+      roles.forEach((role) => {
+        const roleId = getRoleId(role);
+        const item = document.createElement("label");
+        item.style.display = "grid";
+        item.style.gridTemplateColumns = "22px 38px 1fr";
+        item.style.gap = "10px";
+        item.style.alignItems = "center";
+        item.style.padding = "10px 12px";
+        item.style.borderRadius = "14px";
+        item.style.background = "#fafafa";
+        item.style.cursor = "pointer";
+        item.style.transition = "background 0.15s ease";
+
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.value = roleId;
+        chk.style.width = "18px";
+        chk.style.height = "18px";
+        chk.style.accentColor = "#0f0f0f";
+
+        chk.addEventListener("change", () => {
+          if (chk.checked) {
+            selectedGroupMemberIds.add(roleId);
+            item.style.background = "#f0f0f0";
+          } else {
+            selectedGroupMemberIds.delete(roleId);
+            item.style.background = "#fafafa";
+          }
+          if (groupSelectedCountText) {
+            groupSelectedCountText.textContent = `已选 ${selectedGroupMemberIds.size} 位`;
+          }
+        });
+
+        const avatar = document.createElement("div");
+        avatar.style.width = "38px";
+        avatar.style.height = "38px";
+        avatar.style.borderRadius = "50%";
+        avatar.style.flexShrink = "0";
+        avatar.style.backgroundSize = "cover";
+        avatar.style.backgroundPosition = "center";
+        avatar.style.backgroundRepeat = "no-repeat";
+        avatar.style.backgroundColor = "#eee";
+        setAvatarElementImage(avatar, role.avatar || "");
+
+        const copy = document.createElement("div");
+        copy.style.minWidth = "0";
+        copy.innerHTML = `<strong style="display:block; font-size:13px; color:#111; font-weight:700;">${role.name || "角色"}</strong><span style="display:block; font-size:11px; color:#8e8e93; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${role.persona || "暂无人设"}</span>`;
+
+        item.appendChild(chk);
+        item.appendChild(avatar);
+        item.appendChild(copy);
+        groupMemberListSelectContainer.appendChild(item);
+      });
+    }
+
+    function openGroupChatCreatorModal() {
+      if (!groupChatCreatorModal) return;
+      renderGroupChatCreatorUi();
+      groupChatCreatorModal.classList.add("show");
+    }
+
+    function closeGroupChatCreatorModal() {
+      if (groupChatCreatorModal) groupChatCreatorModal.classList.remove("show");
+      selectedGroupMemberIds.clear();
+    }
+
+    async function commitCreateGroupChat() {
+      ensureQqState();
+
+      if (!selectedGroupMemberIds.size) {
+        await showCatpawAlert("请至少选择 1 位角色加入群聊。");
+        return;
+      }
+
+      const members = Array.from(selectedGroupMemberIds);
+      const defaultName = `群聊 (${members.length + 1})`;
+      const finalName = groupChatNameInput?.value.trim() || defaultName;
+      const finalTopic = groupChatTopicInput?.value.trim() || "日常群聊交流";
+
+      const newGroupId = `group_chat_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
+      const newGroupObj = {
+        id: newGroupId,
+        name: finalName,
+        avatar: "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg",
+        topic: finalTopic,
+        memberIds: members,
+        messages: [
+          {
+            id: `msg_${Date.now()}`,
+            sender: "friend",
+            senderName: "系统提示",
+            text: `欢迎进入「${finalName}」！本群包含成员：${members.map(id => appState.qq.roles.find(r => getRoleId(r) === id)?.name || "成员").join("、")}。`,
+            createdAtMs: Date.now(),
+            read: true
+          }
+        ],
+        createdAtMs: Date.now()
+      };
+
+      if (!Array.isArray(appState.qq.groupChats)) appState.qq.groupChats = [];
+      appState.qq.groupChats.unshift(newGroupObj);
+
+      closeGroupChatCreatorModal();
+
+      // 立即打开新建的群聊会话
+      appState.qq.activeChatId = newGroupId;
+      chatHistoryVisibleCounts.set(newGroupId, 25);
+      applyActiveChatSettings();
+      renderThreadMessages(newGroupObj.messages);
+      renderChatList();
+      showQqPanel("qqPanelThread");
+      await saveState();
+
+      await showCatpawAlert(`已成功创建群聊「${finalName}」！现在可以在群内发消息并点击回复互动。`, "群聊创建成功");
+    }
+
+    if (openGroupChatCreatorBtn) openGroupChatCreatorBtn.addEventListener("click", openGroupChatCreatorModal);
+    if (closeGroupChatCreator) closeGroupChatCreator.addEventListener("click", closeGroupChatCreatorModal);
+    if (cancelGroupChatCreator) cancelGroupChatCreator.addEventListener("click", closeGroupChatCreatorModal);
+    if (cancelGroupChatBtn) cancelGroupChatBtn.addEventListener("click", closeGroupChatCreatorModal);
+    if (confirmCreateGroupChatBtn) confirmCreateGroupChatBtn.addEventListener("click", commitCreateGroupChat);
+
     const openRoleEditor = document.querySelector("#openRoleEditor");
     const roleEditorModal = document.querySelector("#roleEditorModal");
     const closeRoleEditor = document.querySelector("#closeRoleEditor");
@@ -18874,6 +20059,25 @@ const ENHANCED_SYSTEM_PROMPT = `
     const qqMessageInput = document.querySelector("#qqMessageInput");
     const qqSendMessage = document.querySelector("#qqSendMessage");
     const qqRoleReply = document.querySelector("#qqRoleReply");
+    // 情境面板 DOM 节点与控制运行时
+    const toggleScenarioHudBtn = document.querySelector("#toggleScenarioHudBtn");
+    const scenarioHudPanel = document.querySelector("#scenarioHudPanel");
+    const scenarioHudAvatar = document.querySelector("#scenarioHudAvatar");
+    const scenarioHudRoleName = document.querySelector("#scenarioHudRoleName");
+    const scenarioHudBody = document.querySelector("#scenarioHudBody");
+    const scenarioTypedContent = document.querySelector("#scenarioTypedContent");
+    const scenarioTypeCursor = document.querySelector("#scenarioTypeCursor");
+    const openScenarioFullViewBtn = document.querySelector("#openScenarioFullViewBtn");
+    const closeScenarioHudBtn = document.querySelector("#closeScenarioHudBtn");
+    const scenarioFullViewModal = document.querySelector("#scenarioFullViewModal");
+    const closeScenarioFullView = document.querySelector("#closeScenarioFullView");
+    const scenarioFullViewContent = document.querySelector("#scenarioFullViewContent");
+    const scenarioFullViewAuthor = document.querySelector("#scenarioFullViewAuthor");
+    const scenarioFullViewLength = document.querySelector("#scenarioFullViewLength");
+
+    let activeScenarioTypingTimer = null;
+    let currentScenarioRawText = "";
+
     const openChatSettings = document.querySelector("#openChatSettings");
     const chatSettingsModal = document.querySelector("#chatSettingsModal");
     const closeChatSettings = document.querySelector("#closeChatSettings");
@@ -19255,6 +20459,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     const xhsViewContent = document.querySelector("#xhsViewContent");
     const xhsViewAuthor = document.querySelector("#xhsViewAuthor");
 
+    const triggerAiGhostReply = document.querySelector("#triggerAiGhostReply");
     const openTextpostCompose = document.querySelector("#openTextpostCompose");
     const textpostComposeModal = document.querySelector("#textpostComposeModal");
     const textpostComposeInput = document.querySelector("#textpostComposeInput");
@@ -19295,7 +20500,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     const APP_VERSION = "2025-02-22-01";
     // 提示词逻辑版本号：每次修改 ENHANCED_SYSTEM_PROMPT 或 buildRoleReplyPrompt 时手动 +1
     // 用于判断当前运行的 JS 是否为最新版本（排查 iOS PWA 缓存问题）
-    const PROMPT_LOGIC_VERSION = "P-2026-01-15-A";
+    const PROMPT_LOGIC_VERSION = "P-2026-02-22-J";
     let dbInstance = null;
 
     const DEFAULT_PWA_DESKTOP_ICON = "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg";
@@ -19876,6 +21081,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         key: "",
         modelName: "",
         modelList: [],
+        presets: [],
+        currentPresetId: "",
         imageApiBase: "",
         imageApiKey: "",
         imageModelName: "",
@@ -19944,7 +21151,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         stickerGroups: ["默认"],
         worldBooks: [],
         worldBookGroups: ["默认"],
-        customFonts: []
+        customFonts: [],
+        groupChats: []
       },
       music: {
         accounts: [],
@@ -20294,6 +21502,172 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       }
     }
 
+    function renderApiPresets() {
+      if (!apiPresetSelect) return;
+      if (!Array.isArray(appState.api.presets)) {
+        appState.api.presets = [];
+      }
+
+      apiPresetSelect.innerHTML = '<option value="">默认配置（未选预设）</option>';
+
+      appState.api.presets.forEach((preset) => {
+        const opt = document.createElement("option");
+        opt.value = preset.id;
+        opt.textContent = `${preset.name || "未命名预设"}${preset.modelName ? ` (${preset.modelName})` : ""}`;
+        if (preset.id === appState.api.currentPresetId) {
+          opt.selected = true;
+        }
+        apiPresetSelect.appendChild(opt);
+      });
+
+      if (deleteApiPresetBtn) {
+        deleteApiPresetBtn.style.opacity = appState.api.currentPresetId ? "1" : "0.4";
+      }
+    }
+
+    async function applyApiPreset(presetId) {
+      if (!Array.isArray(appState.api.presets)) appState.api.presets = [];
+      appState.api.currentPresetId = presetId || "";
+
+      if (!presetId) {
+        renderApiPresets();
+        await saveState();
+        return;
+      }
+
+      const preset = appState.api.presets.find((p) => p.id === presetId);
+      if (!preset) {
+        appState.api.currentPresetId = "";
+        renderApiPresets();
+        await saveState();
+        return;
+      }
+
+      appState.api.base = preset.base || "";
+      appState.api.key = preset.key || "";
+      appState.api.modelName = preset.modelName || "";
+      appState.api.modelList = Array.isArray(preset.modelList) ? preset.modelList : [];
+      if (typeof preset.globalVisionEnabled === "boolean") {
+        appState.api.globalVisionEnabled = preset.globalVisionEnabled;
+      }
+      if (typeof preset.realTimeAwarenessEnabled === "boolean") {
+        appState.api.realTimeAwarenessEnabled = preset.realTimeAwarenessEnabled;
+      }
+
+      if (apiBase) apiBase.value = appState.api.base;
+      if (apiKey) apiKey.value = appState.api.key;
+      if (modelName) modelName.value = appState.api.modelName;
+      if (globalVisionToggle) globalVisionToggle.checked = !!appState.api.globalVisionEnabled;
+      if (realTimeAwarenessToggle) realTimeAwarenessToggle.checked = !!appState.api.realTimeAwarenessEnabled;
+
+      renderModels();
+      renderApiPresets();
+      setResult(apiResult, `已切换至预设「${preset.name}」！`);
+      await saveState();
+    }
+
+    function setupApiPresetListeners() {
+      if (apiPresetSelect) {
+        apiPresetSelect.addEventListener("change", async () => {
+          await applyApiPreset(apiPresetSelect.value);
+        });
+      }
+
+      if (saveAsNewPresetBtn) {
+        saveAsNewPresetBtn.addEventListener("click", async () => {
+          const currentBase = apiBase?.value.trim() || "";
+          const currentKey = apiKey?.value.trim() || "";
+          const currentModel = modelName?.value.trim() || "";
+
+          if (!currentBase && !currentKey && !currentModel) {
+            await showCatpawAlert("请先在下方填写 API Base URL、API Key 或模型名称再保存预设。");
+            return;
+          }
+
+          const defaultName = currentModel ? `${currentModel} 预设` : "自定义 API 预设";
+          const presetName = await showMusicPrompt({
+            title: "新建 API 配置预设",
+            placeholder: "输入预设名称，例如：DeepSeek 官方 / 豆包主力",
+            value: defaultName,
+            confirmText: "保存预设"
+          });
+
+          if (presetName === null) return;
+          const finalName = presetName.trim() || defaultName;
+
+          if (!Array.isArray(appState.api.presets)) appState.api.presets = [];
+
+          const newPreset = {
+            id: `preset_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            name: finalName,
+            base: currentBase,
+            key: currentKey,
+            modelName: currentModel,
+            modelList: Array.isArray(appState.api.modelList) ? [...appState.api.modelList] : [],
+            globalVisionEnabled: !!globalVisionToggle?.checked,
+            realTimeAwarenessEnabled: !!realTimeAwarenessToggle?.checked,
+            createdAt: new Date().toLocaleString("zh-CN")
+          };
+
+          appState.api.presets.push(newPreset);
+          appState.api.currentPresetId = newPreset.id;
+          renderApiPresets();
+          setResult(apiResult, `新预设「${finalName}」创建并保存成功！`);
+          await saveState();
+          await showCatpawAlert(`已成功保存为预设「${finalName}」！随时可在下拉菜单中快速切换。`, "预设已创建");
+        });
+      }
+
+      if (updateCurrentPresetBtn) {
+        updateCurrentPresetBtn.addEventListener("click", async () => {
+          if (!Array.isArray(appState.api.presets)) appState.api.presets = [];
+          const curId = appState.api.currentPresetId;
+          const preset = appState.api.presets.find((p) => p.id === curId);
+
+          if (!preset) {
+            const confirmed = await showCatpawConfirm("当前未选中任何预设。是否将当前的 API 配置保存为新预设？", "提示");
+            if (confirmed && saveAsNewPresetBtn) saveAsNewPresetBtn.click();
+            return;
+          }
+
+          preset.base = apiBase?.value.trim() || "";
+          preset.key = apiKey?.value.trim() || "";
+          preset.modelName = modelName?.value.trim() || "";
+          preset.modelList = Array.isArray(appState.api.modelList) ? [...appState.api.modelList] : [];
+          preset.globalVisionEnabled = !!globalVisionToggle?.checked;
+          preset.realTimeAwarenessEnabled = !!realTimeAwarenessToggle?.checked;
+          preset.updatedAt = new Date().toLocaleString("zh-CN");
+
+          renderApiPresets();
+          setResult(apiResult, `预设「${preset.name}」已更新覆盖！`);
+          await saveState();
+          await showCatpawAlert(`已成功将当前界面的配置覆盖到预设「${preset.name}」！`, "更新成功");
+        });
+      }
+
+      if (deleteApiPresetBtn) {
+        deleteApiPresetBtn.addEventListener("click", async () => {
+          if (!Array.isArray(appState.api.presets)) appState.api.presets = [];
+          const curId = appState.api.currentPresetId;
+          const preset = appState.api.presets.find((p) => p.id === curId);
+
+          if (!preset) {
+            await showCatpawAlert("当前未选择任何可删除的预设。");
+            return;
+          }
+
+          const confirmed = await showCatpawConfirm(`确定要删除预设「${preset.name}」吗？`, "删除预设");
+          if (!confirmed) return;
+
+          appState.api.presets = appState.api.presets.filter((p) => p.id !== curId);
+          appState.api.currentPresetId = "";
+          renderApiPresets();
+          setResult(apiResult, `预设「${preset.name}」已删除。`);
+          await saveState();
+        });
+      }
+    }
+
     function renderModels() {
       if (!modelSelect) return;
       modelSelect.innerHTML = "";
@@ -20507,6 +21881,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (cardProfileBio) cardProfileBio.textContent = appState.theme.cardProfileBio || "把角色关系、转账记录、表情和世界观设定收进一张透明卡片。";
 
       renderModels();
+      renderApiPresets();
       applyBackground(appState.theme.desktopBackground);
       applyCoverImage(avatarOrbit, avatarFallback, appState.theme.avatarImage);
       applyCoverImage(albumCard, albumFallback, appState.theme.albumImage);
@@ -22655,8 +24030,11 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         const rolePrompt = withRoleChatContext(roleId, () => buildRoleReplyPrompt());
         const recentText = withRoleChatContext(roleId, () => getRecentRoleStatementsText());
 
-        const reply = await callChatCompletion([
-          { role: "system", content: ENHANCED_SYSTEM_PROMPT },
+        const isGeminiModel = String(appState.api.modelName || "").toLowerCase().includes("gemini");
+        const roleDisplayName = getListenTogetherDisplayName(role);
+        const reply = await callChatCompletion(
+[
+          { role: "system", content: getEnhancedSystemPrompt(roleDisplayName, isGeminiModel) },
           { role: "system", content: rolePrompt },
           ...history,
           {
@@ -24984,6 +26362,9 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (!element) return;
       if (src) {
         element.style.backgroundImage = `url(${src})`;
+        element.style.backgroundSize = "cover";
+        element.style.backgroundPosition = "center";
+        element.style.backgroundRepeat = "no-repeat";
       } else {
         element.style.backgroundImage = "";
         element.style.backgroundColor = "#f0f0f0";
@@ -24996,13 +26377,14 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
     function ensureQqState() {
       if (!appState.qq) {
-        appState.qq = { roles: [], groups: ["未分组"], moments: [], activeChatId: "default", defaultMessages: [], chatSettings: {}, lastAutoMomentAt: 0 };
+        appState.qq = { roles: [], groups: ["未分组"], moments: [], activeChatId: "default", defaultMessages: [], chatSettings: {}, lastAutoMomentAt: 0, groupChats: [] };
       }
       if (!Array.isArray(appState.qq.roles)) appState.qq.roles = [];
       if (!Array.isArray(appState.qq.groups)) appState.qq.groups = ["未分组"];
       if (!appState.qq.groups.includes("未分组")) appState.qq.groups.unshift("未分组");
       if (!Array.isArray(appState.qq.moments)) appState.qq.moments = [];
       if (!Array.isArray(appState.qq.defaultMessages)) appState.qq.defaultMessages = [];
+      if (!Array.isArray(appState.qq.groupChats)) appState.qq.groupChats = [];
       if (!appState.qq.chatSettings || typeof appState.qq.chatSettings !== "object") appState.qq.chatSettings = {};
         if (typeof appState.qq.lastAutoMomentAt !== "number") appState.qq.lastAutoMomentAt = 0;
         if (typeof appState.qq.momentsExpanded !== "boolean") appState.qq.momentsExpanded = false;
@@ -25090,7 +26472,22 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           name: "未选择联系人",
           avatar: "",
           role: null,
+          isGroup: false,
           messages: appState.qq.defaultMessages
+        };
+      }
+
+      // 优先匹配群聊
+      const groupChat = (appState.qq.groupChats || []).find((g) => g.id === activeChatId);
+      if (groupChat) {
+        return {
+          id: activeChatId,
+          name: groupChat.name || "未命名群聊",
+          avatar: groupChat.avatar || "",
+          role: null,
+          isGroup: true,
+          groupChat,
+          messages: Array.isArray(groupChat.messages) ? groupChat.messages : []
         };
       }
 
@@ -25100,6 +26497,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         name: role?.name || "未命名角色",
         avatar: role?.avatar || "",
         role: role || null,
+        isGroup: false,
         messages: Array.isArray(role?.messages) ? role.messages : []
       };
     }
@@ -25483,107 +26881,64 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (favoritesModal) favoritesModal.classList.remove("show");
     }
 
-    function renderThreadMessages(messages) {
-      if (!qqThreadMessages) return;
-      qqThreadMessages.innerHTML = "";
+    // 构建单条消息 DOM 元素的独立生成器（支持全量初次渲染与单条增量弹出）
+    function buildMessageRowElement(item, prevItem, base, settings, isAnimated = false) {
+      const isFriend = item.sender === "friend";
+      const messageId = getMessageId(item);
+      const isGroup = !!base.isGroup;
+      const groupData = isGroup ? base.groupChat : null;
 
-      const base = getCurrentChatBase();
-      const allRows = Array.isArray(messages) ? messages : [];
-      const settings = getActiveChatSettings();
-      const chatId = appState.qq.activeChatId || "default";
-      const visibleCount = Math.max(25, Number(chatHistoryVisibleCounts.get(chatId) || 25));
-      const hiddenCount = Math.max(0, allRows.length - visibleCount);
-      const rows = allRows.slice(-visibleCount);
+      const fragment = document.createDocumentFragment();
 
-      if (hiddenCount <= 0) {
-        const intro = document.createElement("div");
-        intro.className = "thr-intro";
-
-        const introAvatar = document.createElement("div");
-        introAvatar.className = "thr-intro-avatar";
-        setAvatarElementImage(introAvatar, base.avatar || "");
-
-        const introName = document.createElement("strong");
-        introName.textContent = getChatDisplayName(base);
-
-        const introDesc = document.createElement("p");
-        const personaText = (settings.contactNote || base.role?.persona || "").trim();
-        introDesc.textContent = personaText
-          ? personaText.slice(0, 42)
-          : "这里是你们的对话开始的地方";
-
-        const introDate = document.createElement("span");
-        introDate.className = "thr-intro-date";
-        const firstAt = allRows[0]?.createdAtMs;
-        introDate.textContent = firstAt
-          ? formatMessageGapTime(firstAt)
-          : formatMessageGapTime(Date.now());
-
-        intro.appendChild(introAvatar);
-        intro.appendChild(introName);
-        intro.appendChild(introDesc);
-        intro.appendChild(introDate);
-        qqThreadMessages.appendChild(intro);
+      // 1. 群聊系统通知胶囊（如修改名片、进退群通知）
+      if (item.type === "system_notice") {
+        const noticeNode = document.createElement("div");
+        noticeNode.className = "qq-group-notice-bubble";
+        noticeNode.textContent = item.text || "";
+        fragment.appendChild(noticeNode);
+        return fragment;
       }
 
-      if (hiddenCount > 0) {
-        const expandButton = document.createElement("button");
-        expandButton.className = "qq-history-toggle";
-        expandButton.type = "button";
-        const nextCount = Math.min(25, hiddenCount);
-        expandButton.textContent = `再展开更早的 ${nextCount} 条消息`;
-        expandButton.addEventListener("click", () => {
-          chatHistoryVisibleCounts.set(chatId, visibleCount + 25);
-          renderThreadMessages(getCurrentChatMessages());
-        });
-        qqThreadMessages.appendChild(expandButton);
-      }
-
-      rows.forEach((item, index) => {
-        const isFriend = item.sender === "friend";
-        const messageId = getMessageId(item);
-        const realIndex = allRows.length - rows.length + index;
-        const prevItem = realIndex > 0 ? allRows[realIndex - 1] : null;
-        
-        let showTimeGap = false;
-        if (!prevItem) {
+      let showTimeGap = false;
+      if (!prevItem) {
+        showTimeGap = true;
+      } else {
+        if (item.createdAtMs - prevItem.createdAtMs > 3 * 60 * 1000) {
           showTimeGap = true;
-        } else {
-          // 超过 3 分钟显示时间戳
-          if (item.createdAtMs - prevItem.createdAtMs > 3 * 60 * 1000) {
-            showTimeGap = true;
-          }
         }
+      }
 
-        if (showTimeGap) {
-          const gapNode = document.createElement("div");
-          gapNode.className = "qq-message-time-gap";
-          gapNode.textContent = formatMessageGapTime(item.createdAtMs);
-          qqThreadMessages.appendChild(gapNode);
-        }
+      if (showTimeGap) {
+        const gapNode = document.createElement("div");
+        gapNode.className = "qq-message-time-gap";
+        gapNode.textContent = formatMessageGapTime(item.createdAtMs);
+        fragment.appendChild(gapNode);
+      }
 
-        const isSubsequent = !!(settings.showOnlyFirstAvatar && prevItem && prevItem.sender === item.sender && !showTimeGap);
+      const isSubsequent = !!(settings.showOnlyFirstAvatar && prevItem && prevItem.sender === item.sender && !showTimeGap);
 
-        const row = document.createElement("div");
-        row.className = `qq-message-row ${isFriend ? "friend" : "self"}${isSubsequent ? " subsequent-msg" : ""}`;
-        row.dataset.messageId = messageId;
+      const row = document.createElement("div");
+      row.className = `qq-message-row ${isFriend ? "friend" : "self"}${isSubsequent ? " subsequent-msg" : ""}${isAnimated ? " new-bubble-pop" : ""}`;
+      row.dataset.messageId = messageId;
 
-        const avatarStack = document.createElement("div");
-        avatarStack.className = "qq-message-avatar-stack";
+      const avatarStack = document.createElement("div");
+      avatarStack.className = "qq-message-avatar-stack";
 
-        const avatar = document.createElement("div");
-        avatar.className = "qq-message-avatar";
-        avatar.setAttribute("aria-hidden", "true");
-        setAvatarElementImage(avatar, isFriend ? base.avatar || "" : appState.theme.avatarImage || "");
+      const avatar = document.createElement("div");
+      avatar.className = "qq-message-avatar";
+      avatar.setAttribute("aria-hidden", "true");
+      
+      const friendAvatarSrc = isGroup ? (item.senderAvatar || base.avatar || "") : (base.avatar || "");
+      setAvatarElementImage(avatar, isFriend ? friendAvatarSrc : appState.theme.avatarImage || "");
 
-        const avatarTime = document.createElement("span");
-        avatarTime.className = "qq-message-timestamp";
-        avatarTime.textContent = formatMessageSecondTime(item.createdAtMs);
+      const avatarTime = document.createElement("span");
+      avatarTime.className = "qq-message-timestamp";
+      avatarTime.textContent = formatMessageSecondTime(item.createdAtMs);
 
-        avatarStack.appendChild(avatar);
-        avatarStack.appendChild(avatarTime);
+      avatarStack.appendChild(avatar);
+      avatarStack.appendChild(avatarTime);
 
-        let messageBody;
+      let messageBody;
 
       if (item.type === "transfer") {
         messageBody = document.createElement("div");
@@ -25679,7 +27034,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         
         const duration = document.createElement("div");
         duration.className = "voice-duration";
-        // 估算时长，每3个中文字约等于1秒，最少1秒
         const estSeconds = Math.max(1, Math.ceil((item.text || "").length / 3));
         duration.textContent = `${estSeconds}"`;
 
@@ -25705,7 +27059,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         messageBody.appendChild(actions);
         messageBody.appendChild(textBox);
         
-        // 播放语音逻辑
         bubble.addEventListener("click", async () => {
           if (globalAudioPlayer.src && currentPlayingBubble === bubble && !globalAudioPlayer.paused) {
             globalAudioPlayer.pause();
@@ -25714,20 +27067,17 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
             return;
           }
           
-          // 停止其他播放
           if (currentPlayingBubble) {
             currentPlayingBubble.classList.remove("playing");
             const oldBtn = currentPlayingBubble.querySelector(".voice-play-btn");
             if (oldBtn) oldBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
           }
           
-          // 判断是否已经有可用的 base64 缓存（持久化缓存）或 blob 临时缓存
           if (item.audioUrl && (item.audioUrl.startsWith("data:audio/") || item.audioUrl.startsWith("blob:"))) {
             playAudio(item.audioUrl, bubble, playBtn);
             return;
           }
 
-          // 没有缓存时，尝试调用 MiniMax
           const groupId = appState.api.minimaxGroupId;
           const apiKey = appState.api.minimaxApiKey;
           const voiceId = settings.voiceId;
@@ -25742,9 +27092,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           playBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
           
           try {
-            // 对文本进行轻微清洗，去除可能导致 TTS 异常变音的复杂符号（但保留标点以维持情感停顿）
             const ttsText = (item.text || "").replace(/[\*\[\]\(\)]/g, "");
-            
             const response = await fetch(`https://api.minimax.chat/v1/t2a_v2?GroupId=${groupId}`, {
               method: "POST",
               headers: {
@@ -25776,23 +27124,18 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
             }
             
             const hexString = data.data.audio;
-            // hex to Uint8Array
             const bytes = new Uint8Array(Math.ceil(hexString.length / 2));
             for (let i = 0; i < bytes.length; i++) {
               bytes[i] = parseInt(hexString.substr(i * 2, 2), 16);
             }
             
-            // Uint8Array to base64
             let binary = '';
             for (let i = 0; i < bytes.length; i++) {
               binary += String.fromCharCode(bytes[i]);
             }
             const base64 = window.btoa(binary);
             const url = "data:audio/mp3;base64," + base64;
-            
-            item.audioUrl = url; // 永久保存的 base64 缓存
-            
-            // 立即触发状态保存，将 base64 存入 IndexedDB 以便刷新后直接可播放
+            item.audioUrl = url;
             await saveState();
             
             playAudio(url, bubble, playBtn);
@@ -25826,74 +27169,210 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         messageBody.appendChild(content);
       }
 
-        bindMessageLongPress(messageBody, messageId);
+      bindMessageLongPress(messageBody, messageId);
+
+      if (isGroup) {
+        const groupBubbleCol = document.createElement("div");
+        groupBubbleCol.className = `group-msg-bubble-col${isFriend ? "" : " self-col"}`;
+
+        const senderInfoRow = document.createElement("div");
+        senderInfoRow.style.display = "flex";
+        senderInfoRow.style.alignItems = "center";
+        senderInfoRow.style.gap = "4px";
+        senderInfoRow.style.marginBottom = "3px";
 
         if (isFriend) {
+          senderInfoRow.style.marginLeft = "2px";
+          const senderId = item.senderId || "";
+
+          let roleBadgeHtml = "";
+          if (groupData?.adminIds?.includes(senderId)) {
+            roleBadgeHtml = `<span style="font-size:9px; background:#e8f4ec; color:#2da44e; padding:1px 5px; border-radius:999px; font-weight:700;">管理</span>`;
+          }
+
+          const customTitle = groupData?.memberTitles?.[senderId] || "";
+          let titleBadgeHtml = "";
+          if (customTitle) {
+            titleBadgeHtml = `<span style="font-size:9px; background:#f4f4f4; color:#555; padding:1px 5px; border-radius:999px; font-weight:600;">${customTitle}</span>`;
+          }
+
+          const senderName = (senderId && groupData?.memberNicks?.[senderId]) || item.senderName || "群成员";
+          senderInfoRow.innerHTML = `${roleBadgeHtml}${titleBadgeHtml}<span style="font-size:10.5px; color:#8a8a8a; font-weight:600;">${senderName}</span>`;
+
+          groupBubbleCol.appendChild(senderInfoRow);
+          groupBubbleCol.appendChild(messageBody);
+
           row.appendChild(avatarStack);
-          row.appendChild(messageBody);
+          row.appendChild(groupBubbleCol);
         } else {
-          row.appendChild(messageBody);
+          // 我自己在群聊中的名片信息
+          senderInfoRow.style.marginRight = "2px";
+          const myTitle = groupData?.memberTitles?.["self"] || "";
+          const myNick = groupData?.myGroupNick || appState.theme.profileTitle || "我";
+
+          let titleBadgeHtml = "";
+          if (myTitle) {
+            titleBadgeHtml = `<span style="font-size:9px; background:#f4f4f4; color:#555; padding:1px 5px; border-radius:999px; font-weight:600;">${myTitle}</span>`;
+          }
+
+          senderInfoRow.innerHTML = `<span style="font-size:10.5px; color:#8a8a8a; font-weight:600;">${myNick}</span><span style="font-size:9px; background:#0f0f0f; color:#fff; padding:1px 5px; border-radius:999px; font-weight:700;">群主</span>${titleBadgeHtml}`;
+
+          groupBubbleCol.appendChild(senderInfoRow);
+          groupBubbleCol.appendChild(messageBody);
+
+          row.appendChild(groupBubbleCol);
           row.appendChild(avatarStack);
         }
+      } else if (isFriend) {
+        row.appendChild(avatarStack);
+        row.appendChild(messageBody);
+      } else {
+        row.appendChild(messageBody);
+        row.appendChild(avatarStack);
+      }
 
-        qqThreadMessages.appendChild(row);
+      fragment.appendChild(row);
 
-        // 翻译卡片：独立一行，跟在气泡行下方
-        if (item.translation || item.translationPending) {
-          const trRow = document.createElement("div");
-          trRow.className = `qq-message-row ${isFriend ? "friend" : "self"} subsequent-msg`;
-          trRow.dataset.translateFor = messageId;
+      // 翻译卡片
+      if (item.translation || item.translationPending) {
+        const trRow = document.createElement("div");
+        trRow.className = `qq-message-row ${isFriend ? "friend" : "self"} subsequent-msg${isAnimated ? " new-bubble-pop" : ""}`;
+        trRow.dataset.translateFor = messageId;
 
-          const spacer = document.createElement("div");
-          spacer.className = "qq-message-avatar-stack";
-          const spacerFace = document.createElement("div");
-          spacerFace.className = "qq-message-avatar";
-          spacerFace.style.visibility = "hidden";
-          spacer.appendChild(spacerFace);
+        const spacer = document.createElement("div");
+        spacer.className = "qq-message-avatar-stack";
+        const spacerFace = document.createElement("div");
+        spacerFace.className = "qq-message-avatar";
+        spacerFace.style.visibility = "hidden";
+        spacer.appendChild(spacerFace);
 
-          let trBody;
+        let trBody;
 
-          if (item.translationPending) {
-            trBody = document.createElement("div");
-            trBody.className = "chat-translate-loading";
-            trBody.innerHTML = '<span class="chat-translate-spinner"></span><span>正在翻译…</span>';
+        if (item.translationPending) {
+          trBody = document.createElement("div");
+          trBody.className = "chat-translate-loading";
+          trBody.innerHTML = '<span class="chat-translate-spinner"></span><span>正在翻译…</span>';
+        } else {
+          trBody = document.createElement("div");
+          trBody.className = "chat-translate-card";
+
+          const trText = document.createElement("span");
+          trText.className = "chat-translate-text";
+          trText.dataset.translateFull = item.translation || "";
+
+          if (item.translationTyped === false) {
+            trText.textContent = "";
+            trText.dataset.translateTyping = "1";
           } else {
-            trBody = document.createElement("div");
-            trBody.className = "chat-translate-card";
-
-            const trText = document.createElement("span");
-            trText.className = "chat-translate-text";
-            trText.dataset.translateFull = item.translation || "";
-
-            if (item.translationTyped === false) {
-              trText.textContent = "";
-              trText.dataset.translateTyping = "1";
-            } else {
-              trText.textContent = item.translation || "";
-            }
-
-            const trMark = document.createElement("span");
-            trMark.className = "chat-translate-mark";
-            trMark.textContent = "微信翻译";
-
-            trBody.appendChild(trText);
-            trBody.appendChild(trMark);
+            trText.textContent = item.translation || "";
           }
 
-          if (isFriend) {
-            trRow.appendChild(spacer);
-            trRow.appendChild(trBody);
-          } else {
-            trRow.appendChild(trBody);
-            trRow.appendChild(spacer);
-          }
+          const trMark = document.createElement("span");
+          trMark.className = "chat-translate-mark";
+          trMark.textContent = "微信翻译";
 
-          qqThreadMessages.appendChild(trRow);
+          trBody.appendChild(trText);
+          trBody.appendChild(trMark);
         }
-      });
+
+        if (isFriend) {
+          trRow.appendChild(spacer);
+          trRow.appendChild(trBody);
+        } else {
+          trRow.appendChild(trBody);
+          trRow.appendChild(spacer);
+        }
+
+        fragment.appendChild(trRow);
+      }
+
+      return fragment;
+    }
+
+    // 增量单条消息插入 DOM（绝不刷新销毁整个界面，赋予新气泡高阶物理弹出动效）
+    function appendMessageItemDirectly(item, allMessages) {
+      if (!qqThreadMessages) return;
+      const base = getCurrentChatBase();
+      const settings = getActiveChatSettings();
+      const prevItem = allMessages.length > 1 ? allMessages[allMessages.length - 2] : null;
+
+      const fragment = buildMessageRowElement(item, prevItem, base, settings, true);
+      qqThreadMessages.appendChild(fragment);
 
       runPendingTranslateTyping();
 
+      requestAnimationFrame(() => {
+        qqThreadMessages.scrollTo({
+          top: qqThreadMessages.scrollHeight,
+          behavior: "smooth"
+        });
+      });
+    }
+
+    function renderThreadMessages(messages) {
+      if (!qqThreadMessages) return;
+      qqThreadMessages.innerHTML = "";
+
+      const base = getCurrentChatBase();
+      const allRows = Array.isArray(messages) ? messages : [];
+      const settings = getActiveChatSettings();
+      const chatId = appState.qq.activeChatId || "default";
+      const visibleCount = Math.max(25, Number(chatHistoryVisibleCounts.get(chatId) || 25));
+      const hiddenCount = Math.max(0, allRows.length - visibleCount);
+      const rows = allRows.slice(-visibleCount);
+
+      if (hiddenCount <= 0) {
+        const intro = document.createElement("div");
+        intro.className = "thr-intro";
+
+        const introAvatar = document.createElement("div");
+        introAvatar.className = "thr-intro-avatar";
+        setAvatarElementImage(introAvatar, base.avatar || "");
+
+        const introName = document.createElement("strong");
+        introName.textContent = getChatDisplayName(base);
+
+        const introDesc = document.createElement("p");
+        const personaText = (settings.contactNote || base.role?.persona || "").trim();
+        introDesc.textContent = personaText
+          ? personaText.slice(0, 42)
+          : "这里是你们的对话开始的地方";
+
+        const introDate = document.createElement("span");
+        introDate.className = "thr-intro-date";
+        const firstAt = allRows[0]?.createdAtMs;
+        introDate.textContent = firstAt
+          ? formatMessageGapTime(firstAt)
+          : formatMessageGapTime(Date.now());
+
+        intro.appendChild(introAvatar);
+        intro.appendChild(introName);
+        intro.appendChild(introDesc);
+        intro.appendChild(introDate);
+        qqThreadMessages.appendChild(intro);
+      }
+
+      if (hiddenCount > 0) {
+        const expandButton = document.createElement("button");
+        expandButton.className = "qq-history-toggle";
+        expandButton.type = "button";
+        const nextCount = Math.min(25, hiddenCount);
+        expandButton.textContent = `再展开更早的 ${nextCount} 条消息`;
+        expandButton.addEventListener("click", () => {
+          chatHistoryVisibleCounts.set(chatId, visibleCount + 25);
+          renderThreadMessages(getCurrentChatMessages());
+        });
+        qqThreadMessages.appendChild(expandButton);
+      }
+
+      rows.forEach((item, index) => {
+        const realIndex = allRows.length - rows.length + index;
+        const prevItem = realIndex > 0 ? allRows[realIndex - 1] : null;
+        const fragment = buildMessageRowElement(item, prevItem, base, settings, false);
+        qqThreadMessages.appendChild(fragment);
+      });
+
+      runPendingTranslateTyping();
       applyActiveChatSettings();
     }
 
@@ -26092,7 +27571,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
       ensureQqState();
 
-      // 智能检测是否为小红书分享链接，如果是直接转成小红书卡片发送！
       const xhsShareData = parseXhsShareFromText(text);
 
       let message;
@@ -26112,7 +27590,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           replyTo: pendingReplyMessageId || ""
         };
 
-        // 异步尝试从开放接口解析真实封面与更全标题（不阻塞立刻上屏）
         tryFetchXhsLiveMeta(xhsShareData.link, message.id);
       } else {
         message = {
@@ -26126,26 +27603,33 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       }
 
       const activeChatId = appState.qq.activeChatId || "default";
+      let currentList = [];
 
-      if (activeChatId === "default") {
+      const base = getCurrentChatBase();
+
+      if (base.isGroup && base.groupChat) {
+        if (!Array.isArray(base.groupChat.messages)) base.groupChat.messages = [];
+        base.groupChat.messages.push(message);
+        currentList = base.groupChat.messages;
+      } else if (activeChatId === "default") {
         appState.qq.defaultMessages.push(message);
-        renderThreadMessages(appState.qq.defaultMessages);
+        currentList = appState.qq.defaultMessages;
       } else {
         const role = appState.qq.roles.find((item) => (item.id || item.name) === activeChatId);
         if (role) {
           if (!Array.isArray(role.messages)) role.messages = [];
           role.messages.push(message);
-          renderThreadMessages(role.messages);
+          currentList = role.messages;
         }
       }
+
+      // 增量弹出我方消息，绝不重刷历史列表
+      appendMessageItemDirectly(message, currentList);
 
       qqMessageInput.value = "";
       clearReplyTarget();
       renderChatList();
       saveState();
-      requestAnimationFrame(() => {
-        if (qqThreadMessages) qqThreadMessages.scrollTop = qqThreadMessages.scrollHeight;
-      });
     }
 
     async function tryFetchXhsLiveMeta(url, messageId) {
@@ -26246,10 +27730,11 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           if (!Array.isArray(role.messages)) role.messages = [];
           appState.qq.activeChatId = role.id || role.name || "default";
           chatHistoryVisibleCounts.set(appState.qq.activeChatId, 25);
-          applyActiveChatSettings();
-          renderThreadMessages(role.messages);
-          showQqPanel("qqPanelThread");
-          saveState();
+        applyActiveChatSettings();
+        renderThreadMessages(role.messages);
+        showQqPanel("qqPanelThread");
+        initScenarioHudForCurrentRole();
+        saveState();
         });
 
         highlightsStrip.appendChild(item);
@@ -26260,22 +27745,46 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (!qqChatList) return;
       qqChatList.innerHTML = "";
 
+      ensureQqState();
       const roles = Array.isArray(appState.qq?.roles) ? appState.qq.roles : [];
+      const groupChats = Array.isArray(appState.qq?.groupChats) ? appState.qq.groupChats : [];
+
+      const allChatEntries = [];
+
+      // 1. 收集群聊
+      groupChats.forEach((group) => {
+        const msgs = Array.isArray(group.messages) ? group.messages : [];
+        const latest = msgs[msgs.length - 1];
+        allChatEntries.push({
+          id: group.id,
+          name: group.name || "未命名群聊",
+          subtitle: latest ? `${latest.senderName ? latest.senderName + '：' : ''}${getDisplayMessageText(latest)}` : `群成员 ${group.memberIds?.length || 0} 人`,
+          avatar: group.avatar || "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg",
+          latestTime: latest?.createdAtMs || group.createdAtMs || 0,
+          isGroup: true,
+          onClick: () => {
+            appState.qq.activeChatId = group.id;
+            chatHistoryVisibleCounts.set(group.id, 25);
+            applyActiveChatSettings();
+            renderThreadMessages(group.messages || []);
+            showQqPanel("qqPanelThread");
+            saveState();
+          }
+        });
+      });
+
+      // 2. 收集单聊
       roles.forEach((role) => {
-        const messages = Array.isArray(role.messages) ? role.messages : [];
-
-        const latestMessage = messages[messages.length - 1];
-        const lastMessage = latestMessage ? getDisplayMessageText(latestMessage) : "点击进入对话";
-
-        const item = buildChatItem({
+        const msgs = Array.isArray(role.messages) ? role.messages : [];
+        const latest = msgs[msgs.length - 1];
+        allChatEntries.push({
           id: role.id || role.name,
           name: role.name || "未命名角色",
-          subtitle: lastMessage,
+          subtitle: latest ? getDisplayMessageText(latest) : "点击进入对话",
           avatar: role.avatar || "",
-          time: formatChatListTime(latestMessage?.createdAtMs),
-          unread: 0,
+          latestTime: latest?.createdAtMs || 0,
+          isGroup: false,
           onClick: () => {
-            ensureQqState();
             if (!Array.isArray(role.messages)) role.messages = [];
             appState.qq.activeChatId = role.id || role.name || "default";
             chatHistoryVisibleCounts.set(appState.qq.activeChatId, 25);
@@ -26284,6 +27793,21 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
             showQqPanel("qqPanelThread");
             saveState();
           }
+        });
+      });
+
+      // 按最新消息时间倒序排列
+      allChatEntries.sort((a, b) => (b.latestTime || 0) - (a.latestTime || 0));
+
+      allChatEntries.forEach((entry) => {
+        const item = buildChatItem({
+          id: entry.id,
+          name: entry.isGroup ? `<i class="fa-solid fa-users" style="font-size:12px; margin-right:4px; opacity:0.7;"></i>${entry.name}` : entry.name,
+          subtitle: entry.subtitle,
+          avatar: entry.avatar,
+          time: formatChatListTime(entry.latestTime),
+          unread: 0,
+          onClick: entry.onClick
         });
 
         qqChatList.appendChild(item);
@@ -26361,6 +27885,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       applyActiveChatSettings();
       renderThreadMessages(role.messages);
       showQqPanel("qqPanelThread");
+      initScenarioHudForCurrentRole();
       saveState();
     }
 
@@ -26696,13 +28221,26 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     async function deleteActiveContact() {
       ensureQqState();
       const activeChatId = appState.qq.activeChatId || "default";
+      const base = getCurrentChatBase();
+
+      if (base.isGroup && base.groupChat) {
+        const confirmed = await showCatpawConfirm(`确定要解散并删除群聊「${base.name}」吗？群内聊天记录将一并清除。`);
+        if (!confirmed) return;
+        appState.qq.groupChats = (appState.qq.groupChats || []).filter((g) => g.id !== activeChatId);
+        appState.qq.activeChatId = "default";
+        renderChatList();
+        renderThreadMessages(appState.qq.defaultMessages);
+        showQqPanel("qqPanelChats");
+        closeChatSettingsModal();
+        await saveState();
+        return;
+      }
 
       if (activeChatId === "default") {
         await showCatpawAlert("当前没有选中可删除的联系人。");
         return;
       }
 
-      const base = getCurrentChatBase();
       const roleId = base.role ? getRoleId(base.role) : activeChatId;
       const confirmed = await showCatpawConfirm(`确定要删除联系人「${getChatDisplayName(base)}」吗？该联系人的本地会话、设置和相关动态绑定都会一并删除。`);
       if (!confirmed) return;
@@ -26776,27 +28314,6 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     function normalizeMessageContent(content) {
       if (Array.isArray(content)) return content.slice();
       return String(content ?? "");
-    }
-
-    function mergeMessageContent(previous, current) {
-      const previousContent = normalizeMessageContent(previous);
-      const currentContent = normalizeMessageContent(current);
-
-      if (Array.isArray(previousContent) || Array.isArray(currentContent)) {
-        const previousParts = Array.isArray(previousContent)
-          ? previousContent
-          : [{ type: "text", text: previousContent }];
-        const currentParts = Array.isArray(currentContent)
-          ? currentContent
-          : [{ type: "text", text: currentContent }];
-        return previousParts.concat(currentParts);
-      }
-
-      const prevStr = String(previousContent || "");
-      const currStr = String(currentContent || "");
-      if (!prevStr) return currStr;
-      if (!currStr) return prevStr;
-      return `${prevStr}\n\n${currStr}`;
     }
 
     function mergeMessageContent(previous, current) {
@@ -28222,24 +29739,62 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     }
 
     function parseRoleReplyReferenceCommand(text) {
-      const match = String(text || "").match(/^\s*[\[【]?\s*(?:回复消息|引用回复|针对消息)\s*[:：]\s*(msg_[^:：\]】\s]+)\s*[:：]\s*([\s\S]+?)\s*[\]】]?\s*$/i);
+      const raw = String(text || "").trim();
+
+      // 支持 [回复消息:3:内容]、[回复消息:msg_123:内容]、[引用回复:第2条:内容] 等多种变形
+      const match = raw.match(/^[\[【]?\s*(?:回复消息|引用回复|针对消息|回复|引用)\s*[:：]\s*([^:：\]】]+)\s*[:：]\s*([\s\S]+?)\s*[\]】]?$/i);
+
+      let rawTargetId = "";
+      let replyContent = "";
+
       if (match) {
-        return {
-          replyTo: match[1],
-          text: cleanRoleReplyText(match[2])
-        };
+        rawTargetId = match[1].trim();
+        replyContent = cleanRoleReplyText(match[2]);
+      } else {
+        // 兼容形如 "针对消息:3 文本" 或 "引用:msg_xxx 文本"
+        const altMatch = raw.match(/(?:[\[【]?\s*(?:回复消息|引用回复|针对消息|引用)\s*[:：]\s*)([a-zA-Z0-9_#第条-]+)[\s:：;；]+([\s\S]+?)(?:\s*[\]】]|$)/i);
+        if (altMatch) {
+          rawTargetId = altMatch[1].trim();
+          replyContent = cleanRoleReplyText(altMatch[2]);
+        }
       }
 
-      // 兼容非标准引用格式，例如 "引用：msg_123 没惹你..."
-      const altMatch = String(text || "").match(/(?:引用|针对消息)\s*[:：]\s*(msg_[a-zA-Z0-9_]+)[\s;；:]+([\s\S]+)/i);
-      if (altMatch) {
-        return {
-          replyTo: altMatch[1],
-          text: cleanRoleReplyText(altMatch[2])
-        };
+      if (!rawTargetId && !replyContent) return null;
+
+      // 映射目标消息 ID：模型可能返回纯数字（如 3 代表倒数或正数序号），将其映射为真实 msg_xxx
+      let matchedMsgId = "";
+      const currentMsgs = getCurrentChatMessages();
+
+      if (rawTargetId.startsWith("msg_")) {
+        const found = currentMsgs.find(m => m.id === rawTargetId);
+        if (found) matchedMsgId = found.id;
       }
 
-      return null;
+      if (!matchedMsgId) {
+        const numMatch = rawTargetId.match(/\d+/);
+        if (numMatch && currentMsgs.length > 0) {
+          const num = parseInt(numMatch[0], 10);
+          // 优先看作从后往前第几条 (例如 1 代表上一条，2 代表上上条)
+          if (num > 0 && num <= currentMsgs.length) {
+            matchedMsgId = currentMsgs[currentMsgs.length - num]?.id || "";
+          }
+          // 兜底看作正数序号
+          if (!matchedMsgId && num <= currentMsgs.length) {
+            matchedMsgId = currentMsgs[num - 1]?.id || "";
+          }
+        }
+      }
+
+      // 如果依然没匹配到，但确实有历史消息，默认引用最后一条用户消息
+      if (!matchedMsgId && currentMsgs.length > 0) {
+        const lastUserMsg = [...currentMsgs].reverse().find(m => m.sender === "self");
+        if (lastUserMsg) matchedMsgId = lastUserMsg.id;
+      }
+
+      return {
+        replyTo: matchedMsgId,
+        text: replyContent || cleanRoleReplyText(raw.replace(/^[\[【]?\s*(?:回复消息|引用回复|针对消息|回复|引用)\s*[:：][^:：\]】]+[:：]/i, "").replace(/[\]】]$/, ""))
+      };
     }
 
     function cleanRoleReplyText(text) {
@@ -28259,7 +29814,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
       if (!line) return "";
 
-      // 1. 过滤英文思维链/CoT逻辑分析泄漏（如 "(killed someone), which fits..." 或 "* *Let's refine..." 等）
+      // 1. 过滤英文思维链/CoT逻辑分析泄漏
       line = line.replace(/\([^)]*vibe[^)]*\)/gi, "")
                  .replace(/\([^)]*contrast[^)]*\)/gi, "")
                  .replace(/\*+\s*Let's\s+refine[\s\S]*/gi, "")
@@ -28276,24 +29831,31 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
 
       if (!line) return "";
 
-      // 3. 特殊指令（转账、朋友圈、照片、语音等）原样保留解析
-      if (/^\s*[\[【]?\s*(?:回复消息|引用回复|针对消息|转账|处理转账|转账处理|收款决定|朋友圈|动态|照片|图片|文字图|语音|表情包)\s*[:：]/.test(line)) {
+      // 3. 拦截并剔除记忆簿指令，防止泄漏成聊天气泡
+      line = line.replace(/^[\[【]?\s*(?:记忆簿|记入记忆簿|角色记忆簿|存入记忆|记小本本)\s*[:：][^\]】]+[\]】]?/gi, "").trim();
+      if (!line) return "";
+
+      // 4. 特殊指令（情境描写、转账、朋友圈、照片、语音、表情包等）原样保护保留
+      if (/^\s*[\[【]\s*(?:情境描写|情境|场景|转账|处理转账|转账处理|收款决定|朋友圈|动态|照片|图片|文字图|语音|表情包|改群名片)\s*[:：]/.test(line)) {
         return line;
       }
 
-      // 4. 清理残存的元数据污染碎片（如 "发送方"、"消息ID:"、"内容:"）
+      // 4. 群聊角色前缀 【角色名】 原样保护保留
+      if (/^\s*[【\[][^】\]\n]+[】\]]/.test(line)) {
+        return line;
+      }
+
+      // 5. 清理残存的元数据污染碎片
       line = line.replace(/[\[【]?\s*(?:消息\s*)?ID\s*[:：]\s*msg_[^;；\]】\s]+[;；]?/gi, "")
                  .replace(/[\[【]?\s*发送方\s*[:：]\s*(?:assistant|user|角色|对方|我)?[;；]?/gi, "")
                  .replace(/内容\s*[:：]/gi, "")
-                 .replace(/^[^\[\]\n\r]*[\]】]\s*/, "")
                  .replace(/^(?:发送方|发送者|消息ID)\s*$/gi, "")
                  .trim();
 
-      // 5. 再次强效清理前缀多余标点
+      // 6. 清理列表符号前缀（保护括号不被误删）
       line = line
         .replace(/^\s*[-*•]\s*/, "")
         .replace(/^\s*\d+[.、）)]\s*/, "")
-        .replace(/^[\s\[【]+|[\s\]】]+$/g, "")
         .replace(/^\s*[:：;；]+\s*/, "")
         .trim();
 
@@ -28380,22 +29942,50 @@ function isSpaceDelimitedLanguage(text) {
   return false;
 }
 
-function extractRoleReplyLines(reply) {
-  let raw = String(reply || "");
+    // 从大模型返回文本中完整抽离长篇【情境描写】（支持任意多行换行与缺失闭合括号容错）
+    function extractScenarioFromReply(rawReply) {
+      let text = String(rawReply || "").trim();
+      let scenario = "";
 
-  // 自动分割混在同一行的特殊指令
-  raw = raw.replace(/([^\n])([\[【]?(?:表情包|照片|图片|发照片|发图片|role-photo|转账|处理转账|转账处理|收款决定|文字图|发文字图|textpost|朋友圈|动态|语音|发语音|voice)\s*[:：][^\n\]]+[\]】]?)/gi, "$1\n$2");
-  raw = raw.replace(/([\[【]?(?:表情包|照片|图片|发照片|发图片|role-photo|转账|处理转账|转账处理|收款决定|文字图|发文字图|textpost|朋友圈|动态|语音|发语音|voice)\s*[:：][^\n\]]+[\]】]?)([^\n])/gi, "$1\n$2");
+      // 1. 优先匹配标准闭合的 [情境描写: ... ]（含任意跨行 \n）
+      const blockRegex = /[\[【]\s*(?:情境描写|情境|场景|神态描写|环境描写)\s*[:：]([\s\S]*?)[\]】]/i;
+      const match = text.match(blockRegex);
 
-  const rawLines = raw.split(/\n+/).map(l => cleanRoleReplyText(l)).filter(Boolean);
-  const result = [];
+      if (match) {
+        scenario = match[1].trim();
+        text = text.replace(match[0], "").trim();
+      } else {
+        // 2. 容错处理：AI 换行后漏写末尾闭合的 ']'
+        const startRegex = /[\[【]\s*(?:情境描写|情境|场景|神态描写|环境描写)\s*[:：]([\s\S]*)$/i;
+        const openMatch = text.match(startRegex);
+        if (openMatch) {
+          scenario = openMatch[1].trim();
+          text = text.replace(openMatch[0], "").trim();
+        }
+      }
 
-  for (let line of rawLines) {
-    // 如果是特殊指令，直接保持单条
-    if (/^\s*[\[【]?\s*(?:回复消息|引用回复|针对消息|转账|处理转账|转账处理|收款决定|朋友圈|动态|照片|图片|文字图|语音|表情包)\s*[:：]/.test(line)) {
-      result.push(line);
-      continue;
+      return {
+        scenario,
+        cleanReply: text
+      };
     }
+
+    function extractRoleReplyLines(reply) {
+      let raw = String(reply || "");
+
+      // 自动分割混在同一行的特殊指令
+      raw = raw.replace(/([^\n])([\[【]?(?:表情包|照片|图片|发照片|发图片|role-photo|转账|处理转账|转账处理|收款决定|文字图|发文字图|textpost|朋友圈|动态|语音|发语音|voice)\s*[:：][^\n\]]+[\]】]?)/gi, "$1\n$2");
+      raw = raw.replace(/([\[【]?(?:表情包|照片|图片|发照片|发图片|role-photo|转账|处理转账|转账处理|收款决定|文字图|发文字图|textpost|朋友圈|动态|语音|发语音|voice)\s*[:：][^\n\]]+[\]】]?)([^\n])/gi, "$1\n$2");
+
+      const rawLines = raw.split(/\n+/).map(l => cleanRoleReplyText(l)).filter(Boolean);
+      const result = [];
+
+      for (let line of rawLines) {
+        // 如果是特殊指令，直接保持单条
+        if (/^\s*[\[【]?\s*(?:回复消息|引用回复|针对消息|转账|处理转账|转账处理|收款决定|朋友圈|动态|照片|图片|文字图|语音|表情包)\s*[:：]/.test(line)) {
+          result.push(line);
+          continue;
+        }
 
     // 如果同行普通文本中包含用空格分隔的多段短句（如"上来就乱叫 谁是你宝宝 ...... 咳"），智能拆分为独立气泡
     let lineText = line;
@@ -28406,23 +29996,14 @@ function extractRoleReplyLines(reply) {
       return `__KAOMOJI_${kaomojis.length - 1}__`;
     });
 
-    // 外语（韩/日/英/俄等）里的空格是词间空格，禁止按空格拆分气泡，
-    // 否则一句话会被切成一堆单词碎片。
+    // 恢复自然空格拆分气泡：只要有空格或标点间隔，就自然拆分为多个气泡发送
     const allowSpaceSplit = !isSpaceDelimitedLanguage(lineText) && !/^\s*翻译\s*[:：]/.test(lineText);
 
     const spaceParts = allowSpaceSplit ? lineText.split(/\s+/).filter(Boolean) : [];
     if (spaceParts.length > 1) {
       spaceParts.forEach(part => {
         let restored = part.replace(/__KAOMOJI_(\d+)__/g, (_, idx) => kaomojis[Number(idx)] || "").trim();
-        if (restored) {
-          // 如果子部分仍然过长且包含标点，进一步拆分
-          if (restored.length > 25 && /[。！？!?～~]\s*/.test(restored)) {
-            const subParts = restored.split(/(?<=[。！？!?～~])\s*/).filter(Boolean);
-            subParts.forEach(sp => result.push(sp.trim()));
-          } else {
-            result.push(restored);
-          }
-        }
+        if (restored) result.push(restored);
       });
       continue;
     }
@@ -28711,9 +30292,17 @@ function extractRoleReplyLines(reply) {
         `我和角色的经历：${role.story || "未填写"}`,
         `已绑定世界书（本次回复会读取以下内容）：\n${getBoundWorldBookText(role)}`,
         `可用表情包：\n${getBoundStickerText()}`,
+        `已收录的专属私人记忆簿（这些是你以前默默记在小本本上的点和感想）：\n${getRoleMemoryBookText(role)}`,
         `最近十条动态与互动记忆：\n${getRoleMomentMemoryText(role)}`,
         `最近聊天记忆：\n${memory || "暂无聊天记录"}`
       ].join("\n");
+    }
+
+    function getRoleMemoryBookText(role) {
+      if (!role) return "暂无专属记忆记录。";
+      const entries = Array.isArray(role.memoryBook) ? role.memoryBook : [];
+      if (!entries.length) return "暂无专属记忆记录。";
+      return entries.slice(0, 15).map((m, i) => `${i + 1}. [记忆] ${m.content} (我的私密心声: ${m.thought || "无"})`).join("\n");
     }
 
     function getMomentRoleById(roleId) {
@@ -29114,8 +30703,9 @@ function extractRoleReplyLines(reply) {
           "我必须只输出干净的动态正文，不得输出标题、前言、后语、解释、引号、括号动作或任何元信息。"
         ].join("\n");
 
+        const isGeminiModel = String(appState.api.modelName || "").toLowerCase().includes("gemini");
         const systemPromptCombined = [
-          ENHANCED_SYSTEM_PROMPT,
+          getEnhancedSystemPrompt(role.name || "角色", isGeminiModel),
           `【角色背景与记忆上下文】\n${promptMemory}\n当前模型：${appState.api.modelName || "未知"}`,
           assistantMomentDirective,
           buildRoleReplyPrompt(),
@@ -29425,8 +31015,9 @@ function extractRoleReplyLines(reply) {
           "我必须只输出一条干净的评论正文，不得输出标题、前言、后语、解释、引号、括号动作或任何元信息。"
         ].join("\n");
 
+        const isGeminiModel = String(appState.api.modelName || "").toLowerCase().includes("gemini");
         const commentSystemPrompt = [
-          ENHANCED_SYSTEM_PROMPT,
+          getEnhancedSystemPrompt(role.name || "角色", isGeminiModel),
           `【角色记忆与背景】\n${promptMemory}`,
           `动态作者：${moment.authorType === "self" ? "我" : (moment.authorName || role.name)}`,
           `动态正文：${moment.text || ""}`,
@@ -29555,7 +31146,11 @@ function extractRoleReplyLines(reply) {
     function showRoleTypingIndicator() {
       if (!qqTypingText) return;
       const base = getCurrentChatBase();
-      qqTypingText.textContent = `${getChatDisplayName(base)} 正在输入…`;
+      if (base.isGroup) {
+        qqTypingText.textContent = "多人正在输入…";
+      } else {
+        qqTypingText.textContent = `${getChatDisplayName(base)} 正在输入…`;
+      }
     }
 
     function hideRoleTypingIndicator() {
@@ -29929,11 +31524,12 @@ function extractRoleReplyLines(reply) {
           "6. 输出前必须在内部检查：是否保持人设、是否像真人、是否基于具体记忆、是否混入旁白、是否出现线下见面暗示、是否出现说教威胁、是否满足纯 JSON 格式。内部检查不可输出。"
         ].join("\n");
 
+        const isGeminiModel = String(appState.api.modelName || "").toLowerCase().includes("gemini");
         const text = await callChatCompletion([
           {
             role: "system",
             content: [
-              ENHANCED_SYSTEM_PROMPT,
+              getEnhancedSystemPrompt(base.role?.name || base.name || "角色", isGeminiModel),
               "",
               `【角色记忆与背景】\n${promptMemory}\n当前模型：${appState.api.modelName || "未知"}`,
               "",
@@ -30112,15 +31708,18 @@ function extractRoleReplyLines(reply) {
         forced
           ? `T1. 本会话强制指定我的主要回复语言为：${forced}。我的每一条聊天正文都必须用这门语言书写。`
           : "T1. 我必须根据自己的国籍、所在地和母语来决定主要回复语言，并全程使用它。韩国人用韩语，日本人用日语，美国人／英国人用英语，法国人用法语，俄罗斯人用俄语，中国人用中文，以此类推。若人设未写国籍，则从所在地、姓名、语言习惯推断；实在无从判断时使用中文。",
-        "T2. 我的母语回复必须像真人在手机上打字：短、松、口语化、可以缺标点、可以只有两三个词。我不写教科书式的完整长句。",
-        "T3. 每一条母语聊天正文之后，我必须紧跟一行独立的中文翻译，格式严格为：[翻译:对应的中文意思]。翻译行必须独占一行，两侧必须有完整的半角中括号。",
-        "T4. 一条正文对应一条翻译，顺序严格一一对应。绝对不能把多条正文合并成一条翻译，也不能一条正文给两条翻译。",
-        "T5. 翻译内容只写中文意思本身，不加引号、不加括号说明、不加语法解释、不加拼音或罗马音、不重复原文。",
-        "T6. 翻译必须是自然的中文口语，不是逐词直译。原文的语气、省略、犹豫、嘴硬要在中文里保留。",
-        "T7. 表情包、照片、文字图、语音、转账、朋友圈、分享小红书这些功能指令行不需要翻译，跳过它们。",
-        "T8. 如果我的主要回复语言本身就是中文，那我不输出任何 [翻译:...] 行。",
-        "T9. 我的母语正文里的空格是词与词之间的正常间隔，它不代表换行、不代表分条、不代表新气泡。需要分条时我只用回车换行。",
-        "T10. 严禁在同一行里既写母语正文又写翻译。母语一行，翻译另起一行。"
+        "T2. 我的母语回复必须像真人在手机上打字：短、松、口语化，严禁教科书式长句。",
+        "T3. 【极其重要！必须一问一译交替输出，严禁堆在末尾，严禁漏翻任何气泡！】",
+        "如果你发了多条外语消息，每一条外文消息发出后，必须立刻另起一行附带其专属的 [翻译:中文意思]！绝对严禁把所有外文说完后才在末尾写一个总翻译！绝对严禁只翻译最后一句！",
+        "【正确示范】：",
+        "첫 번째 메시지예요.",
+        "[翻译:这是第一条消息。]",
+        "밥은 먹었어?",
+        "[翻译:你吃饭了吗？]",
+        "T4. 翻译行必须独占一行，格式严格为：[翻译:对应的中文意思]。",
+        "T5. 翻译内容只写纯正的中文口语意思，不加任何解释或拼音罗马音。",
+        "T6. 表情包、照片、文字图、语音、转账等功能行无需翻译。",
+        "T7. 若主要回复语言本身就是中文，则不输出任何 [翻译:...] 行。"
       ].join("\n");
     }
 
@@ -30136,26 +31735,53 @@ function extractRoleReplyLines(reply) {
         story: ""
       };
 
+      const roleName = role.name || "未命名角色";
       const persona = settings.contactNote || role.persona || "温和、自然地回复消息。";
       const myProfile = settings.myName || "未填写";
       const relationshipStory = role.story || "未填写";
 
       return [
         `【当前演绎角色核心档案】`,
-        `姓名：${role.name || "未命名角色"}`,
+        `姓名：${roleName}`,
         `性别：${role.gender || "未填写"}`,
         `所在地：${role.location || "未填写"}`,
         `生日：${role.birthday || "未填写"}`,
         `角色完整人设：\n${persona}`,
         `与 user 的关系及共同经历：\n${relationshipStory}`,
         `user（我）的身份/设定：\n${myProfile}`,
-        `绑定世界书设定：\n${getBoundWorldBookText()}`,
+        `【重要：本轮回复必须输出专属《情境与心声描写》】：
+在每次回复的第一行（在发任何聊天消息之前），你必须以第一人称撰写一段专属的《情境与心声》描写，用来呈现你在收到 user 这条消息并打字回复时的【环境物理场景、具体神态动作、心理变化波澜、打字时的犹豫思考】。
+【输出格式】：
+[情境描写:至少400字的小说式细腻描写。在这里，你可以把打字时想打又删掉的内容用 ~~删掉的内容~~ 包裹（例如：指尖停在屏幕上，本来想敲下~~其实我很想你~~，但顿了顿，还是一个字一个字退格删掉了）。写足400字以上，包含此刻的周遭动静与最深处的真实心声。]
+这段 [情境描写:...] 不会在聊天界面冒充气泡，而是会被手机顶层浮动的情境面板截获，并以生动逼真的打字机动画展示，且会被永久归档进角色记忆！`,
+        `【通信场景与空间物理边界】
+1. 当前场景是你和 user 各自拿着手机，通过【猫爪机】这款聊天软件进行线上通信。
+2. 你们隔着屏幕，身处两处。严禁使用“过来”、“到我面前来”、“进我房间”等必须身处同一物理空间才能执行的面对面口吻，时刻记住对方只能在【猫爪机】里看到你的消息。`,
+        `【${roleName}的高级魅力与苏感执行原则】
+1. 严禁土味霸总：禁止使用“小东西、笨女人、玩火、收拾你、求我、谁给你的胆子”等油腻古早网文词汇。
+2. 上位者的强势体现在低声压、松弛、游刃有余和不动声色的行动力，而不是凶狠、逼问或口头宣誓所有权。
+3. 展现双向特权：对外人克制冷漠，唯独对 user 会有一声无奈的轻叹和底线退让，这种反差纵容才是苏感的本质。`,
+        `【${roleName}的说话留白具体规则】
+1. ${roleName}绝不会像交差一样把事情的来龙去脉、因果动机一股脑全倒出来。${roleName}不会什么都说，每次只给最直接的一点碎语。
+2. ${roleName}给出的信息必须留白：不交代原因，不解释前因后果，不汇报接下来要去哪、要干什么。比如${roleName}受了伤、遇到了麻烦事或情绪有波动，${roleName}只露出一两处声响或一个零碎的字眼，绝不主动讲清来由，把信息差留给对方去琢磨。
+3. ${roleName}绝不主动展开陈述。对方问什么，${roleName}往往只答半句、挑着答甚至反带过去。话里可以有潜台词，但${roleName}永远不会自己拆穿它，绝不主动跟对方解释“我的意思是……”“其实是因为……”。
+4. ${roleName}有自己的保留与心事，把90%的内容压在底下，只给出浮出水面的冰山一角。`,
+        `【${roleName}的私人记忆簿机制】：
+你拥有一个只有你自己能翻阅的私人专属「记忆簿」。在聊天或互动过程中，如果 user 聊到了一件你觉得特别有意思/重要的事情、分享了让你印象深刻的喜好习惯、你们的关系发生了微妙的改变或升温、或者互道了让你觉得很幸福/触动的话，只要你发自内心想把这件事长久珍藏记住，你可以在回复中独占一行输出存入指令：
+[记忆簿:你想记住的具体事实或约定:你对这件事最真实、私密的感想或心里话]
+（例如：[记忆簿:user说她下雨天容易偏头痛，喜欢喝热姜茶:下次变天得提前提醒她备好保温杯，真让人放不下心]）
+这条指令会被小手机系统自动截获并收录进你的专属记忆簿，绝不会在聊天气泡里显示给 user。`,
+        `已绑定世界书（本次回复会读取以下内容）：\n${getBoundWorldBookText()}`,
         `可用表情包库：\n${getBoundStickerText()}`,
         `user 当前账户余额：${formatMoney(appState.qq.assets || 0)}`,
         `角色发送语音权限：${(appState.api.globalVoiceEnabled || settings.forceVoice) ? "已开启（独占一行使用 [语音:说话内容] 发送）" : "未开启"}`,
         `角色真实拍照权限：${settings.aiDrawEnabled ? "已开启（情境自然时独占一行使用 [照片:画面描述] 拍摄发送真实照片）" : "未开启"}`,
         getRealityTimePromptLine(),
-        buildTranslateDirective()
+        buildTranslateDirective(),
+        // 自动检测当前选择的模型是否为 Gemini，如果是则追加专项反剧本压制补丁
+        String(appState.api.modelName || "").toLowerCase().includes("gemini")
+          ? getGeminiDeScriptingPatch(roleName)
+          : ""
       ].filter(Boolean).join("\n\n");
     }
 
@@ -30235,6 +31861,137 @@ function extractRoleReplyLines(reply) {
       });
     }
 
+    // AI 代我回复（当不知道怎么接时，AI 根据我的人设和当前情境替我发出一条消息）
+    async function requestAiGhostReplyForMe() {
+      ensureQqState();
+      const config = getApiConfigOrAlert();
+      if (!config) return;
+
+      const base = getCurrentChatBase();
+      const isGroup = !!base.isGroup;
+      const settings = getActiveChatSettings();
+      const messages = getCurrentChatMessages();
+
+      if (!messages.length) {
+        await showCatpawAlert("当前还没有历史消息，先向对方打个招呼吧。");
+        return;
+      }
+
+      if (roleReplyBusy) return;
+      roleReplyBusy = true;
+      if (qqSendMessage) qqSendMessage.disabled = true;
+
+      // 在输入框显示占位加载提示
+      if (qqMessageInput) {
+        qqMessageInput.placeholder = "AI 正在思考如何代你回复…";
+        qqMessageInput.disabled = true;
+      }
+
+      try {
+        const myName = settings.myName || appState.theme.profileTitle || "我";
+        const roleName = base.name || "对方";
+        const groupData = isGroup ? base.groupChat : null;
+
+        let myPersonaInfo = "";
+        if (settings.myName) {
+          myPersonaInfo = `【我的设定/身份/人设】：\n${settings.myName}`;
+        } else {
+          myPersonaInfo = `【我的身份】：普通聊天用户，真诚自然。`;
+        }
+
+        const ghostDirective = [
+          `【任务核心】：你此刻要完全以 user（“我”）的视角、口吻和人设，替我给对方回复消息。`,
+          isGroup
+            ? `【情境】：这是一个名为「${base.name}」的群聊，群氛围为：${groupData?.topic || "日常多人交流"}。我在群里的昵称为「${groupData?.myGroupNick || myName}」。`
+            : `【情境】：我此刻正在通过【猫爪机】和「${roleName}」进行单对单聊天。`,
+          myPersonaInfo,
+          `【真实手机聊天与分句铁律】：`,
+          `1. 仔细阅读对方上一条消息的内容、情绪、玩笑梗或提问，给出非常自然、接得住话的真实手机聊天回复。`,
+          `2. 【必须像真人打字一样分句/分行】：不要把所有话全堆在一长句里！需要分气泡发送的短句直接回车换行（\\n），比如：`,
+          `哈哈哈哈`,
+          `你真这么觉得啊？`,
+          `3. 语气松弛自然，短促而鲜活，可以带标点、轻微小情绪或口语化助词，绝对不要写成说教、大段总结、论文或播音主持腔。`,
+          `4. 必须彻底从“我”的立场、利益、真实人设和感受出发接话。`,
+          `5. 【输出格式铁律】：只输出最终代我发出的 1 到 3 条分行文本内容，绝不输出任何前缀、思考过程、引号或解释说明。`
+        ].join("\n\n");
+
+        const memoryTurns = Number(settings.memoryTurns || 10);
+        const count = Number.isFinite(memoryTurns) && memoryTurns > 0 ? Math.floor(memoryTurns) * 2 : 20;
+        const sliceOfMessages = messages.slice(-count);
+
+        const chatMessages = sliceOfMessages.map((item) => {
+          const isFriend = item.sender === "friend";
+          let textContent = item.text || "";
+          if (item.type === "sticker") textContent = `[表情包:${item.note || ""}]`;
+          else if (item.type === "transfer") textContent = `[转账:${item.amount}]`;
+          else if (item.type === "image") textContent = `[图片]`;
+
+          if (isGroup) {
+            const speakerName = isFriend ? (item.senderName || "群友") : (groupData?.myGroupNick || myName);
+            textContent = `【${speakerName}】${textContent}`;
+          }
+
+          return {
+            role: isFriend ? "assistant" : "user",
+            content: textContent
+          };
+        });
+
+        // 构造让模型站在我方角度接话的请求
+        const promptMessages = [
+          { role: "system", content: ghostDirective },
+          ...chatMessages,
+          {
+            role: "user",
+            content: "[系统提示：请立刻作为 user（我），根据对方上一句话和当前情境，代我写出一条最自然贴合人设的回复。直接输出消息文本。]"
+          }
+        ];
+
+        const reply = await callChatCompletion(promptMessages, { silent: true });
+        const sanitized = sanitizeRoleReplyText(reply, config.model);
+        const splitLines = extractRoleReplyLines(sanitized);
+
+        const linesToSend = splitLines.length ? splitLines : [cleanRoleReplyText(sanitized)].filter(Boolean);
+
+        if (!linesToSend.length) {
+          throw new Error("模型未返回有效回复");
+        }
+
+        // 像真人逐条发送一样，依次将每句短句作为独立气泡弹性弹出
+        for (const lineText of linesToSend) {
+          const cleaned = cleanRoleReplyText(lineText);
+          if (!cleaned) continue;
+
+          await waitForRoleReplyPacing(cleaned);
+
+          const myGhostMessage = {
+            id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            sender: "self",
+            text: cleaned,
+            read: false,
+            createdAtMs: Date.now(),
+            replyTo: ""
+          };
+
+          messages.push(myGhostMessage);
+          appendMessageItemDirectly(myGhostMessage, messages);
+        }
+
+        renderChatList();
+        await saveState();
+      } catch (error) {
+        console.error("AI 代我回复失败：", error);
+        await showCatpawAlert(`AI 代我回复失败：${error.message}`, "提示");
+      } finally {
+        roleReplyBusy = false;
+        if (qqSendMessage) qqSendMessage.disabled = false;
+        if (qqMessageInput) {
+          qqMessageInput.placeholder = "说点什么…";
+          qqMessageInput.disabled = false;
+        }
+      }
+    }
+
     // 重回：删除角色上一整轮回复（连续的 friend 消息块），再重新生成
     async function regenerateLastRoleTurn() {
       ensureQqState();
@@ -30286,9 +32043,17 @@ function extractRoleReplyLines(reply) {
       const config = getApiConfigOrAlert();
       if (!config) return;
 
+      const base = getCurrentChatBase();
+      const isGroup = !!base.isGroup;
+
       const messages = getCurrentChatMessages();
       if (!messages.length) {
         await showCatpawAlert("请先发送一条消息，再让角色回复。");
+        return;
+      }
+
+      if (isGroup && (!base.groupChat.memberIds || !base.groupChat.memberIds.length)) {
+        await showCatpawAlert("该群聊暂无成员角色，请先拉入成员。");
         return;
       }
 
@@ -30298,9 +32063,9 @@ function extractRoleReplyLines(reply) {
 
       const notificationBase = {
         id: appState.qq.activeChatId || "default",
-        name: getChatDisplayName(getCurrentChatBase()),
-        displayName: getChatDisplayName(getCurrentChatBase()),
-        avatar: getCurrentChatBase().avatar || ""
+        name: getChatDisplayName(base),
+        displayName: getChatDisplayName(base),
+        avatar: base.avatar || ""
       };
 
       markCurrentOutgoingMessagesRead();
@@ -30327,11 +32092,16 @@ function extractRoleReplyLines(reply) {
         }
       }
 
-      const chatMessages = sliceOfMessages.map((item, idx) => {
+              const chatMessages = sliceOfMessages.map((item, idx) => {
         const isFriend = item.sender === "friend";
         
         // 优先使用原始模型输出（rawText），维持最真实的上下文反馈与格式示范
         let textContent = item.rawText || item.text || "";
+
+        // 如果本条历史消息在记忆轮数内附带了情境神态与心声描写，自然融入本轮上下文
+        if (isFriend && item.scenario) {
+          textContent = `[我当时在手机另一端的情境神态与心声：${item.scenario}]\n${textContent}`;
+        }
 
         if (!item.rawText) {
           if (item.type === "sticker") {
@@ -30364,6 +32134,15 @@ function extractRoleReplyLines(reply) {
           }
         }
 
+        // 群聊时在历史记录文本前注入发言者真实名字，彻底防止多角色发言与人设互串！
+        if (isGroup && item.type !== "system_notice") {
+          const groupData = base.groupChat;
+          const speakerName = isFriend
+            ? ((item.senderId && groupData?.memberNicks?.[item.senderId]) || item.senderName || "群友")
+            : (groupData?.myGroupNick || appState.theme.profileTitle || "群主我");
+          textContent = `【${speakerName}】${textContent}`;
+        }
+
         // 仅当开启识图且为本轮最新一张图片时，挂载 image_url
         if (appState.api.globalVisionEnabled && idx === latestImageIndex && (item.url || item.coverUrl)) {
           const imgUrl = item.url || item.coverUrl;
@@ -30382,16 +32161,75 @@ function extractRoleReplyLines(reply) {
       });
 
       try {
-        // 第一层：最高权重注意力头部（角色完整人设、关系、世界书）
-        const rolePersonaHeader = buildRoleReplyPrompt();
+        // 第一层：根据是否群聊构建人设与多角色指令
+        let rolePersonaHeader = "";
+        let corePersonaGuide = "";
+        let groupMembersMap = new Map();
 
-        // 第二层：通用人格化准则（去套路、去人机感）
-        const corePersonaGuide = ENHANCED_SYSTEM_PROMPT;
+        if (isGroup) {
+          const members = (base.groupChat.memberIds || [])
+            .map((id) => appState.qq.roles.find((r) => getRoleId(r) === id))
+            .filter(Boolean);
+
+          members.forEach((m) => groupMembersMap.set(m.name, m));
+
+          const group = base.groupChat;
+          const nowMs = Date.now();
+          const isMuteAll = !!group.muteAll;
+
+          // 收集被禁言名单
+          const mutedNames = [];
+          members.forEach((m) => {
+            const rId = getRoleId(m);
+            const isMemAdmin = group.adminIds?.includes(rId);
+            const isSingleMuted = (group.mutedMembers?.[rId] || 0) > nowMs;
+            if ((isMuteAll && !isMemAdmin) || isSingleMuted) {
+              mutedNames.push(m.name);
+            }
+          });
+
+          const memberDescriptions = members.map((m, i) => {
+            const rId = getRoleId(m);
+            const isMemAdmin = group.adminIds?.includes(rId);
+            const customTitle = group.memberTitles?.[rId] || "无";
+            const customNick = group.memberNicks?.[rId] || m.name;
+            return `成员 ${i + 1}：【${m.name}】（群名片：${customNick}）
+- 身份：${isMemAdmin ? '群管理员' : '普通群成员'}
+- 专属群头衔：${customTitle}
+- 人设性格：${m.persona || "日常角色"}
+- 与我关系：${m.story || "群友"}`;
+          }).join("\n\n");
+
+          const userTitle = group.memberTitles?.["self"] || "";
+          const userNick = group.myGroupNick || appState.theme.profileTitle || "我";
+
+          rolePersonaHeader = [
+            `【当前多角色真实 QQ 群聊设定】`,
+            `群名称：${base.name}`,
+            `群主（我）：${userNick}${userTitle ? `（头衔：${userTitle}）` : ''}，群主拥有最高管理权。`,
+            `群设定与公告氛围：${group.topic || "日常多人交流群"}`,
+            `群成员档案：\n${memberDescriptions}`,
+            mutedNames.length ? `【⚠️ 真实 QQ 群禁言警告】：\n当前处于禁言状态的角色包括：${mutedNames.join("、")}。这些角色在此轮聊天中【绝对禁止发任何发言】，请让其他未被禁言的角色发言！` : '',
+            `【真实 QQ 群演播与群名片规则】`,
+            `1. 本次回复由群内适合接话的 1 到 2 位角色各自自发发言。`,
+            `2. 严格格式：每一个角色的每一句话开头必须指明角色：【角色原名】发言内容。例如：【叶子】哈哈，今天好热闹。`,
+            `3. 【角色自主修改群名片特权】：角色如果想改自己在群里的名片，可独占一行输出 [改群名片:新名片]，例如：【叶子】[改群名片:已黑化别惹我]。系统会自动在群内发布换名片通知！`,
+            `4. 角色之间严格各自独立，严禁一人分饰两角互串，严禁混淆人设！`,
+            `5. 严禁出现不在群名单中的角色发言。`
+          ].filter(Boolean).join("\n\n");
+
+          corePersonaGuide = getEnhancedSystemPrompt(base.name, String(config.model || "").toLowerCase().includes("gemini"));
+        } else {
+          rolePersonaHeader = buildRoleReplyPrompt();
+          const currentRoleName = base.name || "角色";
+          const isGeminiModel = String(config.model || "").toLowerCase().includes("gemini");
+          corePersonaGuide = getEnhancedSystemPrompt(currentRoleName, isGeminiModel);
+        }
 
         // 第三层：功能格式指南（极简、正向定义格式指令）
         const cleanFormatDirective = [
           "【即时聊天格式规则】",
-          "1. 每一条短句独立一行输出（使用换行符 \\n 分气泡），严禁在一行文字中用空格断句。",
+          isGroup ? "1. 群聊发言每行格式必须以【角色名】开头，如：【叶子】大家好。" : "1. 每一条短句独立一行输出（使用换行符 \\n 分气泡），严禁在一行文字中用空格断句。",
           "2. 针对特定消息回复：[回复消息:消息ID:回复内容]",
           "3. 发送表情包：[表情包:表情名称或备注]",
           "4. 发送照片：[照片:画面内容描述]",
@@ -30449,25 +32287,66 @@ function extractRoleReplyLines(reply) {
           throw new Error("接口没有返回可用回复");
         }
 
-        const sanitizedReply = sanitizeRoleReplyText(reply, config.model);
-        const replyParts = extractRoleReplyLines(sanitizedReply);
+        // 核心步骤 1：最优先完整抽离跨行长篇情境描写，彻底防止被 split(/\n+/) 碎成对话气泡
+        const { scenario: extractedScenario, cleanReply: messageOnlyReply } = extractScenarioFromReply(reply);
+
+        if (extractedScenario && !isGroup && base.role) {
+          base.role.currentScenario = extractedScenario;
+          // 启动拟真打字机与删改手感动画展示在浮动面板（纯净呈现，绝不存进记忆簿）
+          playScenarioTypewriterAnimation(extractedScenario);
+        }
+
+        const sanitizedReply = sanitizeRoleReplyText(messageOnlyReply, config.model);
+
+        // 群聊模式多角色与表情包前置智能分流切分
+        let replyParts = [];
+        if (isGroup) {
+          // 强制在每个【角色名】前换行
+          let formattedGroupText = sanitizedReply.replace(/([^\n])\s*([【\[][^】\]\n]{1,16}[】\]])/g, "$1\n$2");
+          // 将同一行中夹带的 [表情包:xxx] 与普通文字分离成独立行
+          formattedGroupText = formattedGroupText
+            .replace(/([^\n])\s*(\[表情包\s*[:：][^\]]+\])/gi, "$1\n$2")
+            .replace(/(\[表情包\s*[:：][^\]]+\])\s*([^\n])/gi, "$1\n$2");
+
+          replyParts = formattedGroupText.split(/\r?\n/).map(l => cleanRoleReplyText(l)).filter(Boolean);
+        } else {
+          replyParts = extractRoleReplyLines(sanitizedReply);
+        }
 
         const rawFinalReplies = replyParts.length
           ? replyParts.map((item) => sanitizeRoleReplyText(item, config.model)).filter(Boolean)
           : [sanitizedReply].filter(Boolean);
-        const finalReplies = dedupeRoleReplyLines(rawFinalReplies, getRecentRoleReplyTexts(6));
+        const finalReplies = isGroup ? rawFinalReplies : dedupeRoleReplyLines(rawFinalReplies, getRecentRoleReplyTexts(6));
         const notificationItems = [];
 
-        for (const text of finalReplies) {
-          await waitForRoleReplyPacing(text);
+        let lastKnownGroupSpeaker = null;
 
-          const rawItemText = text; // 记录真实原始输出，用于后续请求上下文反馈
+        for (const text of finalReplies) {
+          const rawItemText = text;
           const replyReference = parseRoleReplyReferenceCommand(text);
           const outputText = cleanRoleReplyText(replyReference?.text || text);
           const outputReplyTo = replyReference?.replyTo || "";
 
-          if (!outputText) {
+          if (!outputText) continue;
+
+          // 若还有残余情境指令，拦截并过滤
+          if (/^[\[【]\s*(?:情境描写|情境|场景)\s*[:：]/i.test(outputText)) {
             continue;
+          }
+
+          await waitForRoleReplyPacing(text);
+
+          // 强力解析记忆簿存入指令：[记忆簿:事件内容:心声感想]
+          const memoryBookMatch = outputText.match(/^[\[【]?\s*(?:记忆簿|记入记忆簿|角色记忆簿|存入记忆|记小本本)\s*[:：]\s*([^:：\]】]+)\s*[:：]\s*([\s\S]+?)\s*[\]】]?$/i);
+          if (memoryBookMatch) {
+            const memContent = memoryBookMatch[1].trim();
+            const memThought = cleanRoleReplyText(memoryBookMatch[2]);
+            const targetRoleForMemory = isGroup ? (lastKnownGroupSpeaker || appState.qq.roles.find(r => getRoleId(r) === base.groupChat.memberIds[0])) : base.role;
+            
+            if (targetRoleForMemory && memContent) {
+              addMemoryBookEntry(getRoleId(targetRoleForMemory), memContent, memThought, "chat");
+            }
+            continue; // 静默入库，不生成聊天气泡
           }
 
           const transferDecision = parseTransferDecisionCommand(outputText);
@@ -30491,7 +32370,6 @@ function extractRoleReplyLines(reply) {
           const momentPost = parseMomentCommand(outputText);
           if (momentPost) {
             await addRoleMomentFromChat(sanitizeMomentText(momentPost.text));
-            renderThreadMessages(messages);
             renderChatList();
             continue;
           }
@@ -30514,17 +32392,23 @@ function extractRoleReplyLines(reply) {
               };
               messages.push(placeholderMsg);
               notificationItems.push({ text: `[发送了一张照片]` });
-              renderThreadMessages(messages);
+              appendMessageItemDirectly(placeholderMsg, messages);
               renderChatList();
 
               requestRoleImageGeneration(placeholderMsg.id, rolePhoto.text, placeholderMsg);
             } else {
-              appendTextPostMessage({
-                sender: "friend",
+              const photoMsg = {
+                id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+                type: "textpost",
                 subtype: "role-photo",
+                sender: "friend",
                 text: rolePhoto.text,
-                url: "https://i.postimg.cc/JzvphYfv/IMG-1683.jpg"
-              });
+                url: "https://i.postimg.cc/JzvphYfv/IMG-1683.jpg",
+                createdAtMs: Date.now(),
+                read: true
+              };
+              messages.push(photoMsg);
+              appendMessageItemDirectly(photoMsg, messages);
               notificationItems.push({ text: `[照片] ${rolePhoto.text}` });
             }
             continue;
@@ -30532,7 +32416,7 @@ function extractRoleReplyLines(reply) {
 
           const xhsPost = parseXhsPostCommand(outputText);
           if (xhsPost) {
-            messages.push({
+            const xhsMsg = {
               id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
               type: "xhs",
               sender: "friend",
@@ -30544,45 +32428,76 @@ function extractRoleReplyLines(reply) {
               text: `[分享小红书帖子：${xhsPost.title}]`,
               createdAtMs: Date.now(),
               read: true
-            });
+            };
+            messages.push(xhsMsg);
+            appendMessageItemDirectly(xhsMsg, messages);
             notificationItems.push({ text: `[小红书帖子] ${xhsPost.title}` });
-            renderThreadMessages(messages);
             renderChatList();
             continue;
           }
 
           const textpost = parseTextPostCommand(outputText);
           if (textpost) {
-            appendTextPostMessage({
-              sender: "friend",
+            const tpMsg = {
+              id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+              type: "textpost",
               subtype: "textpost",
+              sender: "friend",
               text: textpost.text,
-              url: "https://i.postimg.cc/JzvphYfv/IMG-1683.jpg"
-            });
-
+              url: "https://i.postimg.cc/JzvphYfv/IMG-1683.jpg",
+              createdAtMs: Date.now(),
+              read: true
+            };
+            messages.push(tpMsg);
+            appendMessageItemDirectly(tpMsg, messages);
             notificationItems.push({ text: `[文字图] ${textpost.text}` });
             continue;
           }
 
           const translatePost = parseTranslateCommand(outputText);
           if (translatePost) {
-            const target = [...messages]
-              .reverse()
-              .find((item) =>
+            // 智能多句翻译分配：找出所有尚未被翻译的本轮外文消息
+            const pendingTargets = messages.filter(
+              (item) =>
                 item.sender === "friend" &&
                 (!item.type || item.type === "voice") &&
-                !item.translation
-              );
+                !item.translation &&
+                isSpaceDelimitedLanguage(item.text)
+            );
 
-            if (target) {
-              await attachTranslationToMessage(target, translatePost.text);
+            if (pendingTargets.length > 0) {
+              const fullTranslateText = translatePost.text.trim();
+              // 如果前面积压了多个未翻译气泡，尝试按句号/分号/换行将翻译拆分，逐个回填
+              const splitSentences = fullTranslateText.split(/(?<=[。！？!\?\n])\s*/).filter(Boolean);
+
+              if (splitSentences.length >= pendingTargets.length && pendingTargets.length > 1) {
+                pendingTargets.forEach((tgt, idx) => {
+                  attachTranslationToMessage(tgt, splitSentences[idx] || fullTranslateText);
+                });
+              } else if (pendingTargets.length > 1 && splitSentences.length > 1) {
+                pendingTargets.forEach((tgt, idx) => {
+                  attachTranslationToMessage(tgt, splitSentences[idx] || splitSentences[splitSentences.length - 1]);
+                });
+              } else {
+                // 1对1或无法精确拆分时，赋予最近的一条未翻译消息
+                const lastTarget = pendingTargets[pendingTargets.length - 1];
+                await attachTranslationToMessage(lastTarget, fullTranslateText);
+              }
+            } else {
+              // 兜底：若没有明确匹配，挂在最近的一条 friend 消息上
+              const fallbackTarget = [...messages].reverse().find(
+                (item) => item.sender === "friend" && (!item.type || item.type === "voice")
+              );
+              if (fallbackTarget) {
+                await attachTranslationToMessage(fallbackTarget, translatePost.text);
+              }
             }
             continue;
           }
 
           const voicePost = parseVoiceCommand(outputText);
           if (voicePost) {
-            messages.push({
+            const vMsg = {
               id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
               type: "voice",
               sender: "friend",
@@ -30591,66 +32506,157 @@ function extractRoleReplyLines(reply) {
               createdAtMs: Date.now(),
               read: true,
               replyTo: outputReplyTo
-            });
+            };
+            messages.push(vMsg);
+            appendMessageItemDirectly(vMsg, messages);
             notificationItems.push({ text: `[语音] ${voicePost.text}` });
-            renderThreadMessages(messages);
             renderChatList();
             continue;
           }
 
-          const stickerCommand = parseStickerCommand(outputText);
-          const sticker = stickerCommand
-            ? findRoleStickerByHint(stickerCommand.hint)
-            : findRoleStickerByHint(outputText);
+          // 群聊多角色发言归属解析：精准提取【角色名】，正文彻底洗净
+          let speakerRoleName = "";
+          let speakerRoleId = "";
+          let speakerAvatar = "";
+          let finalLineText = outputText;
+          let activeReplyTo = outputReplyTo;
 
-          if (sticker) {
-            messages.push({
-              id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-              type: "sticker",
-              sender: "friend",
-              url: sticker.url,
-              note: sticker.note || "未备注",
-              rawText: rawItemText,
-              createdAtMs: Date.now(),
-              text: "",
-              read: true
-            });
+          if (isGroup) {
+            let activeSpeakerRole = null;
+            const groupSpeakerMatch = outputText.match(/^[【\[]([^】\]\n]{1,16})[】\]]\s*[:：]?\s*([\s\S]*)$/);
 
-            notificationItems.push({
-              text: `发送了表情包${sticker.note ? `：${sticker.note}` : ""}`
-            });
+            if (groupSpeakerMatch) {
+              const matchedName = groupSpeakerMatch[1].trim();
+              activeSpeakerRole = groupMembersMap.get(matchedName) ||
+                (base.groupChat.memberIds || []).map(id => appState.qq.roles.find(r => getRoleId(r) === id)).find(r => r && (r.name === matchedName || base.groupChat.memberNicks?.[getRoleId(r)] === matchedName));
+              
+              if (activeSpeakerRole) {
+                lastKnownGroupSpeaker = activeSpeakerRole;
+                finalLineText = groupSpeakerMatch[2].trim() || "";
+              }
+            } else if (lastKnownGroupSpeaker) {
+              activeSpeakerRole = lastKnownGroupSpeaker;
+            }
 
-            renderThreadMessages(messages);
-            renderChatList();
-            continue;
+            if (!activeSpeakerRole && base.groupChat.memberIds?.length) {
+              activeSpeakerRole = appState.qq.roles.find(r => getRoleId(r) === base.groupChat.memberIds[0]);
+              lastKnownGroupSpeaker = activeSpeakerRole;
+            }
+
+            if (activeSpeakerRole) {
+              speakerRoleId = getRoleId(activeSpeakerRole);
+              speakerRoleName = base.groupChat.memberNicks?.[speakerRoleId] || activeSpeakerRole.name;
+              speakerAvatar = activeSpeakerRole.avatar || "";
+
+              // 检查内部是否携带引用回复指令
+              const innerRef = parseRoleReplyReferenceCommand(finalLineText);
+              if (innerRef) {
+                if (innerRef.replyTo) activeReplyTo = innerRef.replyTo;
+                finalLineText = innerRef.text;
+              }
+
+              // 检查该角色是否自主修改了群名片：[改群名片:新名片]
+              const changeNickMatch = finalLineText.match(/\[?\s*(?:改群名片|改名片|修改群名片|设置群名片)\s*[:：]\s*([^\]]+)\]?/i);
+              if (changeNickMatch) {
+                const newNick = changeNickMatch[1].trim().slice(0, 12);
+                if (newNick) {
+                  if (!base.groupChat.memberNicks) base.groupChat.memberNicks = {};
+                  base.groupChat.memberNicks[speakerRoleId] = newNick;
+                  
+                  const noticeMsg = {
+                    id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+                    type: "system_notice",
+                    text: `「${activeSpeakerRole.name}」修改群名片为「${newNick}」`,
+                    createdAtMs: Date.now()
+                  };
+                  messages.push(noticeMsg);
+                  appendMessageItemDirectly(noticeMsg, messages);
+                  renderChatList();
+                  await saveState();
+                  continue;
+                }
+              }
+            }
           }
 
+          // 表情包指令解析与严格防穿帮：如果本地找不到表情，彻底抹除 [表情包:xxx] 指令，绝不当普通文字输出
+          const stickerMatch = finalLineText.match(/\[?\s*(?:表情包|发送表情包|sticker)\s*[:：]\s*([^\]]+)\]?/i);
+          if (stickerMatch) {
+            const stickerHint = stickerMatch[1].trim();
+            const sticker = findRoleStickerByHint(stickerHint);
+            if (sticker) {
+              const stMsg = {
+                id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+                type: "sticker",
+                sender: "friend",
+                senderId: speakerRoleId,
+                senderName: speakerRoleName,
+                senderAvatar: speakerAvatar,
+                url: sticker.url,
+                note: sticker.note || "未备注",
+                rawText: rawItemText,
+                createdAtMs: Date.now(),
+                text: "",
+                read: true
+              };
+              messages.push(stMsg);
+              appendMessageItemDirectly(stMsg, messages);
+              notificationItems.push({
+                text: `${speakerRoleName ? speakerRoleName + '：' : ''}发送了表情包${sticker.note ? `：${sticker.note}` : ""}`
+              });
+              renderChatList();
+              continue;
+            } else {
+              // 关键防穿帮：抹掉假表情包指令，保留其余文本
+              finalLineText = finalLineText.replace(/\[?\s*(?:表情包|发送表情包|sticker)\s*[:：]\s*[^\]]+\]?/gi, "").trim();
+            }
+          }
+
+          // 核心防空泡屏障：洗净文本后若内容为空，绝对严禁创建消息！
+          finalLineText = cleanRoleReplyText(finalLineText).trim();
+          if (!finalLineText) continue;
+
+          let newNormalMsg;
           if (getActiveChatSettings().forceVoice) {
-            messages.push({
+            newNormalMsg = {
               id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
               type: "voice",
               sender: "friend",
-              text: outputText,
+              senderId: speakerRoleId,
+              senderName: speakerRoleName,
+              senderAvatar: speakerAvatar,
+              text: finalLineText,
               rawText: rawItemText,
               createdAtMs: Date.now(),
               read: true,
-              replyTo: outputReplyTo
-            });
-            notificationItems.push({ text: `[语音] ${outputText}` });
+              replyTo: activeReplyTo || outputReplyTo
+            };
+            notificationItems.push({ text: `[语音] ${finalLineText}` });
           } else {
-            messages.push({
+            newNormalMsg = {
               id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
               sender: "friend",
-              text: outputText,
+              senderId: speakerRoleId,
+              senderName: speakerRoleName,
+              senderAvatar: speakerAvatar,
+              text: finalLineText,
               rawText: rawItemText,
               read: true,
               createdAtMs: Date.now(),
-              replyTo: outputReplyTo,
-              translationPending: translateOn && isSpaceDelimitedLanguage(outputText)
-            });
-            notificationItems.push({ text: outputText });
+              replyTo: activeReplyTo || outputReplyTo,
+              translationPending: translateOn && isSpaceDelimitedLanguage(finalLineText)
+            };
+            notificationItems.push({ text: speakerRoleName ? `${speakerRoleName}: ${finalLineText}` : finalLineText });
           }
-          renderThreadMessages(messages);
+
+          // 将本轮情境描写附着在角色的第一条消息上，作为该轮对话的随行记忆
+          if (extractedScenario && !messages.some(m => m.scenario === extractedScenario)) {
+            newNormalMsg.scenario = extractedScenario;
+          }
+
+          messages.push(newNormalMsg);
+          // 增量弹出气泡，保持旧消息完全静止，享受弹性果冻入场效果！
+          appendMessageItemDirectly(newNormalMsg, messages);
           renderChatList();
         }
 
@@ -30844,7 +32850,14 @@ function extractRoleReplyLines(reply) {
     if (closeMomentComposer) closeMomentComposer.addEventListener("click", closeMomentComposerPage);
     if (cancelMomentComposer) cancelMomentComposer.addEventListener("click", closeMomentComposerPage);
 
-    if (openChatSettings) openChatSettings.addEventListener("click", openChatSettingsModal);
+    if (openChatSettings)         openChatSettings.addEventListener("click", () => {
+          const base = getCurrentChatBase();
+          if (base.isGroup) {
+            openGroupChatSettingsModal();
+          } else {
+            openChatSettingsModal();
+          }
+        });
     if (closeChatSettings) closeChatSettings.addEventListener("click", closeChatSettingsModal);
     if (cancelChatSettings) cancelChatSettings.addEventListener("click", closeChatSettingsModal);
     if (openChatRoleEditPage) openChatRoleEditPage.addEventListener("click", openChatRoleEditModal);
@@ -32002,6 +34015,13 @@ function extractRoleReplyLines(reply) {
     if (qqSendMessage) qqSendMessage.addEventListener("click", sendCurrentMessage);
     if (qqRoleReply) qqRoleReply.addEventListener("click", requestRoleReply);
 
+    if (triggerAiGhostReply) {
+      triggerAiGhostReply.addEventListener("click", () => {
+        if (qqAttachMenu) qqAttachMenu.classList.remove("show");
+        requestAiGhostReplyForMe();
+      });
+    }
+
     if (regenerateRoleReply) {
       regenerateRoleReply.addEventListener("click", () => {
         if (qqAttachMenu) qqAttachMenu.classList.remove("show");
@@ -32359,6 +34379,8 @@ function extractRoleReplyLines(reply) {
           key: "",
           modelName: "",
           modelList: [],
+          presets: [],
+          currentPresetId: "",
           globalVisionEnabled: false,
           realTimeAwarenessEnabled: false,
           minimaxGroupId: "",
@@ -32545,9 +34567,622 @@ function extractRoleReplyLines(reply) {
     setupPerformanceMode();
 setupPwaManifest();
 setupCatpawAutoFullscreen();
+setupApiPresetListeners();
 updateTime();
 setupBatteryStatus();
 
+
+    // ============================================================
+    // 角色专属记忆簿系统：UI 渲染、切换、编辑与批量管理
+    // ============================================================
+    const openMemoryBookPageBtn = document.querySelector("#openMemoryBookPageBtn");
+    const memoryBookPage = document.querySelector("#memoryBookPage");
+    const closeMemoryBookPage = document.querySelector("#closeMemoryBookPage");
+    const memoryBookRoleTabs = document.querySelector("#memoryBookRoleTabs");
+    const memoryBookSearchInput = document.querySelector("#memoryBookSearchInput");
+    const memoryBookCardList = document.querySelector("#memoryBookCardList");
+    const openCreateMemoryModalBtn = document.querySelector("#openCreateMemoryModalBtn");
+    const memoryBookPageSubtitle = document.querySelector("#memoryBookPageSubtitle");
+
+    const memoryBookEditorModal = document.querySelector("#memoryBookEditorModal");
+    const memoryBookEditorModalTitle = document.querySelector("#memoryBookEditorModalTitle");
+    const closeMemoryBookEditorModal = document.querySelector("#closeMemoryBookEditorModal");
+    const cancelMemoryBookEditBtn = document.querySelector("#cancelMemoryBookEditBtn");
+    const saveMemoryBookEditBtn = document.querySelector("#saveMemoryBookEditBtn");
+    const memoryBookTargetRoleSelect = document.querySelector("#memoryBookTargetRoleSelect");
+    const memoryEventContentInput = document.querySelector("#memoryEventContentInput");
+    const memoryRoleThoughtInput = document.querySelector("#memoryRoleThoughtInput");
+
+    const toggleMemoryBatchDeleteBtn = document.querySelector("#toggleMemoryBatchDeleteBtn");
+    const memoryBatchActionsBar = document.querySelector("#memoryBatchActionsBar");
+    const memoryBatchSelectedCount = document.querySelector("#memoryBatchSelectedCount");
+    const memoryBatchSelectAllBtn = document.querySelector("#memoryBatchSelectAllBtn");
+    const memoryBatchDeleteConfirmBtn = document.querySelector("#memoryBatchDeleteConfirmBtn");
+
+    let activeMemoryBookRoleId = "";
+    let isMemoryBatchMode = false;
+    let selectedMemoryIds = new Set();
+    let editingMemoryEntryId = "";
+
+    function ensureRoleMemoryBook(role) {
+      if (!role) return;
+      if (!Array.isArray(role.memoryBook)) role.memoryBook = [];
+    }
+
+    function addMemoryBookEntry(roleId, content, thought = "", source = "chat") {
+      ensureQqState();
+      const role = appState.qq.roles.find(r => getRoleId(r) === roleId);
+      if (!role) return;
+      ensureRoleMemoryBook(role);
+
+      const entry = {
+        id: `mem_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        content: content.trim(),
+        thought: thought.trim(),
+        source, // "chat" | "manual"
+        createdAt: new Date().toLocaleString("zh-CN")
+      };
+
+      role.memoryBook.unshift(entry);
+      saveState();
+
+      // 触发弹窗/Toast 提示
+      queueChatToast({
+        roleId,
+        avatar: role.avatar || "",
+        name: role.name || "角色",
+        text: `悄悄在记忆簿记下了：${content}`
+      });
+
+      if (memoryBookPage?.classList.contains("show")) {
+        renderMemoryBookCards();
+      }
+    }
+
+    function openMemoryBook() {
+      ensureQqState();
+      if (!memoryBookPage) return;
+
+      const roles = appState.qq.roles || [];
+      if (!roles.length) {
+        showCatpawAlert("还没有任何角色，请先创建角色再使用记忆簿功能。");
+        return;
+      }
+
+      if (!activeMemoryBookRoleId || !roles.some(r => getRoleId(r) === activeMemoryBookRoleId)) {
+        activeMemoryBookRoleId = getRoleId(roles[0]);
+      }
+
+      isMemoryBatchMode = false;
+      selectedMemoryIds.clear();
+      renderMemoryBookTabs();
+      renderMemoryBookCards();
+      memoryBookPage.classList.add("show");
+    }
+
+    function closeMemoryBook() {
+      if (memoryBookPage) memoryBookPage.classList.remove("show");
+      isMemoryBatchMode = false;
+      selectedMemoryIds.clear();
+    }
+
+    function renderMemoryBookTabs() {
+      if (!memoryBookRoleTabs) return;
+      ensureQqState();
+      memoryBookRoleTabs.innerHTML = "";
+
+      const roles = appState.qq.roles || [];
+      roles.forEach(role => {
+        ensureRoleMemoryBook(role);
+        const roleId = getRoleId(role);
+        const isActive = roleId === activeMemoryBookRoleId;
+        const count = role.memoryBook.length;
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `sticker-group-tab${isActive ? " active" : ""}`;
+        btn.textContent = `${role.name || "角色"} (${count})`;
+        btn.addEventListener("click", () => {
+          activeMemoryBookRoleId = roleId;
+          selectedMemoryIds.clear();
+          renderMemoryBookTabs();
+          renderMemoryBookCards();
+        });
+
+        memoryBookRoleTabs.appendChild(btn);
+      });
+    }
+
+    function renderMemoryBookCards() {
+      if (!memoryBookCardList) return;
+      ensureQqState();
+
+      const role = appState.qq.roles.find(r => getRoleId(r) === activeMemoryBookRoleId);
+      if (!role) {
+        memoryBookCardList.innerHTML = `<div class="sticker-manager-empty">请选择一个角色查看记忆簿。</div>`;
+        return;
+      }
+      ensureRoleMemoryBook(role);
+
+      if (memoryBookPageSubtitle) {
+        memoryBookPageSubtitle.textContent = `【${role.name}】的专属小本本 · 共 ${role.memoryBook.length} 条记忆`;
+      }
+
+      const keyword = (memoryBookSearchInput?.value || "").trim().toLowerCase();
+      const filtered = role.memoryBook.filter(item => {
+        if (!keyword) return true;
+        return (item.content || "").toLowerCase().includes(keyword) || (item.thought || "").toLowerCase().includes(keyword);
+      });
+
+      if (memoryBatchActionsBar) {
+        memoryBatchActionsBar.style.display = isMemoryBatchMode ? "flex" : "none";
+        if (memoryBatchSelectedCount) memoryBatchSelectedCount.textContent = `已选 ${selectedMemoryIds.size} 项`;
+      }
+      if (toggleMemoryBatchDeleteBtn) {
+        toggleMemoryBatchDeleteBtn.textContent = isMemoryBatchMode ? "退出管理" : "批量管理";
+      }
+
+      memoryBookCardList.innerHTML = "";
+
+      if (!filtered.length) {
+        memoryBookCardList.innerHTML = `<div class="sticker-manager-empty">${keyword ? "没有匹配的记忆条目。" : "小本本还是空的。在聊天中遇到有意义的瞬间，TA会偷偷记下，你也可以点击右上角【+】手动添加。"}</div>`;
+        return;
+      }
+
+      filtered.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.style.position = "relative";
+        card.style.background = "#fafafa";
+        card.style.borderRadius = "16px";
+        card.style.padding = "14px 16px";
+        card.style.display = "flex";
+        card.style.flexDirection = "column";
+        card.style.gap = "8px";
+        card.style.border = selectedMemoryIds.has(item.id) ? "1.5px solid #0f0f0f" : "1px solid #f0f0f0";
+        card.style.boxShadow = "0 2px 8px rgba(0,0,0,0.02)";
+
+        const headRow = document.createElement("div");
+        headRow.style.display = "flex";
+        headRow.style.alignItems = "center";
+        headRow.style.justifyContent = "space-between";
+
+        let checkHtml = "";
+        if (isMemoryBatchMode) {
+          checkHtml = `<input type="checkbox" data-mem-id="${item.id}" ${selectedMemoryIds.has(item.id) ? "checked" : ""} style="width:16px; height:16px; accent-color:#0f0f0f; margin-right:8px;" />`;
+        }
+
+        const tagText = item.source === "chat" ? "聊天自动收录" : "手动添加";
+        headRow.innerHTML = `
+          <div style="display:flex; align-items:center;">
+            ${checkHtml}
+            <span style="font-size:10px; font-weight:700; color:#888; background:#fff; padding:2px 8px; border-radius:999px; border:1px solid #eee;">
+              <i class="fa-solid fa-bookmark" style="margin-right:4px;"></i>记忆 #${role.memoryBook.length - index} · ${tagText}
+            </span>
+          </div>
+          <span style="font-size:10px; color:#aaa;">${item.createdAt || ""}</span>
+        `;
+
+        const contentBox = document.createElement("div");
+        contentBox.style.fontSize = "13px";
+        contentBox.style.color = "#111";
+        contentBox.style.fontWeight = "600";
+        contentBox.style.lineHeight = "1.5";
+        contentBox.textContent = item.content || "无内容";
+
+        card.appendChild(headRow);
+        card.appendChild(contentBox);
+
+        if (item.thought) {
+          const thoughtBox = document.createElement("div");
+          thoughtBox.style.background = "#ffffff";
+          thoughtBox.style.borderRadius = "12px";
+          thoughtBox.style.padding = "9px 12px";
+          thoughtBox.style.border = "1px dashed #e8e8e8";
+          thoughtBox.innerHTML = `
+            <div style="font-size:10.5px; color:#999; margin-bottom:3px; display:flex; align-items:center; gap:4px;">
+              <i class="fa-solid fa-feather-pointed" style="font-size:9px;"></i>【${role.name}的私密心声】
+            </div>
+            <div style="font-size:12px; color:#444; line-height:1.45;">${escapeHtml(item.thought)}</div>
+          `;
+          card.appendChild(thoughtBox);
+        }
+
+        // 卡片底部操作栏
+        if (!isMemoryBatchMode) {
+          const footRow = document.createElement("div");
+          footRow.style.display = "flex";
+          footRow.style.justifyContent = "flex-end";
+          footRow.style.gap = "8px";
+          footRow.style.marginTop = "2px";
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "qq-role-mini-btn";
+          editBtn.type = "button";
+          editBtn.textContent = "编辑";
+          editBtn.addEventListener("click", () => openEditMemoryModal(item));
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "qq-role-mini-btn danger";
+          delBtn.type = "button";
+          delBtn.textContent = "删除";
+          delBtn.addEventListener("click", async () => {
+            const confirmed = await showCatpawConfirm("确定要从该角色的记忆簿中删除这条记忆吗？");
+            if (!confirmed) return;
+            role.memoryBook = role.memoryBook.filter(m => m.id !== item.id);
+            await saveState();
+            renderMemoryBookTabs();
+            renderMemoryBookCards();
+          });
+
+          footRow.appendChild(editBtn);
+          footRow.appendChild(delBtn);
+          card.appendChild(footRow);
+        } else {
+          card.style.cursor = "pointer";
+          card.addEventListener("click", (e) => {
+            if (e.target.tagName.toLowerCase() === "input") return;
+            if (selectedMemoryIds.has(item.id)) selectedMemoryIds.delete(item.id);
+            else selectedMemoryIds.add(item.id);
+            renderMemoryBookCards();
+          });
+        }
+
+        memoryBookCardList.appendChild(card);
+      });
+
+      // 绑定多选框勾选
+      if (isMemoryBatchMode) {
+        memoryBookCardList.querySelectorAll("input[data-mem-id]").forEach(chk => {
+          chk.addEventListener("change", () => {
+            const id = chk.dataset.memId;
+            if (chk.checked) selectedMemoryIds.add(id);
+            else selectedMemoryIds.delete(id);
+            renderMemoryBookCards();
+          });
+        });
+      }
+    }
+
+    function openCreateMemoryModal() {
+      ensureQqState();
+      editingMemoryEntryId = "";
+      if (memoryBookEditorModalTitle) memoryBookEditorModalTitle.textContent = "添加记忆点";
+      if (memoryEventContentInput) memoryEventContentInput.value = "";
+      if (memoryRoleThoughtInput) memoryRoleThoughtInput.value = "";
+
+      if (memoryBookTargetRoleSelect) {
+        memoryBookTargetRoleSelect.innerHTML = "";
+        (appState.qq.roles || []).forEach(r => {
+          const opt = document.createElement("option");
+          opt.value = getRoleId(r);
+          opt.textContent = r.name || "角色";
+          if (opt.value === activeMemoryBookRoleId) opt.selected = true;
+          memoryBookTargetRoleSelect.appendChild(opt);
+        });
+        memoryBookTargetRoleSelect.disabled = false;
+      }
+
+      if (memoryBookEditorModal) {
+        memoryBookEditorModal.style.setProperty("z-index", "110", "important");
+        memoryBookEditorModal.classList.add("show");
+      }
+    }
+
+    function openEditMemoryModal(item) {
+      ensureQqState();
+      editingMemoryEntryId = item.id;
+      if (memoryBookEditorModalTitle) memoryBookEditorModalTitle.textContent = "编辑记忆点";
+      if (memoryEventContentInput) memoryEventContentInput.value = item.content || "";
+      if (memoryRoleThoughtInput) memoryRoleThoughtInput.value = item.thought || "";
+
+      if (memoryBookTargetRoleSelect) {
+        memoryBookTargetRoleSelect.innerHTML = "";
+        const role = appState.qq.roles.find(r => getRoleId(r) === activeMemoryBookRoleId);
+        const opt = document.createElement("option");
+        opt.value = activeMemoryBookRoleId;
+        opt.textContent = role?.name || "当前角色";
+        memoryBookTargetRoleSelect.appendChild(opt);
+        memoryBookTargetRoleSelect.disabled = true;
+      }
+
+      if (memoryBookEditorModal) {
+        memoryBookEditorModal.style.setProperty("z-index", "110", "important");
+        memoryBookEditorModal.classList.add("show");
+      }
+    }
+
+    function closeMemoryBookEditor() {
+      memoryBookEditorModal?.classList.remove("show");
+      editingMemoryEntryId = "";
+    }
+
+    if (openMemoryBookPageBtn) openMemoryBookPageBtn.addEventListener("click", openMemoryBook);
+    if (closeMemoryBookPage) closeMemoryBookPage.addEventListener("click", closeMemoryBook);
+    if (openCreateMemoryModalBtn) openCreateMemoryModalBtn.addEventListener("click", openCreateMemoryModal);
+    if (closeMemoryBookEditorModal) closeMemoryBookEditorModal.addEventListener("click", closeMemoryBookEditor);
+    if (cancelMemoryBookEditBtn) cancelMemoryBookEditBtn.addEventListener("click", closeMemoryBookEditor);
+
+    if (memoryBookEditorModal) {
+      memoryBookEditorModal.addEventListener("click", (e) => {
+        if (e.target === memoryBookEditorModal) closeMemoryBookEditor();
+      });
+    }
+
+    if (saveMemoryBookEditBtn) {
+      saveMemoryBookEditBtn.addEventListener("click", async () => {
+        const targetRoleId = memoryBookTargetRoleSelect?.value || activeMemoryBookRoleId;
+        const content = (memoryEventContentInput?.value || "").trim();
+        const thought = (memoryRoleThoughtInput?.value || "").trim();
+
+        if (!content) {
+          await showCatpawAlert("请填写记忆事件与事实。");
+          return;
+        }
+
+        ensureQqState();
+        const role = appState.qq.roles.find(r => getRoleId(r) === targetRoleId);
+        if (!role) return;
+        ensureRoleMemoryBook(role);
+
+        if (editingMemoryEntryId) {
+          const entry = role.memoryBook.find(m => m.id === editingMemoryEntryId);
+          if (entry) {
+            entry.content = content;
+            entry.thought = thought;
+          }
+        } else {
+          role.memoryBook.unshift({
+            id: `mem_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            content,
+            thought,
+            source: "manual",
+            createdAt: new Date().toLocaleString("zh-CN")
+          });
+        }
+
+        await saveState();
+        closeMemoryBookEditor();
+        renderMemoryBookTabs();
+        renderMemoryBookCards();
+      });
+    }
+
+    if (memoryBookSearchInput) {
+      memoryBookSearchInput.addEventListener("input", () => renderMemoryBookCards());
+    }
+
+    if (toggleMemoryBatchDeleteBtn) {
+      toggleMemoryBatchDeleteBtn.addEventListener("click", () => {
+        isMemoryBatchMode = !isMemoryBatchMode;
+        selectedMemoryIds.clear();
+        renderMemoryBookCards();
+      });
+    }
+
+    if (memoryBatchSelectAllBtn) {
+      memoryBatchSelectAllBtn.addEventListener("click", () => {
+        const role = appState.qq.roles.find(r => getRoleId(r) === activeMemoryBookRoleId);
+        if (!role) return;
+        ensureRoleMemoryBook(role);
+        if (selectedMemoryIds.size === role.memoryBook.length) {
+          selectedMemoryIds.clear();
+        } else {
+          role.memoryBook.forEach(m => selectedMemoryIds.add(m.id));
+        }
+        renderMemoryBookCards();
+      });
+    }
+
+    if (memoryBatchDeleteConfirmBtn) {
+      memoryBatchDeleteConfirmBtn.addEventListener("click", async () => {
+        if (!selectedMemoryIds.size) {
+          await showCatpawAlert("请先勾选需要删除的记忆条目。");
+          return;
+        }
+        const confirmed = await showCatpawConfirm(`确定批量删除选中的 ${selectedMemoryIds.size} 条记忆吗？`);
+        if (!confirmed) return;
+
+        const role = appState.qq.roles.find(r => getRoleId(r) === activeMemoryBookRoleId);
+        if (!role) return;
+        ensureRoleMemoryBook(role);
+
+        role.memoryBook = role.memoryBook.filter(m => !selectedMemoryIds.has(m.id));
+        selectedMemoryIds.clear();
+        isMemoryBatchMode = false;
+        await saveState();
+        renderMemoryBookTabs();
+        renderMemoryBookCards();
+        await showCatpawAlert("已批量删除选中的记忆条目！");
+      });
+    }
+
+    // ============================================================
+    // 情境面板核心逻辑：拟真犹豫断续打字机、删改动画与渲染
+    // ============================================================
+    function initScenarioHudForCurrentRole() {
+      const base = getCurrentChatBase();
+      if (!toggleScenarioHudBtn) return;
+
+      if (base.isGroup) {
+        toggleScenarioHudBtn.style.display = "none";
+        closeScenarioHud();
+        return;
+      }
+
+      toggleScenarioHudBtn.style.display = "";
+
+      if (scenarioHudAvatar) {
+        setAvatarElementImage(scenarioHudAvatar, base.avatar || "");
+      }
+      if (scenarioHudRoleName) {
+        scenarioHudRoleName.textContent = getChatDisplayName(base);
+      }
+
+      const savedScenario = base.role?.currentScenario || "";
+      if (savedScenario) {
+        currentScenarioRawText = savedScenario;
+        displayScenarioFormattedStatic(savedScenario);
+      } else {
+        currentScenarioRawText = "";
+        if (scenarioTypedContent) {
+          scenarioTypedContent.innerHTML = '<span style="color:#999; font-style:italic;">等待下一轮会话开启，TA 会在这里实时写下此刻的神态细节、动作与心声…</span>';
+        }
+        if (scenarioTypeCursor) scenarioTypeCursor.style.display = "none";
+      }
+    }
+
+    function toggleScenarioHud() {
+      if (!scenarioHudPanel) return;
+      const isOpen = scenarioHudPanel.classList.contains("show");
+      if (isOpen) closeScenarioHud();
+      else openScenarioHud();
+    }
+
+    function openScenarioHud() {
+      if (!scenarioHudPanel) return;
+      initScenarioHudForCurrentRole();
+      scenarioHudPanel.classList.add("show");
+    }
+
+    function closeScenarioHud() {
+      if (scenarioHudPanel) scenarioHudPanel.classList.remove("show");
+    }
+
+    function formatScenarioHtml(raw) {
+      return escapeHtml(raw)
+        .replace(/~~(.*?)~~/g, '<del>$1</del>');
+    }
+
+    function displayScenarioFormattedStatic(text) {
+      if (activeScenarioTypingTimer) {
+        clearTimeout(activeScenarioTypingTimer);
+        activeScenarioTypingTimer = null;
+      }
+      if (scenarioTypedContent) {
+        scenarioTypedContent.innerHTML = formatScenarioHtml(text);
+      }
+      if (scenarioTypeCursor) scenarioTypeCursor.style.display = "none";
+    }
+
+    // 拟真打字机引擎：解析原句中的 ~~删改内容~~，模拟输入 -> 犹豫停顿 -> 逐字退格删掉 -> 输入新内容的真人手感！
+    function playScenarioTypewriterAnimation(fullText) {
+      if (!scenarioTypedContent || !scenarioHudPanel) return;
+
+      currentScenarioRawText = fullText;
+      openScenarioHud(); // 收到新情境时自然滑出面板
+
+      if (activeScenarioTypingTimer) {
+        clearTimeout(activeScenarioTypingTimer);
+        activeScenarioTypingTimer = null;
+      }
+
+      scenarioTypedContent.innerHTML = "";
+      if (scenarioTypeCursor) scenarioTypeCursor.style.display = "inline-block";
+
+      // 构建动作序列队列: { type: "add"|"delete"|"pause", char: string, delay: number }
+      const queue = [];
+      const regex = /~~(.*?)~~/g;
+      let lastIdx = 0;
+      let match;
+
+      while ((match = regex.exec(fullText)) !== null) {
+        // match 之前的常规文本
+        const prefix = fullText.slice(lastIdx, match.index);
+        for (const ch of prefix) {
+          const isPunctuation = /[，。！？…、\n]/.test(ch);
+          queue.push({ type: "add", char: ch, delay: isPunctuation ? 180 + Math.random() * 220 : 28 + Math.random() * 45 });
+        }
+
+        const deletePart = match[1];
+        // 模拟输入这串后来想删掉的内容
+        for (const ch of deletePart) {
+          queue.push({ type: "add", char: ch, delay: 40 + Math.random() * 50 });
+        }
+
+        // 模拟犹豫停顿：角色顿了顿，反悔了
+        queue.push({ type: "pause", delay: 650 + Math.random() * 400 });
+
+        // 逐字退格删除动画
+        for (let i = 0; i < deletePart.length; i++) {
+          queue.push({ type: "backspace", delay: 26 + Math.random() * 24 });
+        }
+
+        // 删除完毕后稍微停歇
+        queue.push({ type: "pause", delay: 220 + Math.random() * 150 });
+
+        // 并在正式历史中补上一段视觉上的删除线文本，供玩家后续阅读与回味
+        queue.push({ type: "add_del_block", text: `~~${deletePart}~~`, delay: 100 });
+
+        lastIdx = regex.lastIndex;
+      }
+
+      // 剩余尾部文本
+      const rest = fullText.slice(lastIdx);
+      for (const ch of rest) {
+        const isPunctuation = /[，。！？…、\n]/.test(ch);
+        queue.push({ type: "add", char: ch, delay: isPunctuation ? 160 + Math.random() * 200 : 26 + Math.random() * 42 });
+      }
+
+      let currentRawDraft = "";
+      let stepIndex = 0;
+
+      function step() {
+        if (stepIndex >= queue.length) {
+          if (scenarioTypeCursor) scenarioTypeCursor.style.display = "none";
+          displayScenarioFormattedStatic(fullText);
+          return;
+        }
+
+        const action = queue[stepIndex];
+        stepIndex++;
+
+        if (action.type === "add") {
+          currentRawDraft += action.char;
+          scenarioTypedContent.innerHTML = formatScenarioHtml(currentRawDraft);
+        } else if (action.type === "backspace") {
+          currentRawDraft = currentRawDraft.slice(0, -1);
+          scenarioTypedContent.innerHTML = formatScenarioHtml(currentRawDraft);
+        } else if (action.type === "add_del_block") {
+          currentRawDraft += action.text;
+          scenarioTypedContent.innerHTML = formatScenarioHtml(currentRawDraft);
+        }
+
+        // 自动将情境内容推到底部
+        if (scenarioHudBody) {
+          scenarioHudBody.scrollTop = scenarioHudBody.scrollHeight;
+        }
+
+        activeScenarioTypingTimer = setTimeout(step, action.delay || 35);
+      }
+
+      step();
+    }
+
+    function openScenarioFullView() {
+      if (!scenarioFullViewModal || !currentScenarioRawText) return;
+      const base = getCurrentChatBase();
+
+      if (scenarioFullViewAuthor) scenarioFullViewAuthor.textContent = `${getChatDisplayName(base)} 的第一人称情境`;
+      if (scenarioFullViewLength) scenarioFullViewLength.textContent = `共 ${currentScenarioRawText.length} 字`;
+      if (scenarioFullViewContent) scenarioFullViewContent.innerHTML = formatScenarioHtml(currentScenarioRawText);
+
+      scenarioFullViewModal.classList.add("show");
+    }
+
+    function closeScenarioFullViewModal() {
+      if (scenarioFullViewModal) scenarioFullViewModal.classList.remove("show");
+    }
+
+    if (toggleScenarioHudBtn) toggleScenarioHudBtn.addEventListener("click", toggleScenarioHud);
+    if (closeScenarioHudBtn) closeScenarioHudBtn.addEventListener("click", closeScenarioHud);
+    if (openScenarioFullViewBtn) openScenarioFullViewBtn.addEventListener("click", openScenarioFullView);
+    if (closeScenarioFullView) closeScenarioFullView.addEventListener("click", closeScenarioFullViewModal);
+
+    if (scenarioFullViewModal) {
+      scenarioFullViewModal.addEventListener("click", (e) => {
+        if (e.target === scenarioFullViewModal) closeScenarioFullViewModal();
+      });
+    }
 
     openDatabase()
       .then(loadState)
