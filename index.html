@@ -2969,16 +2969,26 @@
 
     .qq-history-toggle {
       width: fit-content;
-      margin: 4px auto 14px;
-      border: 0;
+      margin: 8px auto 14px;
+      border: 0 !important;
       border-radius: 999px;
-      padding: 7px 13px;
-      color: #666666;
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid rgba(255, 255, 255, 0.92);
-      box-shadow: 0 8px 16px rgba(150, 150, 150, 0.1);
+      padding: 5px 14px;
+      color: #999999;
+      background: #f5f5f5;
+      box-shadow: none !important;
       font-size: 11px;
-      font-weight: 1000;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    .qq-history-toggle:active {
+      background: #ececec;
+      opacity: 0.7;
     }
 
     .qq-home-editable {
@@ -3091,8 +3101,8 @@
       min-height: 0;
       flex: 1;
       padding: 0;
-      --chat-avatar-size: 30px;
-      --chat-avatar-radius: 10px;
+      --chat-avatar-size: 44px;
+      --chat-avatar-radius: 50%;
       --self-bubble-color: #ffffff;
       --friend-bubble-color: #f0f2f5;
       background: #ffffff;
@@ -3437,7 +3447,7 @@
 
     .qq-message-row {
       display: flex;
-      align-items: flex-end; /* 让底部对齐基线，方便气泡通过上浮与下外边距实现“在头像上方一些”的错位 */
+      align-items: flex-start !important;
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -3447,10 +3457,10 @@
     }
 
     .qq-message-avatar-stack {
-      margin: 0;
+      margin: 0 !important;
       flex-shrink: 0;
       align-self: flex-start;
-      margin-top: 14px; /* 头像稍微下压，让气泡显现在头像上方一些 */
+      margin-top: 0 !important;
     }
 
     .qq-message-avatar {
@@ -3463,7 +3473,7 @@
 
     .qq-message-bubble {
       position: relative;
-      max-width: 74%;
+      max-width: min(72%, 260px) !important;
       padding: var(--bubble-pad-y, 9px) var(--bubble-pad-x, 16px) !important;
       border-radius: 20px !important;
       font-size: var(--bubble-font-size, 13.5px);
@@ -3585,6 +3595,95 @@
 
     .qq-reply-preview.show {
       display: flex;
+    }
+
+    /* 群聊 @ 成员快捷选人悬浮弹窗 */
+    .group-mention-popup {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: calc(58px + env(safe-area-inset-bottom));
+      z-index: 38;
+      max-height: 220px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+      border: 1px solid #f0f0f0;
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      animation: mentionPopUp 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+    }
+
+    .group-mention-popup.show {
+      display: flex;
+    }
+
+    @keyframes mentionPopUp {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .group-mention-header {
+      padding: 6px 10px 4px;
+      font-size: 10px;
+      color: #999;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-bottom: 1px solid #f7f7f7;
+      margin-bottom: 2px;
+    }
+
+    .group-mention-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s ease;
+      width: 100%;
+    }
+
+    .group-mention-item:active,
+    .group-mention-item.active {
+      background: #f5f5f5;
+    }
+
+    .group-mention-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      background-color: #eee;
+      flex-shrink: 0;
+    }
+
+    .group-mention-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .group-mention-tag {
+      font-size: 9.5px;
+      color: #999;
+      background: #f0f0f0;
+      padding: 1px 6px;
+      border-radius: 999px;
+      flex-shrink: 0;
     }
 
     .qq-reply-preview span {
@@ -4525,7 +4624,7 @@
     }
 
     .qq-thread {
-      --chat-avatar-size: 40px;
+      --chat-avatar-size: 44px;
       --chat-avatar-radius: 50%;
       --self-bubble-color: #ffffff;
       --friend-bubble-color: #ffffff;
@@ -4548,7 +4647,8 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      border: 1px solid rgba(255, 255, 255, 0.88);
+      border: none !important;
+      box-shadow: none !important;
     }
 
     .qq-message-row {
@@ -7899,7 +7999,7 @@
     }
 
     .chat-image-message {
-      max-width: 74%;
+      max-width: min(72%, 260px);
       min-width: 0;
       padding: 0;
       background: transparent;
@@ -10437,7 +10537,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-width: 240px;
+      max-width: min(72%, 260px);
     }
 
     .voice-bubble {
@@ -10961,10 +11061,9 @@
       justify-content: flex-end;
     }
 
-    /* 头像整体往下沉 10px，形成截图里的“气泡高悬在头像上方一些”的视觉层次 */
     .qq-page.thread-mode .qq-message-avatar-stack {
-      width: var(--chat-avatar-size, 38px);
-      margin: 10px 0 0 !important;
+      width: var(--chat-avatar-size, 44px);
+      margin: 0 !important;
       display: grid !important;
       justify-items: center;
       gap: 4px;
@@ -10995,7 +11094,7 @@
     .qq-page.thread-mode .qq-message-bubble {
       display: inline-block !important;
       width: fit-content !important;
-      max-width: 100% !important;
+      max-width: min(72%, 260px) !important;
       min-height: 0;
       padding: var(--bubble-pad-y, 8px) var(--bubble-pad-x, 14px) !important;
       border-radius: 18px !important;
@@ -11323,56 +11422,9 @@
       background: #fbfbfb !important;
     }
 
-    /* 会话开场卡：单头像 + 签名 + 日期胶囊 */
+    /* 会话开场卡已移除 */
     .thr-intro {
-      display: grid;
-      justify-items: center;
-      padding: 18px 20px 26px;
-    }
-
-    .thr-intro-avatar {
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      background-color: #f2f2f2;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      box-shadow: 0 0 0 5px #ffffff, 0 0 0 6.5px #ededed;
-      filter: grayscale(0.35);
-    }
-
-    .thr-intro strong {
-      display: block;
-      margin-top: 16px;
-      color: #1b1b1b;
-      font-size: 19px;
-      line-height: 1.2;
-      font-weight: 700;
-      letter-spacing: -0.035em;
-      text-align: center;
-    }
-
-    .thr-intro p {
-      max-width: 250px;
-      margin-top: 8px;
-      color: #a6a6a6;
-      font-size: 12.5px;
-      line-height: 1.6;
-      font-weight: 400;
-      text-align: center;
-    }
-
-    .thr-intro-date {
-      margin-top: 14px;
-      padding: 5px 13px;
-      border-radius: 999px;
-      background: #f4f4f4;
-      color: #a0a0a0;
-      font-size: 10.5px;
-      font-weight: 500;
-      letter-spacing: 0.02em;
-      font-variant-numeric: tabular-nums;
+      display: none !important;
     }
 
     /* 气泡弹性入场动画 (iOS Spring 拟真手感，增量插入专属) */
@@ -11433,14 +11485,16 @@
     }
 
     .qq-page.thread-mode .qq-message-avatar-stack {
-      width: var(--chat-avatar-size, 38px);
-      margin-top: 14px !important; /* 核心错位：让头像相对于第一条气泡向下沉，呈现气泡高悬在上 */
+      width: var(--chat-avatar-size, 44px);
+      margin-top: 0 !important;
     }
 
     .qq-page.thread-mode .qq-message-avatar {
-      width: var(--chat-avatar-size, 38px) !important;
-      height: var(--chat-avatar-size, 38px) !important;
-      box-shadow: 0 0 0 1.5px #f0f0f0 !important;
+      width: var(--chat-avatar-size, 44px) !important;
+      height: var(--chat-avatar-size, 44px) !important;
+      border-radius: var(--chat-avatar-radius, 50%) !important;
+      border: none !important;
+      box-shadow: none !important;
       filter: grayscale(0.3);
     }
 
@@ -12850,7 +12904,7 @@
 
     /* 1. 带引用的气泡：保留自身归属底色与不对称圆角 */
     .qq-page.thread-mode .qq-message-bubble:has(.qq-message-quote) {
-      max-width: 74% !important;
+      max-width: min(72%, 260px) !important;
       display: block !important;
       padding: var(--bubble-pad-y, 9px) var(--bubble-pad-x, 13px) !important;
       color: #262626 !important;
@@ -12879,7 +12933,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      max-width: 74%;
+      max-width: min(72%, 260px);
       min-width: 0;
       width: auto;
       flex: 0 1 auto;
@@ -12887,6 +12941,9 @@
 
     .qq-page.thread-mode .group-msg-bubble-col.self-col {
       align-items: flex-end;
+      display: flex;
+      flex-direction: column;
+      max-width: min(72%, 260px);
     }
 
     .qq-page.thread-mode .group-msg-bubble-col .qq-message-bubble {
@@ -12899,7 +12956,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      max-width: 74%;
+      max-width: min(72%, 260px);
       min-width: 0;
       width: auto;
       flex: 0 1 auto;
@@ -12907,6 +12964,23 @@
 
     .qq-message-bubble-col.self-col {
       align-items: flex-end;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 确保我方气泡与卡片在上，时间戳固定展示在气泡下方 */
+    .qq-message-bubble-col.self-col > *:not(.qq-bubble-meta),
+    .group-msg-bubble-col.self-col > *:not(.qq-bubble-meta) {
+      order: 1 !important;
+    }
+
+    .qq-message-bubble-col.self-col .qq-bubble-meta,
+    .group-msg-bubble-col.self-col .qq-bubble-meta {
+      order: 2 !important;
+      margin-top: 4px !important;
+      margin-bottom: 0 !important;
+      justify-content: flex-end !important;
+      width: 100% !important;
     }
 
     .qq-message-bubble-col .qq-message-bubble {
@@ -17042,6 +17116,11 @@
 
             <div class="qq-thread-compose">
               <div class="qq-typing-hint" id="qqTypingText"></div>
+              <!-- 群聊 @ 成员实时选人浮动弹窗 -->
+              <div class="group-mention-popup" id="groupMentionPopup" aria-label="选择要@的群成员">
+                <div class="group-mention-header">选择要 @ 的群成员</div>
+                <div id="groupMentionList" style="display:flex; flex-direction:column; gap:2px;"></div>
+              </div>
               <button class="qq-compose-heart-btn" id="openAttachMenu" type="button" aria-label="附加功能菜单">
                 <i class="fa-solid fa-plus"></i>
               </button>
@@ -18425,6 +18504,14 @@
         </div>
 
         <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-regular fa-clock"></i> 显示/隐藏群消息时间戳</div>
+          <div class="chat-toggle-row">
+            <span>开启后，每条消息旁显示发送时刻（如 07:58）</span>
+            <input id="groupTimestampToggle" type="checkbox" />
+          </div>
+        </div>
+
+        <div class="chat-setting-item">
           <div class="chat-setting-title"><i class="fa-solid fa-broom"></i> 清空群记录</div>
           <button class="liquid-btn chat-delete-contact" id="clearGroupChatHistoryBtn" type="button">清空本群所有聊天记录</button>
         </div>
@@ -19445,8 +19532,13 @@ const ENHANCED_SYSTEM_PROMPT = getEnhancedSystemPrompt("角色");
     const groupMembersManagerList = document.querySelector("#groupMembersManagerList");
     const addMoreMemberToGroupBtn = document.querySelector("#addMoreMemberToGroupBtn");
     const groupMuteAllToggle = document.querySelector("#groupMuteAllToggle");
+    const groupTimestampToggle = document.querySelector("#groupTimestampToggle");
     const clearGroupChatHistoryBtn = document.querySelector("#clearGroupChatHistoryBtn");
     const dissolveGroupChatBtn = document.querySelector("#dissolveGroupChatBtn");
+
+    // 群聊 @ 选人弹窗
+    const groupMentionPopup = document.querySelector("#groupMentionPopup");
+    const groupMentionList = document.querySelector("#groupMentionList");
 
     const groupAddMemberModal = document.querySelector("#groupAddMemberModal");
     const closeGroupAddMember = document.querySelector("#closeGroupAddMember");
@@ -19477,10 +19569,12 @@ const ENHANCED_SYSTEM_PROMPT = getEnhancedSystemPrompt("角色");
       if (!group.mutedMembers || typeof group.mutedMembers !== "object") group.mutedMembers = {};
       if (!group.ownerId) group.ownerId = "self";
 
+      const chatSettings = getActiveChatSettings();
       if (groupSettingsNameInput) groupSettingsNameInput.value = group.name || "";
       if (groupSettingsTopicInput) groupSettingsTopicInput.value = group.topic || "";
       if (groupSettingsMyNickInput) groupSettingsMyNickInput.value = group.myGroupNick || "";
       if (groupMuteAllToggle) groupMuteAllToggle.checked = !!group.muteAll;
+      if (groupTimestampToggle) groupTimestampToggle.checked = !!chatSettings.showAvatarTimestamp;
       if (groupMemberCountLabel) groupMemberCountLabel.textContent = String((group.memberIds?.length || 0) + 1);
 
       if (groupSettingsAvatarPreview) {
@@ -19873,6 +19967,12 @@ const ENHANCED_SYSTEM_PROMPT = getEnhancedSystemPrompt("角色");
       group.myGroupNick = groupSettingsMyNickInput?.value.trim() || "";
       group.muteAll = !!groupMuteAllToggle?.checked;
 
+      const chatSettings = getActiveChatSettings();
+      if (groupTimestampToggle) {
+        chatSettings.showAvatarTimestamp = !!groupTimestampToggle.checked;
+      }
+
+      applyActiveChatSettings();
       setThreadHeader(group.name, group.avatar || "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg");
       renderChatList();
       renderThreadMessages(group.messages || []);
@@ -26475,9 +26575,9 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         boundStickerGroups: [],
         boundWorldBookGroups: [],
         wallpaper: "",
-        avatarSize: 30,
+        avatarSize: 44,
         scenarioHudEnabled: true,
-        avatarRadius: 10,
+        avatarRadius: 50,
         bubblePadY: 7,
         bubblePadX: 10,
         bubbleFontSize: 14,
@@ -27381,46 +27481,25 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       const hiddenCount = Math.max(0, allRows.length - visibleCount);
       const rows = allRows.slice(-visibleCount);
 
-      if (hiddenCount <= 0) {
-        const intro = document.createElement("div");
-        intro.className = "thr-intro";
-
-        const introAvatar = document.createElement("div");
-        introAvatar.className = "thr-intro-avatar";
-        setAvatarElementImage(introAvatar, base.avatar || "");
-
-        const introName = document.createElement("strong");
-        introName.textContent = getChatDisplayName(base);
-
-        const introDesc = document.createElement("p");
-        const personaText = (settings.contactNote || base.role?.persona || "").trim();
-        introDesc.textContent = personaText
-          ? personaText.slice(0, 42)
-          : "这里是你们的对话开始的地方";
-
-        const introDate = document.createElement("span");
-        introDate.className = "thr-intro-date";
-        const firstAt = allRows[0]?.createdAtMs;
-        introDate.textContent = firstAt
-          ? formatMessageGapTime(firstAt)
-          : formatMessageGapTime(Date.now());
-
-        intro.appendChild(introAvatar);
-        intro.appendChild(introName);
-        intro.appendChild(introDesc);
-        intro.appendChild(introDate);
-        qqThreadMessages.appendChild(intro);
-      }
+      // 移除了开场的单头像、人设简介和开场日期卡片（.thr-intro）
 
       if (hiddenCount > 0) {
         const expandButton = document.createElement("button");
         expandButton.className = "qq-history-toggle";
         expandButton.type = "button";
         const nextCount = Math.min(25, hiddenCount);
-        expandButton.textContent = `再展开更早的 ${nextCount} 条消息`;
+        expandButton.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i><span>查看更早的 ${nextCount} 条消息</span>`;
         expandButton.addEventListener("click", () => {
+          const prevScrollHeight = qqThreadMessages.scrollHeight;
+          const prevScrollTop = qqThreadMessages.scrollTop;
+          
           chatHistoryVisibleCounts.set(chatId, visibleCount + 25);
           renderThreadMessages(getCurrentChatMessages());
+          
+          requestAnimationFrame(() => {
+            const addedHeight = qqThreadMessages.scrollHeight - prevScrollHeight;
+            qqThreadMessages.scrollTop = prevScrollTop + addedHeight;
+          });
         });
         qqThreadMessages.appendChild(expandButton);
       }
@@ -28219,7 +28298,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       settings.boundStickerGroups = getMultiSelectValues(chatStickerGroupSelect);
       settings.boundMyStickerGroups = getMultiSelectValues(chatMyStickerGroupSelect);
       settings.boundWorldBookGroups = getMultiSelectValues(chatWorldBookGroupSelect);
-      settings.avatarSize = Number(chatAvatarSizeRange?.value || 40);
+      settings.avatarSize = Number(chatAvatarSizeRange?.value || 44);
       settings.avatarRadius = Number(chatAvatarRadiusRange?.value || 50);
       settings.bubblePadY = Number(chatBubblePadYRange?.value || 7);
       settings.bubblePadX = Number(chatBubblePadXRange?.value || 10);
@@ -32179,9 +32258,11 @@ function isSpaceDelimitedLanguage(text) {
         if (isGroup && item.type !== "system_notice") {
           const groupData = base.groupChat;
           const speakerName = isFriend
-            ? ((item.senderId && groupData?.memberNicks?.[item.senderId]) || item.senderName || "群友")
+            ? ((item.senderId && groupData?.memberNicks?.[item.senderId]) || item.senderName || "群成员")
             : (groupData?.myGroupNick || appState.theme.profileTitle || "群主我");
-          textContent = `【${speakerName}】${textContent}`;
+          // 确保去除原本可能残留的旧前缀，防止【角色A】【角色A】多层嵌套污染
+          const cleanTextWithoutPrefix = textContent.replace(/^[【\[][^】\]\n]{1,20}[】\]]\s*[:：]?\s*/, "");
+          textContent = `【${speakerName}】${cleanTextWithoutPrefix}`;
         }
 
         // 仅当开启识图且为本轮最新一张图片时，挂载 image_url
@@ -32229,16 +32310,29 @@ function isSpaceDelimitedLanguage(text) {
             }
           });
 
+          // 聚合：提取你在每个角色会话中填写的专属人设（myName）
+          const myProfilesWithRoles = [];
+          members.forEach((m) => {
+            const rId = getRoleId(m);
+            const setting = appState.qq.chatSettings?.[rId];
+            if (setting?.myName && setting.myName.trim()) {
+              myProfilesWithRoles.push(`- 在【${m.name}】眼中，user（我）的设定为：\n${setting.myName.trim()}`);
+            }
+          });
+
           const memberDescriptions = members.map((m, i) => {
             const rId = getRoleId(m);
             const isMemAdmin = group.adminIds?.includes(rId);
             const customTitle = group.memberTitles?.[rId] || "无";
             const customNick = group.memberNicks?.[rId] || m.name;
+            const roleSetting = appState.qq.chatSettings?.[rId];
+            const myBoundName = roleSetting?.myName ? `（在此角色眼里我的人设/昵称：${roleSetting.myName}）` : "";
+
             return `成员 ${i + 1}：【${m.name}】（群名片：${customNick}）
 - 身份：${isMemAdmin ? '群管理员' : '普通群成员'}
 - 专属群头衔：${customTitle}
 - 人设性格：${m.persona || "日常角色"}
-- 与我关系：${m.story || "群友"}`;
+- 与 user（我）的专属私人关系与经历：${m.story || "群友"}${myBoundName}`;
           }).join("\n\n");
 
           const userTitle = group.memberTitles?.["self"] || "";
@@ -32247,16 +32341,20 @@ function isSpaceDelimitedLanguage(text) {
           rolePersonaHeader = [
             `【当前多角色真实 QQ 群聊设定】`,
             `群名称：${base.name}`,
-            `群主（我）：${userNick}${userTitle ? `（头衔：${userTitle}）` : ''}，群主拥有最高管理权。`,
+            `群主 user（我）：${userNick}${userTitle ? `（头衔：${userTitle}）` : ''}，群主拥有最高管理权。`,
+            myProfilesWithRoles.length ? `【极其重要：user（我）在各个角色心目中的专属人设与身份】：\n${myProfilesWithRoles.join("\n\n")}` : `【user（我）的基础身份】：普通群主，真诚自然。`,
             `群设定与公告氛围：${group.topic || "日常多人交流群"}`,
-            `群成员档案：\n${memberDescriptions}`,
+            `群成员档案与彼此关系：\n${memberDescriptions}`,
             mutedNames.length ? `【⚠️ 真实 QQ 群禁言警告】：\n当前处于禁言状态的角色包括：${mutedNames.join("、")}。这些角色在此轮聊天中【绝对禁止发任何发言】，请让其他未被禁言的角色发言！` : '',
-            `【真实 QQ 群演播与群名片规则】`,
-            `1. 本次回复由群内适合接话的 1 到 2 位角色各自自发发言。`,
-            `2. 严格格式：每一个角色的每一句话开头必须指明角色：【角色原名】发言内容。例如：【叶子】哈哈，今天好热闹。`,
-            `3. 【角色自主修改群名片特权】：角色如果想改自己在群里的名片，可独占一行输出 [改群名片:新名片]，例如：【叶子】[改群名片:已黑化别惹我]。系统会自动在群内发布换名片通知！`,
-            `4. 角色之间严格各自独立，严禁一人分饰两角互串，严禁混淆人设！`,
-            `5. 严禁出现不在群名单中的角色发言。`
+          `【真实 QQ 群演播与群名片规则（极其重要：防止串人）】`,
+          `1. 本次回复由群内适合接话的 1 到 2 位角色各自自发发言。若 user 消息中包含了「@某个角色」，该被 @ 的角色拥有【绝对优先回复权】，必须站出来针对 user 的问题或调侃做出正面回应！`,
+          `2. 【必须严格使用原名】：每位角色发言的每一行必须严格以【角色原名】开头，绝不能使用自定义名片或乱加前缀！`,
+          `   正确示范：`,
+          `   【${members[0]?.name || "角色名"}】这条是我说的内容。`,
+          `   【${members[1]?.name || members[0]?.name || "角色名"}】这条是我接着说的。`,
+          `3. 【角色自主修改群名片特权】：角色如果想改自己在群里的名片，可独占一行输出 [改群名片:新名片]，例如：【叶子】[改群名片:已黑化别惹我]。系统会自动在群内发布换名片通知！`,
+          `4. 角色之间严格各自独立，严禁一人分饰两角互串，严禁混淆人设！`,
+          `5. 严禁出现不在群名单中的角色发言。`
           ].filter(Boolean).join("\n\n");
 
           corePersonaGuide = getEnhancedSystemPrompt(base.name, String(config.model || "").toLowerCase().includes("gemini"));
@@ -32571,43 +32669,57 @@ function isSpaceDelimitedLanguage(text) {
             let activeSpeakerRole = null;
             let detectedName = "";
 
+            // 1. 强力提取角色名：支持【角色名】、[角色名]、角色名:、角色名：等格式
             if (prefixMatch) {
               detectedName = prefixMatch[1].trim();
-              finalLineText = prefixMatch[2].trim(); // 彻底剥离【角色名】前缀，气泡中绝不留残留括号！
+              finalLineText = prefixMatch[2].trim();
             } else {
-              // 兼容冒号前缀格式，如 "江行止：沈从意..."
-              const colonMatch = finalLineText.match(/^([\u4e00-\u9fa5a-zA-Z0-9_\s]{2,12})[:：]\s*([\s\S]+)$/);
+              const colonMatch = finalLineText.match(/^([^\s:：]{1,16})[:：]\s*([\s\S]+)$/);
               if (colonMatch) {
                 const candidateName = colonMatch[1].trim();
-                const matchedInRoles = appState.qq.roles.some(r => r.name === candidateName || (base.groupChat && base.groupChat.memberNicks?.[getRoleId(r)] === candidateName));
-                if (matchedInRoles) {
+                const matchedInMembers = (base.groupChat.memberIds || []).some(id => {
+                  const r = appState.qq.roles.find(item => getRoleId(item) === id);
+                  return r && (r.name === candidateName || (base.groupChat.memberNicks && base.groupChat.memberNicks[id] === candidateName) || r.name.includes(candidateName) || candidateName.includes(r.name));
+                });
+                if (matchedInMembers) {
                   detectedName = candidateName;
                   finalLineText = colonMatch[2].trim();
                 }
               }
             }
 
+            // 清理可能附带的身份修饰，如“管理员·叶子” -> “叶子”
             if (detectedName) {
-              // 模糊匹配群成员
-              activeSpeakerRole = groupMembersMap.get(detectedName) ||
-                (base.groupChat.memberIds || []).map(id => appState.qq.roles.find(r => getRoleId(r) === id)).find(r => r && (r.name === detectedName || (base.groupChat.memberNicks && base.groupChat.memberNicks[getRoleId(r)] === detectedName) || r.name.includes(detectedName) || detectedName.includes(r.name)));
+              detectedName = detectedName.replace(/^(?:群主|管理员|管理|群友|成员)[·\s_-]*/, "").trim();
+            }
 
-              // 若群内无此人，尝试在全局角色库中匹配
+            // 2. 精准匹配群成员
+            if (detectedName) {
+              const groupRoles = (base.groupChat.memberIds || [])
+                .map(id => appState.qq.roles.find(r => getRoleId(r) === id))
+                .filter(Boolean);
+
+              // 优先全等匹配
+              activeSpeakerRole = groupRoles.find(r => r.name === detectedName || (base.groupChat.memberNicks && base.groupChat.memberNicks[getRoleId(r)] === detectedName));
+
+              // 其次双向包含模糊匹配
               if (!activeSpeakerRole) {
-                activeSpeakerRole = appState.qq.roles.find(r => r.name === detectedName || r.name.includes(detectedName));
+                activeSpeakerRole = groupRoles.find(r => r.name.includes(detectedName) || detectedName.includes(r.name));
+              }
+
+              // 再次全局库匹配
+              if (!activeSpeakerRole) {
+                activeSpeakerRole = appState.qq.roles.find(r => r.name === detectedName || r.name.includes(detectedName) || detectedName.includes(r.name));
               }
 
               if (activeSpeakerRole) {
                 lastKnownGroupSpeaker = activeSpeakerRole;
               }
-            } else if (lastKnownGroupSpeaker) {
-              activeSpeakerRole = lastKnownGroupSpeaker;
             }
 
-            // 兜底保护
-            if (!activeSpeakerRole && base.groupChat.memberIds?.length) {
-              activeSpeakerRole = appState.qq.roles.find(r => getRoleId(r) === base.groupChat.memberIds[0]);
-              lastKnownGroupSpeaker = activeSpeakerRole;
+            // 3. 若当前行无名字（换行气泡），优先继承上一句的发言者，绝不随意甩给第0个成员！
+            if (!activeSpeakerRole && lastKnownGroupSpeaker) {
+              activeSpeakerRole = lastKnownGroupSpeaker;
             }
 
             if (activeSpeakerRole) {
@@ -32615,9 +32727,9 @@ function isSpaceDelimitedLanguage(text) {
               speakerRoleName = (base.groupChat.memberNicks && base.groupChat.memberNicks[speakerRoleId]) || activeSpeakerRole.name;
               speakerAvatar = activeSpeakerRole.avatar || "";
             } else {
-              // 无法匹配到角色对象时，直接使用提取到的名称自愈
-              speakerRoleName = detectedName || "群成员";
-              speakerAvatar = base.avatar || "";
+              // 匹配不到时，直接以提取到的名字呈现，绝不篡改成别的角色
+              speakerRoleName = detectedName || (lastKnownGroupSpeaker ? lastKnownGroupSpeaker.name : "群成员");
+              speakerAvatar = lastKnownGroupSpeaker ? (lastKnownGroupSpeaker.avatar || "") : (base.avatar || "");
             }
 
             // 检查内部是否携带引用回复指令
@@ -34287,9 +34399,119 @@ function isSpaceDelimitedLanguage(text) {
       });
     }
 
+    // ============================================================
+    // 群聊 @ 选人弹窗核心逻辑（输入 @ 实时匹配角色与插入）
+    // ============================================================
+    function closeGroupMentionPopup() {
+      if (groupMentionPopup) groupMentionPopup.classList.remove("show");
+    }
+
+    function checkGroupMentionTrigger() {
+      const base = getCurrentChatBase();
+      if (!base.isGroup || !base.groupChat || !qqMessageInput || !groupMentionPopup || !groupMentionList) {
+        closeGroupMentionPopup();
+        return;
+      }
+
+      const text = qqMessageInput.value;
+      const cursorPos = qqMessageInput.selectionStart ?? text.length;
+      const textBeforeCursor = text.slice(0, cursorPos);
+
+      // 提取光标前最近的一个 @ 及其后的关键词（不含空格）
+      const atMatch = textBeforeCursor.match(/@([^\s@]*)$/);
+      if (!atMatch) {
+        closeGroupMentionPopup();
+        return;
+      }
+
+      const query = atMatch[1].trim().toLowerCase();
+      const group = base.groupChat;
+      const members = (group.memberIds || [])
+        .map(id => appState.qq.roles.find(r => getRoleId(r) === id))
+        .filter(Boolean);
+
+      // 过滤匹配：支持角色本名、群名片、拼音简写
+      const matches = members.filter(m => {
+        const id = getRoleId(m);
+        const name = (m.name || "").toLowerCase();
+        const nick = (group.memberNicks?.[id] || "").toLowerCase();
+        if (!query) return true; // 仅输入 @ 时显示全部成员
+        return name.includes(query) || nick.includes(query);
+      });
+
+      if (!matches.length) {
+        closeGroupMentionPopup();
+        return;
+      }
+
+      groupMentionList.innerHTML = "";
+      matches.forEach((m) => {
+        const id = getRoleId(m);
+        const nick = group.memberNicks?.[id] || m.name || "成员";
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "group-mention-item";
+
+        const av = document.createElement("div");
+        av.className = "group-mention-avatar";
+        setAvatarElementImage(av, m.avatar || "");
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "group-mention-name";
+        nameSpan.textContent = nick;
+
+        btn.appendChild(av);
+        btn.appendChild(nameSpan);
+
+        if (nick !== m.name) {
+          const tag = document.createElement("span");
+          tag.className = "group-mention-tag";
+          tag.textContent = m.name;
+          btn.appendChild(tag);
+        }
+
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          insertMentionRole(nick, atMatch.index, cursorPos);
+        });
+
+        groupMentionList.appendChild(btn);
+      });
+
+      groupMentionPopup.classList.add("show");
+    }
+
+    function insertMentionRole(chosenName, atIndex, cursorPos) {
+      if (!qqMessageInput) return;
+      const originalText = qqMessageInput.value;
+      const beforeAt = originalText.slice(0, atIndex);
+      const afterCursor = originalText.slice(cursorPos);
+      const inserted = `@${chosenName} `;
+      qqMessageInput.value = `${beforeAt}${inserted}${afterCursor}`;
+
+      const newCursorPos = beforeAt.length + inserted.length;
+      qqMessageInput.focus();
+      qqMessageInput.setSelectionRange(newCursorPos, newCursorPos);
+      closeGroupMentionPopup();
+    }
+
     if (qqMessageInput) {
+      qqMessageInput.addEventListener("input", checkGroupMentionTrigger);
+      qqMessageInput.addEventListener("keyup", (e) => {
+        if (e.key === "Escape") {
+          closeGroupMentionPopup();
+        } else if (e.key !== "Enter") {
+          checkGroupMentionTrigger();
+        }
+      });
+      qqMessageInput.addEventListener("blur", () => {
+        // 延迟关闭，保证点击候选人列表时事件能正常触发
+        setTimeout(closeGroupMentionPopup, 250);
+      });
       qqMessageInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
+          closeGroupMentionPopup();
           event.preventDefault();
           sendCurrentMessage();
         }
