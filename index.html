@@ -1257,7 +1257,7 @@
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
       overscroll-behavior-y: contain;
-      padding-bottom: calc(100px + env(safe-area-inset-bottom));
+      padding-bottom: calc(110px + env(safe-area-inset-bottom));
     }
 
     .qq-main::-webkit-scrollbar {
@@ -3487,30 +3487,45 @@
       touch-action: manipulation;
     }
 
-    /* 仿截图：对方气泡朝向左侧头像的小尖尾巴 */
+    /* 接收方（对方）气泡朝向左下方的小尾巴：一比一复刻内凹弧线与圆角融合 */
     .qq-message-row.friend .qq-message-bubble::before {
       content: "";
       position: absolute;
-      left: -6px;
-      bottom: 8px;
-      width: 10px;
-      height: 10px;
-      background: inherit;
-      clip-path: polygon(100% 0, 0 100%, 100% 100%);
+      left: -3px;
+      bottom: -1px;
+      width: 13px;
+      height: 13px;
+      background: inherit !important;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      transform: scaleX(-1);
+      transform-origin: center center;
       pointer-events: none;
+      z-index: 1;
     }
 
-    /* 我方气泡朝向右侧头像的小尖尾巴 */
+    /* 发送方（我方）气泡小尾巴：接收方的镜像体，朝向右下方头像 */
     .qq-message-row.self .qq-message-bubble::before {
       content: "";
       position: absolute;
-      right: -6px;
-      bottom: 8px;
-      width: 10px;
-      height: 10px;
-      background: inherit;
-      clip-path: polygon(0 0, 100% 100%, 0 100%);
+      right: -3px;
+      bottom: -1px;
+      width: 13px;
+      height: 13px;
+      background: inherit !important;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      transform: none;
       pointer-events: none;
+      z-index: 1;
     }
 
     .qq-message-row.self .qq-message-bubble {
@@ -4719,8 +4734,34 @@
     }
 
     .qq-thread.avatar-hidden .qq-message-avatar-stack,
-    .qq-thread.avatar-hidden .qq-message-avatar {
-      display: none;
+    .qq-thread.avatar-hidden .qq-message-avatar,
+    .qq-page.thread-mode .qq-thread.avatar-hidden .qq-message-avatar-stack,
+    .qq-page.thread-mode .qq-thread.avatar-hidden .qq-message-avatar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      flex-basis: 0 !important;
+    }
+
+    .qq-page.thread-mode .qq-thread.avatar-hidden .qq-message-row {
+      gap: 0 !important;
+    }
+
+    .qq-page.thread-mode .qq-thread.avatar-hidden .qq-message-row.friend {
+      justify-content: flex-start !important;
+      padding-left: 6px !important;
+    }
+
+    .qq-page.thread-mode .qq-thread.avatar-hidden .qq-message-row.self {
+      justify-content: flex-end !important;
+      padding-right: 6px !important;
+    }
+
+    .qq-page.thread-mode .qq-thread.avatar-hidden .qq-message-bubble-col,
+    .qq-page.thread-mode .qq-thread.avatar-hidden .group-msg-bubble-col {
+      overflow: visible !important;
     }
 
     .qq-message-row.subsequent-msg .qq-message-avatar {
@@ -8879,7 +8920,7 @@
     }
 
     #qqPanelChats .qq-list {
-      padding: 2px 18px 0;
+      padding: 2px 18px calc(80px + env(safe-area-inset-bottom));
     }
 
     #qqPanelChats .qq-chat-row {
@@ -11332,7 +11373,7 @@
       align-items: center;
       min-height: 82px;
       padding: calc(8px + env(safe-area-inset-top)) 14px 10px !important;
-      background: #ffffff !important;
+      background: #fbfbfb !important;
       border-bottom: 0.5px solid rgba(0, 0, 0, 0.06) !important;
       box-shadow: none !important;
     }
@@ -11452,7 +11493,7 @@
 
     .qq-page.thread-mode .qq-thread-messages {
       padding: 8px 16px calc(72px + env(safe-area-inset-bottom)) !important;
-      background: #fbfbfb !important;
+      background: #ffffff !important;
     }
 
     /* 会话开场卡已移除 */
@@ -11563,30 +11604,45 @@
       border-radius: 20px !important;
     }
 
-    /* 仿截图效果：对方气泡朝向左下侧头像的小尖角 */
+    /* 聊天会话页：接收方（对方）气泡朝向左下方小尾巴 */
     .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble::before {
       content: "";
       position: absolute;
-      left: -5px;
-      bottom: 6px;
-      width: 10px;
-      height: 10px;
-      background: inherit;
-      clip-path: polygon(100% 0, 0 100%, 100% 100%);
+      left: -3px;
+      bottom: -1px;
+      width: 13px;
+      height: 13px;
+      background: inherit !important;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      transform: scaleX(-1);
+      transform-origin: center center;
       pointer-events: none;
+      z-index: 1;
     }
 
-    /* 仿截图效果：我方气泡朝向右下侧头像的小尖角 */
+    /* 聊天会话页：发送方（我方）气泡小尾巴，接收方的镜像体 */
     .qq-page.thread-mode .qq-message-row.self .qq-message-bubble::before {
       content: "";
       position: absolute;
-      right: -5px;
-      bottom: 6px;
-      width: 10px;
-      height: 10px;
-      background: inherit;
-      clip-path: polygon(0 0, 100% 100%, 0 100%);
+      right: -3px;
+      bottom: -1px;
+      width: 13px;
+      height: 13px;
+      background: inherit !important;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0,0 L14.5,0 C14.5,7 16.5,14.5 20,20 C11,19.5 3.5,13.5 0,0 Z' fill='black'/%3E%3C/svg%3E");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      transform: none;
       pointer-events: none;
+      z-index: 1;
     }
 
     /* 连续发言时取消后续气泡的小尖角，保持整洁 */
@@ -21662,6 +21718,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
     let dbInstance = null;
 
     const DEFAULT_PWA_DESKTOP_ICON = "https://i.postimg.cc/fW0vHc6S/IMG-0042.jpg";
+    const DEFAULT_ROLE_AVATAR = "https://i.postimg.cc/FF29mLxw/IMG-0160.jpg";
 
     // QQ 全局选择器完整模板与注释
     const QQ_SELECTORS_TEMPLATE = `/* ============================================================
@@ -25223,7 +25280,8 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
               "3. 需要分条时直接回车换行，一行就是一条消息气泡。严禁在同一行里用空格断句。",
               "4. 不输出 Markdown、代码块、引号包裹、括号动作、标题或任何格式说明。",
               "5. 如果要发表情包 / 照片 / 文字图 / 语音，必须独占一行并用半角中括号完整包裹，例如 [表情包:备注] 或 [语音:要说的话]。这一轮不要用转账和朋友圈指令。",
-              "6. 输出的第一个字符就是我要说的第一个字。"
+              "6. 【严禁普通聊天消息包裹中括号】：普通对话文字直接输出，绝对严禁在常规聊天气泡外层添加 '[' 和 ']'，绝对禁止单独输出孤立的 '[' 或 ']' 符号！",
+              "7. 输出的第一个字符就是我要说的第一个字。"
             ].join("\n")
           },
           {
@@ -27335,6 +27393,9 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (!roleEditorModal) return;
       syncRoleGroupOptions();
       updateRolePreview();
+      if (!roleEditorModal.dataset.avatar) {
+        setAvatarElementImage(rolePreviewAvatar, DEFAULT_ROLE_AVATAR);
+      }
       roleEditorModal.classList.add("show");
     }
 
@@ -27707,7 +27768,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       return {
         id: activeChatId,
         name: role?.name || "未命名角色",
-        avatar: role?.avatar || "",
+        avatar: role?.avatar || DEFAULT_ROLE_AVATAR,
         role: role || null,
         isGroup: false,
         messages: Array.isArray(role?.messages) ? role.messages : []
@@ -28179,7 +28240,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       avatar.className = "qq-message-avatar";
       avatar.setAttribute("aria-hidden", "true");
       
-      const friendAvatarSrc = isGroup ? (item.senderAvatar || base.avatar || "") : (base.avatar || "");
+      const friendAvatarSrc = isGroup ? (item.senderAvatar || base.avatar || DEFAULT_ROLE_AVATAR) : (base.avatar || DEFAULT_ROLE_AVATAR);
       setAvatarElementImage(avatar, isFriend ? friendAvatarSrc : appState.theme.avatarImage || "");
 
       avatarStack.appendChild(avatar);
@@ -28966,7 +29027,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         `;
 
         const avatarNode = item.querySelector(".ins-highlight-avatar");
-        setAvatarElementImage(avatarNode, role.avatar || "");
+        setAvatarElementImage(avatarNode, role.avatar || DEFAULT_ROLE_AVATAR);
 
         item.addEventListener("click", () => {
           if (!Array.isArray(role.messages)) role.messages = [];
@@ -29023,7 +29084,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           id: role.id || role.name,
           name: role.name || "未命名角色",
           subtitle: latest ? getDisplayMessageText(latest) : "点击进入对话",
-          avatar: role.avatar || "",
+          avatar: role.avatar || DEFAULT_ROLE_AVATAR,
           latestTime: latest?.createdAtMs || 0,
           isGroup: false,
           onClick: () => {
@@ -29203,7 +29264,7 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
           const avatar = article.querySelector(".qq-contact-avatar");
           const select = article.querySelector(".qq-role-group-select");
           const chatBtn = article.querySelector(".qq-role-mini-btn");
-          setAvatarElementImage(avatar, role.avatar || "");
+          setAvatarElementImage(avatar, role.avatar || DEFAULT_ROLE_AVATAR);
           article.addEventListener("click", (event) => {
             if (event.target.closest("select") || event.target.closest("button")) return;
             openRoleChat(roleId);
@@ -29250,7 +29311,10 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (msgInsightCount) msgInsightCount.textContent = String(totalMessageCount);
       if (msgTabCount) msgTabCount.textContent = `${roles.length} 个会话`;
 
-      setAvatarElementImage(defaultContactAvatar, "");
+      setAvatarElementImage(defaultContactAvatar, DEFAULT_ROLE_AVATAR);
+      if (rolePreviewAvatar && !roleEditorModal?.dataset.avatar) {
+        setAvatarElementImage(rolePreviewAvatar, DEFAULT_ROLE_AVATAR);
+      }
       renderInsHighlights();
       renderChatList();
       renderMoments();
@@ -31123,14 +31187,25 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       line = line.replace(/^[\[【]?\s*(?:记忆簿|记入记忆簿|角色记忆簿|存入记忆|记小本本)\s*[:：][^\]】]+[\]】]?/gi, "").trim();
       if (!line) return "";
 
-      // 剔除空的方括号或残留标点
+      // 剔除孤立的单边方括号、空括号或孤立残留符号（如单独的 "["、"]"、"【"、"】"、"[，" 等）
+      if (/^[\[【\]】()（）\s,，.。!！?？~～:：;；—\-]+$/.test(line)) {
+        return "";
+      }
       if (/^[\[【]\s*[\]】]$/.test(line) || /^[\[【]\s*[:：]\s*[\]】]$/.test(line)) {
         return "";
       }
 
       // 4. 特殊指令（情境描写、转账、朋友圈、照片、语音、表情包等）原样保护保留
-      if (/^\s*[\[【]\s*(?:情境描写|情境|场景|转账|处理转账|转账处理|收款决定|朋友圈|动态|照片|图片|文字图|语音|表情包|改群名片)\s*[:：]/.test(line)) {
+      if (/^\s*[\[【]\s*(?:情境描写|情境|场景|神态描写|环境描写|回复消息|引用回复|针对消息|转账|处理转账|转账处理|收款决定|朋友圈|动态|照片|图片|文字图|语音|表情包|改群名片|记忆簿)\s*[:：]/.test(line)) {
         return line;
+      }
+
+      // 4.1 如果是非指令普通文本，却被错误地用单侧或外层中括号包裹（例如 "[你好呀]" 或 "[你好" 或 "你好]"），自动剥离外壳中括号
+      if (/^[\[【]/.test(line) && !/^[\[【][^】\]\n]{1,20}[】\]]/.test(line)) {
+        line = line.replace(/^[\[【]+/, "").trim();
+      }
+      if (/[\]】]$/.test(line) && !/^[\[【]/.test(line)) {
+        line = line.replace(/[\]】]+$/, "").trim();
       }
 
       // 4. 群聊角色前缀 【角色名】 保护保留，由后续自愈系统精准提取与剥除
@@ -31292,6 +31367,11 @@ function isSpaceDelimitedLanguage(text) {
     // 翻译行永远保持整条，不做二次拆分
     if (/^\s*翻译\s*[:：]/.test(line)) {
       result.push(line);
+      continue;
+    }
+
+    // 严禁让单括号或纯标点独立成行
+    if (/^[\[【\]】()（）\s,，.。!！?？~～:：;；—\-]+$/.test(line)) {
       continue;
     }
 
@@ -31694,7 +31774,7 @@ function isSpaceDelimitedLanguage(text) {
         card.dataset.momentId = moment.id;
 
         const authorName = moment.authorType === "self" ? "我" : (role?.name || moment.authorName || "角色");
-        const avatar = moment.authorType === "self" ? appState.theme.avatarImage : (role?.avatar || "");
+        const avatar = moment.authorType === "self" ? appState.theme.avatarImage : (role?.avatar || DEFAULT_ROLE_AVATAR);
         const comments = Array.isArray(moment.comments) ? moment.comments : [];
         const scopeLabel = getMomentScopeLabel(moment.visibility);
 
@@ -32174,7 +32254,7 @@ function isSpaceDelimitedLanguage(text) {
 
         const face = document.createElement("span");
         face.className = "mcp-scope-face";
-        setAvatarElementImage(face, role.avatar || "");
+        setAvatarElementImage(face, role.avatar || DEFAULT_ROLE_AVATAR);
 
         const name = document.createElement("span");
         name.className = "mcp-scope-name";
@@ -32717,7 +32797,7 @@ function isSpaceDelimitedLanguage(text) {
     function updateRoleStatusModal(status, role) {
       if (roleStatusName) roleStatusName.textContent = role?.name || "角色";
       if (roleStatusTime) roleStatusTime.textContent = new Date().toLocaleString("zh-CN");
-      setAvatarElementImage(roleStatusAvatar, role?.avatar || "");
+      setAvatarElementImage(roleStatusAvatar, role?.avatar || DEFAULT_ROLE_AVATAR);
       if (roleStatusAction) roleStatusAction.textContent = status.action || "没有记录动作";
       if (roleStatusOutfit) roleStatusOutfit.textContent = status.outfit || "没有记录服饰";
       const desire = Math.max(0, Math.min(100, Number(status.desire || 50)));
@@ -33349,7 +33429,7 @@ function isSpaceDelimitedLanguage(text) {
         id: appState.qq.activeChatId || "default",
         name: getChatDisplayName(base),
         displayName: getChatDisplayName(base),
-        avatar: base.avatar || ""
+        avatar: base.avatar || DEFAULT_ROLE_AVATAR
       };
 
       markCurrentOutgoingMessagesRead();
@@ -33958,9 +34038,9 @@ function isSpaceDelimitedLanguage(text) {
             }
           }
 
-          // 核心防空泡屏障：洗净文本后若内容为空，或仅剩孤立的中括号 '[]'，绝对严禁创建消息！
+          // 核心防空泡屏障：洗净文本后若内容为空、或仅剩孤立括号、单边括号，严禁创建消息气泡！
           finalLineText = cleanRoleReplyText(finalLineText).trim();
-          if (!finalLineText || /^[\[【]\s*[\]】]$/.test(finalLineText)) continue;
+          if (!finalLineText || /^[\[【\]】()（）\s,，.。!！?？~～:：;；—\-]+$/.test(finalLineText)) continue;
 
           let newNormalMsg;
           if (getActiveChatSettings().forceVoice) {
@@ -35331,7 +35411,7 @@ function isSpaceDelimitedLanguage(text) {
       saveRoleEditor.addEventListener("click", async () => {
         const role = {
           id: `role_${Date.now()}`,
-          avatar: roleEditorModal?.dataset.avatar || "",
+          avatar: roleEditorModal?.dataset.avatar || DEFAULT_ROLE_AVATAR,
           name: roleNameInput?.value.trim() || "",
           gender: roleGenderInput?.value || "",
           persona: rolePersonaInput?.value.trim() || "",
@@ -35361,7 +35441,7 @@ function isSpaceDelimitedLanguage(text) {
         if (roleLocationInput) roleLocationInput.value = "";
         if (roleBirthdayInput) roleBirthdayInput.value = "";
         if (roleStoryInput) roleStoryInput.value = "";
-        setAvatarElementImage(rolePreviewAvatar, "");
+        setAvatarElementImage(rolePreviewAvatar, DEFAULT_ROLE_AVATAR);
         updateRolePreview();
         closeRoleEditorModal();
       });
