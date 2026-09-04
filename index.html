@@ -5693,6 +5693,7 @@
       border: none;
       border-top: 1px solid #f5f5f5;
       box-shadow: none;
+      min-width: 0;
     }
 
     .chat-setting-item:first-of-type {
@@ -9329,8 +9330,9 @@
       transform: none;
     }
 
-    /* QQ 美化全屏管理页 · 纯黑底白字大圆角按钮 */
-    #qqThemeManagerModal .insc-btn {
+    /* 全屏管理页通用 · 大圆角按钮 */
+    #qqThemeManagerModal .insc-btn,
+    #storageManagerModal .insc-btn {
       width: 100%;
       min-height: 46px;
       padding: 0 16px;
@@ -9350,19 +9352,39 @@
       transition: opacity 0.15s ease, background 0.15s ease, transform 0.1s ease;
     }
 
-    #qqThemeManagerModal .insc-btn:active {
+    #qqThemeManagerModal .insc-btn:active,
+    #storageManagerModal .insc-btn:active {
       background: #2a2a2a !important;
       opacity: 0.85;
       transform: scale(0.985);
     }
 
-    #qqThemeManagerModal .insc-btn.danger-btn {
+    #qqThemeManagerModal .insc-btn.danger-btn,
+    #storageManagerModal .insc-btn.danger-btn {
       background: #1c1c1c !important;
       color: #ff4d4f !important;
     }
 
-    #qqThemeManagerModal .insc-btn.danger-btn:active {
+    #qqThemeManagerModal .insc-btn.danger-btn:active,
+    #storageManagerModal .insc-btn.danger-btn:active {
       background: #2d1b1c !important;
+    }
+
+    /* 空间管理的特化配色（浅色底深色字） */
+    #storageManagerModal .insc-btn {
+      background: #f5f5f5 !important;
+      color: #0f0f0f !important;
+      box-shadow: none !important;
+    }
+    #storageManagerModal .insc-btn:active {
+      background: #ebebeb !important;
+    }
+    #storageManagerModal .insc-btn.danger-btn {
+      background: #fff5f5 !important;
+      color: #ff3b30 !important;
+    }
+    #storageManagerModal .insc-btn.danger-btn:active {
+      background: #ffe6e6 !important;
     }
 
     #stickerManagerModal .sticker-group-tabs {
@@ -11129,28 +11151,39 @@
     .qq-page.thread-mode .qq-message-quote {
       width: 100%;
       margin: 0 0 6px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      color: #888888 !important;
-      background: #efefed !important;
+      padding: 6px 10px;
+      border-radius: 12px;
+      color: rgba(255, 255, 255, 0.8) !important;
+      background: rgba(255, 255, 255, 0.14) !important;
       font-size: 11px;
-      line-height: 1.3;
-      font-weight: 600;
+      line-height: 1.35;
+      font-weight: 500;
     }
 
     .qq-page.thread-mode .qq-message-bubble:has(.qq-message-quote) {
-      max-width: min(76%, 276px) !important;
-      border-radius: 16px !important;
+      max-width: min(72%, 260px) !important;
+      border-radius: 20px !important;
       display: block;
-      padding: var(--bubble-pad-y, 8px) var(--bubble-pad-x, 10px) !important;
-      color: #050505 !important;
-      background: #ffffff !important;
+      padding: var(--bubble-pad-y, 8px) var(--bubble-pad-x, 12px) !important;
+      color: #ffffff !important;
+      box-sizing: border-box !important;
+    }
+
+    .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble:has(.qq-message-quote) {
+      background: #4f4f4f !important;
+      color: #ffffff !important;
+    }
+
+    .qq-page.thread-mode .qq-message-row.self .qq-message-bubble:has(.qq-message-quote) {
+      background: #2f2f2f !important;
+      color: #ffffff !important;
     }
 
     .qq-page.thread-mode .qq-message-bubble:has(.qq-message-quote) .qq-message-content {
+      color: #ffffff !important;
       font-size: var(--bubble-font-size, 14px);
-      line-height: 1.45;
-      font-weight: 600;
+      line-height: 1.5;
+      font-weight: 400;
     }
 
     .qq-page.thread-mode .qq-message-time-gap {
@@ -11563,10 +11596,10 @@
 
     .qq-page.thread-mode .qq-message-quote {
       margin-bottom: 6px;
-      padding: 5px 10px;
+      padding: 6px 10px;
       border-radius: 12px;
-      color: #9a9a9a !important;
-      background: #ffffff !important;
+      color: rgba(255, 255, 255, 0.8) !important;
+      background: rgba(255, 255, 255, 0.14) !important;
       font-size: 11px;
       font-weight: 400;
     }
@@ -12672,6 +12705,73 @@
       background: #333333;
     }
 
+    .bubble-theme-grid {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      width: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .bubble-theme-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .bubble-theme-card {
+      flex-shrink: 0;
+      width: 90px;
+      border-radius: 14px;
+      border: 2px solid transparent;
+      padding: 4px;
+      background: #f7f7f7;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bubble-theme-card.active {
+      border-color: #0f0f0f;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .bubble-theme-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 6px;
+      border-radius: 10px;
+      background: #f2f2f7;
+      pointer-events: none;
+    }
+
+    .btp-friend {
+      align-self: flex-start;
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 9px;
+      font-weight: 500;
+    }
+
+    .btp-self {
+      align-self: flex-end;
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 9px;
+      font-weight: 500;
+    }
+
+    .bubble-theme-name {
+      font-size: 11px;
+      color: #111;
+      text-align: center;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
     #pwaInstallModal .announcement-body,
     #announcementModal .announcement-body {
       gap: 8px !important;
@@ -12899,33 +12999,31 @@
 
     /* ============================================================
        引用回复样式重构 · 与聊天气泡语言对齐
-       无边框 · 无彩色 · 嵌套浅层区块
+       保持与正常气泡严格同色同圆角，最大宽度严格限制 min(72%, 260px)
        ============================================================ */
 
-    /* 1. 带引用的气泡：保留自身归属底色与不对称圆角 */
+    /* 1. 带引用的气泡：对齐对应的对话气泡背景色、圆角与最大宽度限制 */
     .qq-page.thread-mode .qq-message-bubble:has(.qq-message-quote) {
       max-width: min(72%, 260px) !important;
+      width: fit-content !important;
       display: block !important;
-      padding: var(--bubble-pad-y, 9px) var(--bubble-pad-x, 13px) !important;
-      color: #262626 !important;
-      background: #f2f2f2 !important;
+      padding: var(--bubble-pad-y, 8px) var(--bubble-pad-x, 12px) !important;
+      border-radius: 20px !important;
       border: 0 !important;
       box-shadow: none !important;
+      box-sizing: border-box !important;
     }
 
     .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble:has(.qq-message-quote) {
-      background: #f2f2f2 !important;
-      border-radius: 18px !important;
+      background: #4f4f4f !important;
+      color: #ffffff !important;
+      border-radius: 20px !important;
     }
 
     .qq-page.thread-mode .qq-message-row.self .qq-message-bubble:has(.qq-message-quote) {
-      background: #ececec !important;
-      border-radius: 18px !important;
-    }
-
-    .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble:has(.qq-message-quote),
-    .qq-page.thread-mode .qq-message-row.self .qq-message-bubble:has(.qq-message-quote) {
-      border-radius: 18px !important;
+      background: #2f2f2f !important;
+      color: #ffffff !important;
+      border-radius: 20px !important;
     }
 
     /* QQ 群聊多角色专属气泡与名字列布局：宽度与单聊严格统一，支持双方显示群名片 */
@@ -13005,21 +13103,21 @@
       clear: both;
     }
 
-    /* 2. 引用块：气泡内浅一层的嵌套区块，圆角语言与气泡一致 */
+    /* 2. 引用块：气泡内半透明自然衬底，圆角语言与气泡一致 */
     .qq-message-quote,
     .qq-page.thread-mode .qq-message-quote {
       display: block !important;
       width: 100% !important;
       max-width: 100% !important;
-      margin: 0 0 7px !important;
-      padding: 8px 11px !important;
+      margin: 0 0 6px !important;
+      padding: 6px 10px !important;
       border: 0 !important;
-      border-radius: 13px !important;
-      background: #ffffff !important;
+      border-radius: 12px !important;
+      background: rgba(255, 255, 255, 0.14) !important;
       box-shadow: none !important;
-      color: #9a9a9a !important;
+      color: rgba(255, 255, 255, 0.82) !important;
       font-size: 11.5px !important;
-      line-height: 1.5 !important;
+      line-height: 1.4 !important;
       font-weight: 400 !important;
       letter-spacing: -0.005em;
       white-space: normal !important;
@@ -13032,17 +13130,17 @@
     }
 
     .qq-page.thread-mode .qq-message-row.self .qq-message-quote {
-      border-radius: 13px !important;
-      background: #f7f7f7 !important;
-      color: #9a9a9a !important;
+      border-radius: 12px !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+      color: rgba(255, 255, 255, 0.82) !important;
     }
 
-    /* 3. 引用下方的正文：与普通气泡正文完全一致 */
+    /* 3. 引用下方的正文：白色字体，与普通气泡正文完全一致 */
     .qq-page.thread-mode .qq-message-bubble:has(.qq-message-quote) .qq-message-content {
       display: block;
-      color: #262626 !important;
+      color: #ffffff !important;
       font-size: var(--bubble-font-size, 14px) !important;
-      line-height: 1.55 !important;
+      line-height: 1.5 !important;
       font-weight: 400 !important;
       letter-spacing: -0.005em;
     }
@@ -17806,6 +17904,10 @@
           <span class="insc-highlight-circle"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
           <span>QQ美化</span>
         </button>
+        <button class="insc-highlight" type="button" id="openStorageManagerBtn">
+          <span class="insc-highlight-circle"><i class="fa-solid fa-database"></i></span>
+          <span>空间管理</span>
+        </button>
       </nav>
 
       <section class="card-panel" id="billPanel">
@@ -17960,6 +18062,48 @@
   </section>
 
   <!-- QQ 全局美化独立全屏管理页 -->
+  <section class="sticker-manager-modal" id="storageManagerModal" aria-label="本地存储空间管理">
+    <div class="sticker-manager-card">
+      <header class="sticker-manager-head">
+        <button class="card-back" id="closeStorageManagerBtn" type="button" aria-label="返回名片页">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="sticker-manager-title">
+          <strong>空间管理</strong>
+          <span id="storageTotalStatus">正在计算 IndexedDB 占用...</span>
+        </div>
+        <button class="card-add" id="refreshStorageBtn" type="button" aria-label="重新计算" title="重新计算">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+      </header>
+
+      <div class="card-form" style="padding-top: 4px;">
+        <!-- 环形数据统计图 -->
+        <div class="storage-donut-wrap" id="storageDonutChart">
+          <div class="storage-donut-hole">
+            <strong id="storageDonutTotal">0 MB</strong>
+            <span>总计使用</span>
+          </div>
+        </div>
+
+        <!-- 垃圾清理操作按钮 -->
+        <div class="card-form-actions" style="margin-bottom: 16px;">
+          <button class="insc-btn" id="cleanStorageCacheBtn" type="button">
+            <i class="fa-solid fa-broom" style="color:#888;"></i>一键清理状态缓存
+          </button>
+          <button class="insc-btn danger-btn" id="cleanStorageAllBtn" type="button">
+            <i class="fa-solid fa-dumpster-fire"></i>全清极速瘦身
+          </button>
+        </div>
+
+        <div style="font-size:11px; color:#8e8e93; font-weight:700; text-transform:uppercase; margin: 4px 0 10px 4px;">各模块明细数据</div>
+
+        <!-- 动态数据列表容器 -->
+        <div id="storageItemsContainer" style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 20px;"></div>
+      </div>
+    </div>
+  </section>
+
   <section class="sticker-manager-modal" id="qqThemeManagerModal" aria-label="QQ全局美化管理">
     <div class="sticker-manager-card">
       <header class="sticker-manager-head">
@@ -18493,6 +18637,11 @@
 
         <!-- 真实 QQ 群禁言规则 -->
         <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-palette"></i> 气泡主题</div>
+          <div class="bubble-theme-grid" id="groupBubbleThemeGrid"></div>
+        </div>
+
+        <div class="chat-setting-item">
           <div class="chat-setting-title"><i class="fa-solid fa-volume-xmark"></i> 群禁言管理 (真实 QQ 规则)</div>
           <div class="chat-toggle-row">
             <div>
@@ -18704,6 +18853,68 @@
   </section>
   <style>
     /* 纯白小球旋转转圈动效 (White Orbit Spinner) */
+    .storage-donut-wrap {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin: 10px auto 26px;
+      border-radius: 50%;
+      background: conic-gradient(#f0f0f0 0% 100%);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+      transition: background 0.4s ease;
+    }
+    .storage-donut-hole {
+      width: 106px;
+      height: 106px;
+      background: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+    .storage-donut-hole strong {
+      font-size: 19px;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: -0.02em;
+    }
+    .storage-donut-hole span {
+      font-size: 10px;
+      color: #888;
+      margin-top: 2px;
+    }
+    .storage-item-row {
+      display: grid;
+      grid-template-columns: 14px 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      background: #fafafa;
+      border-radius: 16px;
+      margin-bottom: 8px;
+    }
+    .storage-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .storage-item-info strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+    }
+    .storage-item-info span {
+      display: block;
+      margin-top: 3px;
+      font-size: 10px;
+      color: #888;
+    }
+
     .catpaw-white-orbit-spinner {
       width: 44px;
       height: 44px;
@@ -18944,6 +19155,11 @@
             </div>
           </div>
           <div class="chat-ai-result" id="chatAiImageResult">尚未上传感知图片。</div>
+        </div>
+
+        <div class="chat-setting-item">
+          <div class="chat-setting-title"><i class="fa-solid fa-palette"></i> 气泡主题</div>
+          <div class="bubble-theme-grid" id="chatBubbleThemeGrid"></div>
         </div>
 
         <div class="chat-setting-item">
@@ -19570,6 +19786,9 @@ const ENHANCED_SYSTEM_PROMPT = getEnhancedSystemPrompt("角色");
       if (!group.ownerId) group.ownerId = "self";
 
       const chatSettings = getActiveChatSettings();
+      if (document.getElementById("groupBubbleThemeGrid")) {
+        renderBubbleThemeGrid("groupBubbleThemeGrid", chatSettings.bubbleTheme || "default");
+      }
       if (groupSettingsNameInput) groupSettingsNameInput.value = group.name || "";
       if (groupSettingsTopicInput) groupSettingsTopicInput.value = group.topic || "";
       if (groupSettingsMyNickInput) groupSettingsMyNickInput.value = group.myGroupNick || "";
@@ -20451,6 +20670,227 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
         if (customQqCssInput) customQqCssInput.value = QQ_SELECTORS_TEMPLATE;
         await showCatpawAlert("已将选择器模板填入下方代码框，可直接查看与编辑。", "提示");
       }
+    }
+
+    // ============================================================
+    // 存储空间管理：统计与清理 IndexedDB 内各个模块数据
+    // ============================================================
+    const openStorageManagerBtn = document.querySelector("#openStorageManagerBtn");
+    const storageManagerModal = document.querySelector("#storageManagerModal");
+    const closeStorageManagerBtn = document.querySelector("#closeStorageManagerBtn");
+    const refreshStorageBtn = document.querySelector("#refreshStorageBtn");
+    const storageDonutChart = document.querySelector("#storageDonutChart");
+    const storageDonutTotal = document.querySelector("#storageDonutTotal");
+    const storageItemsContainer = document.querySelector("#storageItemsContainer");
+    const cleanStorageCacheBtn = document.querySelector("#cleanStorageCacheBtn");
+    const cleanStorageAllBtn = document.querySelector("#cleanStorageAllBtn");
+
+    function roughSizeOf(obj) {
+      try {
+        return JSON.stringify(obj || {}).length * 2; // 近似 UTF-16 字节数
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + " KB";
+      else return (bytes / 1048576).toFixed(2) + " MB";
+    }
+
+    function calculateStorageUsage() {
+      ensureQqState();
+      
+      // 1. 聊天记录缓存 (messages)
+      let chatBytes = roughSizeOf(appState.qq.defaultMessages);
+      appState.qq.roles.forEach(r => chatBytes += roughSizeOf(r.messages));
+      appState.qq.groupChats.forEach(g => chatBytes += roughSizeOf(g.messages));
+
+      // 2. 状态历史缓存 (statusHistory) -> 无效/垃圾数据，最容易膨胀
+      let statusBytes = 0;
+      Object.values(appState.qq.chatSettings || {}).forEach(s => {
+        statusBytes += roughSizeOf(s.statusHistory);
+      });
+
+      // 3. 图片与UI封面 (包含了 base64 存图的模块)
+      let imgBytes = roughSizeOf(appState.theme);
+      appState.qq.roles.forEach(r => imgBytes += roughSizeOf(r.avatar));
+      appState.qq.groupChats.forEach(g => imgBytes += roughSizeOf(g.avatar));
+      imgBytes += roughSizeOf(appState.music.accounts);
+      imgBytes += roughSizeOf(appState.music.songs.map(s => s.cover));
+
+      // 4. 表情包库
+      let stickerBytes = roughSizeOf(appState.qq.stickers);
+
+      // 5. 朋友圈动态
+      let momentBytes = roughSizeOf(appState.qq.moments);
+
+      // 6. 记忆与世界书
+      let memoryBytes = roughSizeOf(appState.qq.worldBooks);
+      appState.qq.roles.forEach(r => memoryBytes += roughSizeOf(r.memoryBook));
+
+      // 7. 其他核心配置 (API / 音乐非图部分等)
+      let totalBytes = roughSizeOf(appState);
+      let otherBytes = totalBytes - (chatBytes + statusBytes + imgBytes + stickerBytes + momentBytes + memoryBytes);
+      if (otherBytes < 0) otherBytes = 0;
+
+      return [
+        { key: "chat", name: "聊天消息记录", color: "#4f78ff", bytes: chatBytes },
+        { key: "img", name: "图片素材缓存", color: "#f5a623", bytes: imgBytes },
+        { key: "status", name: "生成状态记录", color: "#ff3b30", bytes: statusBytes },
+        { key: "sticker", name: "表情包库图床", color: "#34c759", bytes: stickerBytes },
+        { key: "moment", name: "朋友圈与互动", color: "#af52de", bytes: momentBytes },
+        { key: "memory", name: "世界书与记忆", color: "#5ac8fa", bytes: memoryBytes },
+        { key: "other", name: "核心应用配置", color: "#e5e5ea", bytes: otherBytes }
+      ];
+    }
+
+    function renderStorageManager() {
+      if (!storageManagerModal || !storageDonutChart) return;
+      
+      const usage = calculateStorageUsage();
+      const totalBytes = usage.reduce((sum, item) => sum + item.bytes, 0);
+
+      if (storageDonutTotal) {
+        storageDonutTotal.textContent = formatBytes(totalBytes);
+      }
+
+      // 生成 conic-gradient 背景
+      let gradientParts = [];
+      let currentPercent = 0;
+      
+      if (totalBytes > 0) {
+        usage.sort((a, b) => b.bytes - a.bytes).forEach(item => {
+          if (item.bytes === 0) return;
+          const percent = (item.bytes / totalBytes) * 100;
+          gradientParts.push(`${item.color} ${currentPercent}% ${currentPercent + percent}%`);
+          currentPercent += percent;
+        });
+        storageDonutChart.style.background = `conic-gradient(${gradientParts.join(", ")})`;
+      } else {
+        storageDonutChart.style.background = `conic-gradient(#f0f0f0 0% 100%)`;
+      }
+
+      // 渲染列表
+      storageItemsContainer.innerHTML = "";
+      usage.forEach(item => {
+        const percent = totalBytes > 0 ? ((item.bytes / totalBytes) * 100).toFixed(1) : "0.0";
+        
+        const row = document.createElement("div");
+        row.className = "storage-item-row";
+        
+        let actionBtnHtml = "";
+        // 除了其他核心配置外，给予单项清除能力
+        if (item.key !== "other" && item.key !== "img") {
+           actionBtnHtml = `<button class="qq-role-mini-btn danger" data-storage-action="${item.key}" style="background:transparent; padding:0 12px;">清空</button>`;
+        } else if (item.key === "img") {
+           actionBtnHtml = `<span style="font-size:10px; color:#c0c0c0;">请在各功能内修改图片</span>`;
+        } else {
+           actionBtnHtml = `<span style="font-size:10px; color:#c0c0c0;">核心不可清</span>`;
+        }
+
+        row.innerHTML = `
+          <div class="storage-dot" style="background:${item.color};"></div>
+          <div class="storage-item-info">
+            <strong>${item.name}</strong>
+            <span>占比：${percent}%</span>
+          </div>
+          <div style="font-size:12px; font-weight:600; color:#111; font-variant-numeric:tabular-nums; margin-right:8px;">
+            ${formatBytes(item.bytes)}
+          </div>
+          ${actionBtnHtml}
+        `;
+
+        const actionBtn = row.querySelector("button[data-storage-action]");
+        if (actionBtn) {
+          actionBtn.addEventListener("click", async () => {
+            await handleStorageClearAction(item.key, item.name);
+          });
+        }
+
+        storageItemsContainer.appendChild(row);
+      });
+    }
+
+    async function handleStorageClearAction(key, name) {
+      const confirmed = await showCatpawConfirm(`确定要清空【${name}】吗？此操作无法撤销。`, "清空确认");
+      if (!confirmed) return;
+
+      ensureQqState();
+      switch (key) {
+        case "chat":
+          appState.qq.defaultMessages = [];
+          appState.qq.roles.forEach(r => r.messages = []);
+          appState.qq.groupChats.forEach(g => g.messages = []);
+          break;
+        case "status":
+          Object.values(appState.qq.chatSettings || {}).forEach(s => s.statusHistory = []);
+          break;
+        case "sticker":
+          appState.qq.stickers = [];
+          break;
+        case "moment":
+          appState.qq.moments = [];
+          break;
+        case "memory":
+          appState.qq.worldBooks = [];
+          appState.qq.roles.forEach(r => r.memoryBook = []);
+          break;
+      }
+      
+      await saveState();
+      renderStorageManager();
+      await showCatpawAlert(`【${name}】已成功清空。`);
+    }
+
+    if (openStorageManagerBtn) {
+      openStorageManagerBtn.addEventListener("click", () => {
+        if (!storageManagerModal) return;
+        renderStorageManager();
+        storageManagerModal.classList.add("show");
+      });
+    }
+
+    if (closeStorageManagerBtn) {
+      closeStorageManagerBtn.addEventListener("click", () => {
+        if (storageManagerModal) storageManagerModal.classList.remove("show");
+      });
+    }
+
+    if (refreshStorageBtn) {
+      refreshStorageBtn.addEventListener("click", renderStorageManager);
+    }
+
+    if (cleanStorageCacheBtn) {
+      cleanStorageCacheBtn.addEventListener("click", async () => {
+        const confirmed = await showCatpawConfirm("这会清除所有的生成状态记录(Status History)，不会影响任何聊天消息。确定清理缓存吗？", "一键清理缓存");
+        if (!confirmed) return;
+        
+        Object.values(appState.qq.chatSettings || {}).forEach(s => s.statusHistory = []);
+        await saveState();
+        renderStorageManager();
+        await showCatpawAlert("无效缓存已释放。");
+      });
+    }
+
+    if (cleanStorageAllBtn) {
+      cleanStorageAllBtn.addEventListener("click", async () => {
+        const confirmed = await showCatpawConfirm("【警告】这会立即清空所有的聊天记录、朋友圈、表情包、状态记录、记忆本和世界书！\n如果你觉得数据量太大导致卡顿，可以点确认。确定要进行极速瘦身吗？", "危险操作！全清极速瘦身");
+        if (!confirmed) return;
+        
+        appState.qq.defaultMessages = [];
+        appState.qq.roles.forEach(r => { r.messages = []; r.memoryBook = []; });
+        appState.qq.groupChats.forEach(g => g.messages = []);
+        appState.qq.moments = [];
+        appState.qq.stickers = [];
+        appState.qq.worldBooks = [];
+        Object.values(appState.qq.chatSettings || {}).forEach(s => s.statusHistory = []);
+        
+        await saveState();
+        renderStorageManager();
+        await showCatpawAlert("全部数据模块已清空，系统已恢复至最轻量状态。");
+      });
     }
 
     if (openQqThemeManagerBtn) {
@@ -26553,11 +26993,47 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       });
     }
 
+    const BUBBLE_THEMES = {
+      "default": { name: "默认极简", selfBg: "#ececec", selfColor: "#262626", friendBg: "#f2f2f2", friendColor: "#262626" },
+      "classic_black": { name: "极简黑", selfBg: "#2f2f2f", selfColor: "#ffffff", friendBg: "#4f4f4f", friendColor: "#ffffff" },
+      "minimal_gray": { name: "简约灰", selfBg: "#d8d8d8", selfColor: "#111111", friendBg: "#e5e5e5", friendColor: "#111111" },
+      "os_blue": { name: "OS蓝", selfBg: "#007aff", selfColor: "#ffffff", friendBg: "#e9e9eb", friendColor: "#000000" },
+      "os_green": { name: "OS绿", selfBg: "#34c759", selfColor: "#ffffff", friendBg: "#e9e9eb", friendColor: "#000000" },
+      "os_pink": { name: "OS粉", selfBg: "#ff2d55", selfColor: "#ffffff", friendBg: "#e9e9eb", friendColor: "#000000" }
+    };
+
     const CHAT_THEME_PRESETS = {};
+
+    function renderBubbleThemeGrid(containerId, currentTheme) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = "";
+      Object.keys(BUBBLE_THEMES).forEach((key) => {
+        const theme = BUBBLE_THEMES[key];
+        const card = document.createElement("div");
+        card.className = `bubble-theme-card${currentTheme === key ? " active" : ""}`;
+        card.dataset.themeKey = key;
+        card.innerHTML = `
+          <div class="bubble-theme-preview">
+            <div class="btp-friend" style="background:${theme.friendBg}; color:${theme.friendColor};">Hello</div>
+            <div class="btp-self" style="background:${theme.selfBg}; color:${theme.selfColor};">Hi~</div>
+          </div>
+          <div class="bubble-theme-name">${theme.name}</div>
+        `;
+        card.addEventListener("click", () => {
+          container.querySelectorAll(".bubble-theme-card").forEach(c => c.classList.remove("active"));
+          card.classList.add("active");
+          getActiveChatSettings().bubbleTheme = key;
+          applyActiveChatSettings();
+        });
+        container.appendChild(card);
+      });
+    }
 
     function getChatDefaultSettings() {
       return {
         theme: "blue",
+        bubbleTheme: "default",
         remark: "",
         contactNote: "",
         myName: "",
@@ -26678,6 +27154,44 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       document.documentElement.style.setProperty("--transfer-card-bg", "#ffffff");
       qqThreadPanel.style.setProperty("--self-text-color", "#2d3035");
       qqThreadPanel.style.setProperty("--friend-text-color", "#2d3035");
+
+      const bubbleThemeKey = settings.bubbleTheme || "default";
+      const themeObj = BUBBLE_THEMES[bubbleThemeKey] || BUBBLE_THEMES.default;
+      let dynStyleTag = document.querySelector("#dynamic-bubble-theme-style");
+      if (!dynStyleTag) {
+        dynStyleTag = document.createElement("style");
+        dynStyleTag.id = "dynamic-bubble-theme-style";
+        document.head.appendChild(dynStyleTag);
+      }
+      dynStyleTag.textContent = `
+        .qq-page.thread-mode .qq-message-row.self .qq-message-bubble {
+          background: ${themeObj.selfBg} !important;
+          color: ${themeObj.selfColor} !important;
+        }
+        .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble {
+          background: ${themeObj.friendBg} !important;
+          color: ${themeObj.friendColor} !important;
+        }
+        .qq-page.thread-mode .qq-message-row.self .qq-message-bubble:has(.qq-message-quote) {
+          background: ${themeObj.selfBg} !important;
+        }
+        .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble:has(.qq-message-quote) {
+          background: ${themeObj.friendBg} !important;
+        }
+        .qq-page.thread-mode .qq-message-row.self .qq-message-bubble:has(.qq-message-quote) .qq-message-content {
+          color: ${themeObj.selfColor} !important;
+        }
+        .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble:has(.qq-message-quote) .qq-message-content {
+          color: ${themeObj.friendColor} !important;
+        }
+        .qq-page.thread-mode .qq-message-row.friend .qq-message-bubble::before {
+          background: ${themeObj.friendBg} !important;
+        }
+        .qq-page.thread-mode .qq-message-row.self .qq-message-bubble::before {
+          background: ${themeObj.selfBg} !important;
+        }
+      `;
+
       const activeFont = getCustomFontById(settings.chatFontId);
       qqThreadPanel.style.fontFamily = activeFont ? `"${activeFont.family}", "Noto Sans TC", "Noto Sans SC", "PingFang SC", sans-serif` : "";
 
@@ -28192,6 +28706,10 @@ const momentsAutoStatus = document.querySelector("#momentsAutoStatus");
       if (!chatSettingsModal) return;
       renderChatAvatarPair();
       const settings = getActiveChatSettings();
+
+      if (document.getElementById("chatBubbleThemeGrid")) {
+        renderBubbleThemeGrid("chatBubbleThemeGrid", settings.bubbleTheme || "default");
+      }
 
       const base = getCurrentChatBase();
       if (chatSettingRemark) chatSettingRemark.value = settings.remark || "";
